@@ -34,7 +34,7 @@ File path(s).
 ``` r
 example_plate("control")
 #>                                                                                                                        control 
-#> "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpVEPw2F/temp_libpath43343f9aa15e/FunMel/extdata/zymo_control.jpg" 
+#> "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpVEPw2F/temp_libpath43347401009c/FunMel/extdata/zymo_control.jpg" 
 # \donttest{
 res <- analyze_plate(example_plate("control"), layout = plate_layout(centre = "none"))
 #> ℹ Reading image
