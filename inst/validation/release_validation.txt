@@ -1,0 +1,50 @@
+FunMel 0.3.1: working MycoHalo base with matched controls and central fungi
+
+All original exported MycoHalo function names remain available. Native library
+and objects use the FunMel name; is_mycohalo_plate is a compatibility alias.
+Dish fitting, background correction, image kernels, colour conversion, and the
+bacterial/control image paths are retained. simulate_plate now also renders a
+schematic central partner for a fungal layout, with appropriately named truth masks. The fungal path now uses separate
+peripheral-target, central-partner and surrounding-zone components. It returns
+a central_fungus mask separately from the four targets. Halo masks are connected
+colour-zone candidates; unresolved fungal halos are NA with not_resolved status.
+
+Technical testing of 20 supplied images at max_dim=1200 and n_boot=20 completed
+all images and detected four target regions in each. All 15 confrontation images
+had a central fungal region. Separate halo candidates were resolved in 11;
+four had no resolved separate boundary. Correct counts do not verify tissue
+ownership or exact edges. Full QC figures and measurements are in photo_review.zip.
+The final QC panels display resolved masks instead of unlinked preliminary
+class pixels. Images 43/44 contain significant off-centre growth needing review.
+
+The supplied metadata has incorrect B22 filenames and blank B37 treatments.
+Proposed corrections use visual appearance and folder labels; metadata_confirmed
+is FALSE to block biological coefficients until the design is confirmed.
+No strain/medium identity or factor interpretation was invented. All five sets
+have three treatment photos and one control photo. Four colonies on that control
+are not four biological control plates. Descriptive coefficients are available
+once metadata and QC are confirmed; final inferential tables are withheld under
+the package's conservative replicated-control requirement for this archive.
+
+The coefficient is a ratio of mean target MI, not a mean of positional ratios.
+Equal weighting is used for target colonies within a plate and plates within
+sets. Per-plate coefficients and control-replication labels are returned. Facing
+bias also uses only controls in the same set. Provisional metadata and failed QC
+cannot silently generate coefficients. Shared-control covariance is retained in
+the lme4/lmerTest raw-MI contrasts for adequately replicated designs. The supplied
+0.2.0 coefficient t-interval omitted shared-control denominator uncertainty and
+was not retained as biological inference.
+
+Tests cover matched-set arithmetic, per-plate ratios, missing controls, missing
+metadata, plate IDs, central exclusion, image-mask disjointness, fungal/bacterial
+outputs, export compatibility, contrasts, singular fits and the original kernels.
+The executable vignette explains these choices using clearly synthetic data.
+
+Validation environment: Linux R 4.3.3 with lme4 and lmerTest installed.
+Mac interactive image annotation and installation were not exercised here.
+
+0.3.2 package repair: prepare_photo_archive is exported and the packaged
+script uses it. Archive/path tests cover extra enclosing folders, wrong ZIPs,
+stale files, ambiguous matches, Mac resource forks, missing batch paths, and
+empty results when all existing images fail. Image/statistical algorithms
+are unchanged from 0.3.1; the complete regression suite is checked again.

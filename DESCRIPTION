@@ -1,0 +1,35 @@
+Package: FunMel
+Title: Colour-Calibrated Quantification of Fungal Melanization in
+        Confrontation Assays
+Version: 0.3.6
+Authors@R: 
+    person("Mitra", "Ghotbi", email = "mitra.ghotbi@gmail.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-9185-9993"))
+Description: Layout-based analysis of plate photographs for measuring fungal
+    colony colour, shape and edge-to-centre profiles, developed for four
+    approximately round 'Zymoseptoria tritici' colonies and a central partner.
+    Retains the image workflow originally developed as 'MycoHalo'. Explicit
+    metadata matches every treatment set to its own control plates. Calculates
+    descriptive treatment-to-control image-darkness ratios and assesses matched
+    treatment differences using plate-level random effects with 'lme4' and
+    Satterthwaite contrasts from 'lmerTest'. Exports quality-control figures,
+    measurements, matched coefficients and diagnostic information. Image darkness
+    is a proxy requiring biological validation, not a pigment concentration.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends: R (>= 4.1.0)
+Imports: cli, graphics, grDevices, magick, Rcpp, stats, tools, utils,
+    lme4, lmerTest, ggplot2, grid, rlang
+LinkingTo: Rcpp
+Suggests: knitr, rmarkdown, png, testthat (>= 3.0.0),
+        withr
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+NeedsCompilation: yes
+Author: Mitra Ghotbi [aut, cre] (<https://orcid.org/0000-0001-9185-9993>)
+Maintainer: Mitra Ghotbi <mitra.ghotbi@gmail.com>
+URL: https://github.com/mghotbi/FunMel
+BugReports: https://github.com/mghotbi/FunMel/issues
+Config/roxygen2/version: 8.1.0
