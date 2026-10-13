@@ -1,0 +1,97 @@
+# Assess matched treatment effects within and across control sets
+
+First computes each set-specific arithmetic MI ratio using
+[`melanization_coefficient()`](https://mghotbi.github.io/FunMel/reference/melanization_coefficient.md).
+Final descriptive coefficients average these ratios equally across sets
+for each treatment. They are not ratios against a pooled control.
+Inferential contrasts use raw colony MI, not ratios sharing a control
+denominator.
+
+## Usage
+
+``` r
+assess_experiment(
+  colonies,
+  control = "control",
+  by = NULL,
+  method = c("mixed", "plate_means"),
+  level = 0.95,
+  p_adjust = "holm",
+  pool_contexts = FALSE,
+  comparison_scope = c("matched_effects", "common_sets")
+)
+```
+
+## Arguments
+
+- colonies:
+
+  Target colony table or batch result, with plate_id, set_id, treatment,
+  colony_id and MI_mean. Raw pipeline results may include the central
+  partner, which is excluded. Missing target values are errors.
+
+- control:
+
+  Label identifying control plates.
+
+- by:
+
+  Optional extra control-matching columns. A set cannot span different
+  matching values. To pool multiple strains/days, explicitly justify
+  that estimand; otherwise assess each biological context separately.
+
+- method:
+
+  mixed (lme4/lmerTest) or plate_means (ordinary linear model on one
+  arithmetic MI per plate). The latter is an explicit alternative, not a
+  silent fallback after a problematic mixed fit.
+
+- level:
+
+  Confidence level for unadjusted, contrast-wise intervals.
+
+- p_adjust:
+
+  Multiplicity method passed to p.adjust; default Holm. Applied
+  separately to within_sets, overall_effects and treatment_comparisons.
+
+- pool_contexts:
+
+  Allow final pooling across different recorded strains, days or media.
+  Default FALSE; subset to a context or explicitly justify pooling.
+
+- comparison_scope:
+
+  matched_effects compares each treatment's own matched effects across
+  its observed sets; common_sets restricts both to shared sets.
+  Different set coverage is flagged and needs a comparability
+  justification.
+
+## Value
+
+List with coefficients, overall_coefficients, plate_means, within_sets,
+overall_effects, treatment_comparisons, model, diagnostics, and status.
+Mixed-model contrasts use Satterthwaite degrees of freedom. Sparse
+designs, singular fits and convergence problems return descriptive
+coefficients with no inferential tables. At least two independent plates
+per cell are required as a computational guard, not a sufficiency
+guarantee.
+
+## Details
+
+The mixed model is MI ~ 0 + set-treatment cell + (1 \| plate). It
+estimates a separate mean for every observed set-treatment cell and a
+random intercept for each plate. Within-set contrasts subtract the
+matching control cell. Overall contrasts average those differences
+equally over available sets. Pairwise treatment comparisons subtract the
+average matched effects of each treatment. Optionally restrict both
+treatments to their common sets. These effects refer to the observed
+sets, not a population of unobserved sets.
+
+Assumes independent plates, approximately normal residuals and common
+residual variance. Inspect model residuals and the actual design.
+Pixels, radial rings and repeat photographs are not biological
+replicates. The model does not handle repeated observations of a plate
+over time. Shared control uncertainty is retained through the model
+contrast covariance; do not test exported ratios as if they were
+independent observations.

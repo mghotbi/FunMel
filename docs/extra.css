@@ -1,0 +1,37 @@
+/* FunMel: warm colours inspired by the original gold-and-brown logo. */
+:root { --funmel-gold: #c9971c; --funmel-ink: #2b2520; }
+body { line-height: 1.7; }
+.navbar { border-bottom: 3px solid var(--funmel-gold); box-shadow: 0 2px 12px rgba(43,37,32,.04); }
+main h1 { font-size: clamp(2rem, 4vw, 2.8rem); letter-spacing: -.035em; line-height: 1.16; font-weight: 750; margin-bottom: 1.4rem; }
+main h2 { border-top: 1px solid #e9dfcf; margin-top: 2.7rem; padding-top: 1.25rem; letter-spacing: -.015em; }
+main h3 { margin-top: 1.8rem; font-weight: 650; }
+main p { margin-bottom: 1.1rem; }
+main blockquote { border-left: 4px solid var(--funmel-gold); border-radius: 0 .7rem .7rem 0; padding: 1.1rem 1.4rem; background: #f7f0df; color: var(--funmel-ink); margin: 1.6rem 0; }
+main blockquote p:last-child { margin-bottom: 0; }
+main pre { border: 1px solid #e9dfcf; border-radius: .65rem; padding: 1rem; font-size: .88rem; }
+main table { display: block; max-width: 100%; overflow-x: auto; font-size: .91rem; margin: 1.5rem 0; }
+main th { background: #f3ecde; font-weight: 650; }
+main td, main th { padding: .65rem .8rem; vertical-align: top; }
+main img { max-width: 100%; height: auto; }
+.funmel-details { border: 1px solid #e9dfcf; border-radius: .65rem; padding: .8rem 1rem; margin: 1.5rem 0; background: #fff; }
+.funmel-details summary { cursor: pointer; font-weight: 650; color: #745523; }
+.funmel-details[open] summary { margin-bottom: 1rem; }
+#toc a { font-size: .9rem; }
+footer { border-top: 1px solid #e9dfcf; }
+@media (max-width: 767px) { main pre { font-size: .82rem; } main h2 { margin-top: 2rem; } }
+
+/* Readable code typography, with local system fallbacks. */
+pre, code, kbd, samp {
+  font-family: Menlo, Consolas, monospace !important;
+}
+main pre { font-size: .9rem; line-height: 1.6; }
+main code { font-size: .92em; }
+main pre code { font-size: inherit; }
+
+/* Keep the header logo compact rather than inheriting full image dimensions. */
+img[alt^="FunMel hex logo"], .page-header img.logo {
+  height: 139px;
+  width: auto;
+  max-width: 145px;
+  object-fit: contain;
+}
