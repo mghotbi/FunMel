@@ -1,4 +1,4 @@
-# FunMel 0.3.6 release checklist and scope
+# FunMel 0.3.7 release checklist and scope
 
 ## Experimental agreement
 
@@ -33,7 +33,7 @@ asymmetry are different responses. A factorial design needs explicit factor term
 
 Install the declared dependencies plus testthat, knitr, rmarkdown, png and withr.
 Run `testthat::test_local()`, then `R CMD build .` and
-`R CMD check --no-manual FunMel_0.3.6.tar.gz`. The vignette is executed and rebuilt
+`R CMD check --no-manual FunMel_0.3.7.tar.gz`. The vignette is executed and rebuilt
 as part of package checks. The beginner scripts can be rerun from system.file()
 after installation. If re-generating help, install roxygen2 and run
 `roxygen2::roxygenise()` before rebuilding.
@@ -58,7 +58,7 @@ and quantify robustness to imaging conditions. No superiority to ImageJ in accur
 or speed is established by the current tests. External benchmarking remains a
 separate task; it is not claimed complete.
 
-## Figure update (0.3.6)
+## Figure update (0.3.7)
 
 Controls use outlined squares; treatments use contrasting filled circles.
 Independent plate dots have separate lanes to remain visible when MI overlaps.

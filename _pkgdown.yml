@@ -1,0 +1,28 @@
+url: https://mghotbi.github.io/FunMel/
+title: FunMel
+
+template:
+  bootstrap: 5
+  theme: github-light
+  bslib:
+    bg: "#FFFCF7"
+    fg: "#2B2520"
+    primary: "#745523"
+    base_font: "system-ui"
+    heading_font: "system-ui"
+    code_font: "Menlo"
+
+navbar:
+  structure:
+    left: [intro, reference, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/FunMel.html
+
+articles:
+  - title: Learn the workflow
+    navbar: ~
+    contents:
+      - FunMel

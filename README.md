@@ -1,5 +1,4 @@
-# FunMel
-
+# FunMel <img src="man/figures/logo.png" align="right" height="139" alt="FunMel hex logo showing four peripheral colonies around a central colony and halo" />
 **From confrontation-plate photographs to reviewed colony measurements, matched
 melanization coefficients and plate-aware treatment comparisons.**
 
@@ -58,13 +57,13 @@ Private repositories additionally require GitHub authentication. An optional
 ```r
 install.packages(c("cli", "magick", "Rcpp", "lme4", "lmerTest", "ggplot2"))
 install.packages(file.choose(), repos=NULL, type="source")
-# Choose FunMel_0.3.6.tar.gz. Restart R again after installation.
+# Choose FunMel_0.3.7.tar.gz. Restart R again after installation.
 ```
 
 ```r
 library(FunMel)
-packageVersion("FunMel")                 # installed version: 0.3.6
-getNamespaceVersion("FunMel")            # loaded version: also 0.3.6
+packageVersion("FunMel")                 # installed version: 0.3.7
+getNamespaceVersion("FunMel")            # loaded version: also 0.3.7
 vignette("FunMel", package="FunMel")
 help(package="FunMel")
 ```
@@ -336,6 +335,6 @@ repeatable batch measurements, plate-aware statistics and figure exports in one
 R workflow. ImageJ/Fiji already supports measurements, ROI management and macro
 batch processing; FunMel is not claimed to be inherently more accurate or always
 faster. ImageJ can remain useful for manual mask review and difficult images.
-See the separate, README-ready [overview and algorithms](inst/guides/FunMel_overview.md).
+See the separate, README-ready [overview and algorithms](https://github.com/mghotbi/FunMel/blob/HEAD/inst/guides/FunMel_overview.md).
 
  

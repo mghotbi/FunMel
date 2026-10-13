@@ -26,6 +26,8 @@ plot_qc <- function(x, panels = c("overlay", "classes"),
   ob <- p$objects
   if(!is.null(ob$central_object)) ob$bacteria <- ob$central_object
   partner_label <- if(identical(ob$partner_type,"fungus")) "central fungus" else "central bacterium"
+  has_partner <- !is.null(ob$bacteria) && any(ob$bacteria)
+  has_halo <- !is.null(ob$halo) && any(ob$halo)
   d <- p$dish
   H <- dim(p$rgb)[1]; W <- dim(p$rgb)[2]
   ncol_ <- length(panels)
@@ -88,11 +90,14 @@ plot_qc <- function(x, panels = c("overlay", "classes"),
     ccols <- colony_cols[(det - 1) %% length(colony_cols) + 1]
     legends$overlay <- list(
       title = "Outlines",
-      legend = c("dish edge", "analysed agar", "expected position / search",
-                 partner_label, "halo candidate", "satellite / debris (excluded)",
+      legend = c("dish edge", "analysed agar", "expected positions",
+                 partner_label, "halo candidate", "satellite / debris",
                  paste("colony", ct$id[det])),
       col = c("#00B8D4", "#00B8D4", "grey55", "#E6D200", "#FF9900", "grey75", ccols),
       lty = c(2, 1, 3, rep(1, 3 + length(det))), lwd = 3)
+    keep <- c(TRUE, TRUE, TRUE, has_partner, has_halo,
+              !is.null(ob$satellites) && any(ob$satellites), rep(TRUE, length(det)))
+    for (nm in c("legend", "col", "lty")) legends$overlay[[nm]] <- legends$overlay[[nm]][keep]
   }
   if ("classes" %in% panels) {
     img <- array(0, c(H, W, 3))
@@ -112,10 +117,13 @@ plot_qc <- function(x, panels = c("overlay", "classes"),
     ccols <- colony_cols[(det - 1) %% length(colony_cols) + 1]
     legends$classes <- list(
       title = "Pixel classes",
-      legend = c("agar", "fungus, not a colony", partner_label, "halo candidate", "other",
+      legend = c("agar", "non-target material", partner_label, "halo candidate", "other",
                  "cast shadow", paste("colony", ct$id[det])),
       fill = c("#40454D", "#8C8C8C", "#FAF2D9", "#D9B326", "#E61A1A", "#1A2973", ccols),
       border = "grey30")
+    keep <- c(TRUE, any(cmap == 1L), has_partner, has_halo, any(cmap == 4L),
+              !is.null(p$bg$shadow) && any(p$bg$shadow), rep(TRUE, length(det)))
+    for (nm in c("legend", "fill")) legends$classes[[nm]] <- legends$classes[[nm]][keep]
   }
   # ---- legend strips (second row), one per panel, in panel order
   for (k in panels) {
@@ -126,6 +134,10 @@ plot_qc <- function(x, panels = c("overlay", "classes"),
     args <- c(list(x = "top", bty = "n", ncol = 2, cex = 0.95, title.font = 2,
                    title.adj = 0, x.intersp = 0.8, y.intersp = 1.15,
                    seg.len = 2.2, xjust = 0.5), lg)
+    # Measure the legend on this device and shrink it only when it would clip.
+    box <- do.call(graphics::legend, c(args, list(plot = FALSE)))
+    shrink <- min(1, 0.95 / box$rect$w, 0.95 / box$rect$h)
+    args$cex <- args$cex * shrink
     do.call(graphics::legend, args)
   }
   invisible(x)

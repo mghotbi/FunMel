@@ -1,3 +1,13 @@
+# FunMel 0.3.7
+
+- Fit QC legends to the graphics device, omit absent classes and use a neutral non-target-material label.
+
+- Add the FunMel-branded logo and a coordinated pkgdown theme with Menlo code typography.
+- Polish the user guide with a workflow overview, concise headings and a collapsible plate-measurement table.
+- Move maintenance instructions to CONTRIBUTING.md; retain user-focused documentation and exact GitHub installation instructions.
+- Include the documentation site for branch-based GitHub Pages hosting.
+- Retain image-analysis and matched-control statistical methods; qualify stats::setNames to resolve the namespace check note.
+
 # FunMel 0.3.6
 
 - Focus primary documentation on four target Zymoseptoria colonies around
