@@ -1,0 +1,498 @@
+---
+title: "FunMel: fungal confrontation assays from photographs to treatment assessment"
+author: "Mitra Ghotbi"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{FunMel: fungal confrontation assays from photographs to treatment assessment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse=TRUE,comment="#>",fig.width=7.2,fig.height=4.2)
+library(FunMel)
+```
+
+## Install FunMel
+
+Install a GitHub-hosted copy of the package using `remotes`. R >= 4.1 and
+source-compilation tools are required: Xcode Command Line Tools on macOS,
+the matching Rtools release on Windows, or an R development toolchain and
+ImageMagick development libraries on Linux.
+
+```{r github-install, eval=FALSE}
+install.packages("remotes")
+remotes::install_github("mghotbi/FunMel")
+library(FunMel)
+```
+
+The source repository is [mghotbi/FunMel](https://github.com/mghotbi/FunMel).
+The default installation uses its default branch. To select a release tag
+or another branch, add `ref="TAG_OR_BRANCH"`.
+
+To include the locally installed vignette:
+
+```{r github-install-vignette, eval=FALSE}
+install.packages(c("remotes", "knitr", "rmarkdown"))
+remotes::install_github("mghotbi/FunMel",
+                        build_vignettes=TRUE, dependencies=TRUE)
+vignette("FunMel", package="FunMel")
+```
+
+Vignette building requires Pandoc, normally supplied with RStudio. Private
+repositories require GitHub authentication. Restart R before replacing a loaded
+FunMel installation. For a downloaded source archive, use
+`install.packages(file.choose(), repos=NULL, type="source")` instead.
+
+## What you will learn
+
+This guide introduces the FunMel workflow: analyze plate photographs, inspect
+segmentation masks, organize experimental metadata, calculate matched-control
+melanization coefficients, assess treatment effects and export comparison
+figures. FunMel retains the original MycoHalo functions for compatibility.
+
+The first worked example uses a bundled measured dataset from a 14-day
+confrontation assay. Subsequent examples use simulated plates and measurements
+to demonstrate image analysis and statistical methods. All runnable examples
+in this guide use bundled or simulated inputs; no photograph download is needed.
+
+The default assay has four approximately round *Zymoseptoria tritici* colonies
+surrounding a central fungal colony and its halo candidate. Target-colony MI
+quantifies darkness in the four *Z. tritici* colonies. The central fungus and
+halo are measured separately and excluded from those MI summaries.
+A known inoculation layout supplies search
+regions and seeds. Detected outlines need not be round. These are image classes,
+not automated species identification. A central colour zone is a halo candidate,
+not a confirmed inhibition boundary.
+
+## Worked example: one control and three treatment plates per set
+
+The bundled 14-day dataset contains twenty photographs organized into five
+matching sets. Each set contains one control dish and three treatment dishes,
+with four target *Z. tritici* colonies per dish. Metadata has twenty plate rows;
+the measurement table has eighty colony rows. This design is used to demonstrate
+shared-control matching. Other experiments may have different replicate counts
+and control arrangements, which must be recorded explicitly in their metadata.
+
+```{r own-metadata}
+real_meta <- read.csv(system.file("extdata","14_day_example","metadata.csv",
+                                 package="FunMel"),stringsAsFactors=FALSE)
+real_colonies <- read.csv(system.file("extdata","14_day_example","colonies.csv",
+                                     package="FunMel"),stringsAsFactors=FALSE)
+validate_metadata(real_meta)
+knitr::kable(real_meta[real_meta$set_id=="A33_1_14_days",
+                       c("file","plate_id","set_id","treatment","replicate")])
+```
+
+The same four-row structure applies to A60, B20, B22 and B37, with each set's own
+control. The control replicate is 1 and the three treatment replicates are 1–3.
+Replicate numbers do not define one-to-one pairing here: all three treatment
+plates use their set's single control. Folder-derived treatment identities and
+experimental mappings are provisional. Each control dish appears once in the
+metadata and serves as the denominator for all treatment plates in its set.
+
+```{r own-measurements}
+real_plate_means <- aggregate(MI_mean ~ plate_id + set_id + treatment,
+                             data=real_colonies,FUN=mean)
+knitr::kable(real_plate_means,digits=2)
+```
+
+These are measured image-darkness values rather than simulated outputs.
+Interpretation as biological treatment responses requires verification of
+experimental assignments, segmentation masks and colour calibration. The
+bundled example retains its provisional review status.
+
+```{r own-comparison, fig.height=5.5}
+plot_treatment_comparison(real_colonies,preview=TRUE)
+```
+
+For each set, the displayed coefficient is
+`mean(MI_T1, MI_T2, MI_T3) / MI_control`. This descriptive coefficient permits one
+control plate. The built-in inferential assessment has a separate replication
+guard and does not treat four control colonies as four control plates. Replicate
+ratios share control uncertainty; their spread is not a full ratio confidence interval.
+`metadata_confirmed=FALSE` is retained, so the figure is clearly provisional and
+final coefficient calculation remains blocked until review.
+
+```{r own-script, eval=FALSE}
+source(system.file("examples","04_14_day_case_study.R",package="FunMel"))
+file.copy(system.file("examples","metadata_14_day_case_study.csv",package="FunMel"),
+          "case_study_metadata.csv",overwrite=FALSE)
+```
+
+The case-study metadata illustrates one row per independent plate and explicit
+matching-set assignments. The following sections use synthetic data to explain
+image analysis and statistical calculations step by step.
+
+## 1. Analyze a plate and inspect its masks
+
+```{r first-image, fig.height=5.5}
+lay <- plate_layout(centre="none")
+sim <- simulate_plate(width=400,height=500,layout=lay,seed=21)
+control <- analyze_plate(sim$image,layout=lay,id="synthetic_control",
+                         n_boot=20,verbose=FALSE)
+control$colonies[,c("colony_id","detected","MI_mean","area_mm2")]
+plot_qc(control)
+```
+
+There is one measurement row per target colony. The overlay shows boundaries and
+labels; the resolved-object panel shows the assigned regions. Four detected
+regions are not proof of four correct biological objects. Check dish scale,
+colony boundaries, reflections, central-object assignment and warnings.
+
+```{r fungal-image, fig.height=5.5}
+fungal_layout <- plate_layout(centre="fungus",rotation_deg=10)
+fungal_sim <- simulate_plate(width=400,height=500,layout=fungal_layout,seed=22)
+confrontation <- analyze_plate(fungal_sim$image,layout=fungal_layout,
+                               id="synthetic_fungal",n_boot=20,verbose=FALSE)
+confrontation$plate_summary[,c("central_partner_type","central_detected","halo_status")]
+plot_qc(confrontation)
+```
+
+For fungal confrontation photographs, use `centre="fungus"`; control plates
+use `centre="none"`. Pass an image path rather than `sim$image` and enter the
+actual dish diameter:
+
+```{r real-single, eval=FALSE}
+img <- file.choose()
+r <- analyze_plate(img,layout=plate_layout(centre="fungus"),
+                   dish_diameter_mm=90,keep_images=TRUE)
+plot_qc(r)
+r$warnings
+```
+
+`keep_images=TRUE` allows later QC plotting. Batch results save QC PNGs but drop
+large image arrays. Mean MI is `100 - L*` on retained, non-specular colony-interior
+pixels: higher MI means darker images, not measured pigment concentration.
+
+## 2. Adapt the layout to new photographs
+
+```{r layouts}
+plate_layout(centre="fungus",rotation_deg=15,radius_frac=0.5)
+positions <- data.frame(id=c("N","E","S","W"),
+                        x_rel=c(0,0.5,0,-0.5),y_rel=c(-0.5,0,0.5,0))
+plate_layout(centre="fungus",positions=positions)
+```
+
+Coordinates are relative to the dish radius: x increases rightward and y
+downward. `radius_mm` can set physical inoculation spacing. `search_frac` controls
+core-search radius. Do not enlarge it indiscriminately to capture unrelated
+growth. Optional numeric `rotation_deg`, `radius_frac`, `radius_mm`, `search_frac`,
+`start_deg` and `n_colonies` metadata columns are read by `layout_by_treatment()`.
+Explicit layout arguments take priority. Arbitrary image names and supported
+layouts are allowed; severely merged colonies, reflections or uncertain class
+identity still need review/training or manual analysis.
+
+## 3. Metadata defines which control is relevant
+
+One row is one independently prepared dish photographed once. Four colonies on
+one plate are subsamples. Multiple photographs of the same dish are repeated
+observations, not independent biological replicates.
+
+| Field | Required interpretation |
+|---|---|
+| `file`, `relative_file` | Unique basename and optional path from the photo root |
+| `plate_id` | Unique biological plate ID |
+| `set_id` | Matching control set, often a batch |
+| `treatment` | `control` or a consistent intervention name |
+| `centre_model` | `none` for controls; `fungus` for fungal confrontation |
+| `partner_type` | Biological partner type |
+| `zymo_strain`, `day`, `medium` | Recommended context, complete and constant within a set if supplied |
+| `metadata_confirmed` | TRUE after experimental mapping is verified |
+| `qc_pass` | TRUE after acceptable mask and calibration review; required for finalization |
+
+A treatment in S1 uses only S1 controls. Separate treatment-control experiments
+need separate set IDs. Several treatments can legitimately share controls within
+one batch: put all those plates in one set and list each control once. Do not
+copy a shared control under new plate IDs. The same treatment label across sets
+must mean the same intervention. Set IDs need not be folder names.
+
+```{r metadata}
+demo <- example_experiment(seed=42)
+# Assign fungal labels to the two simulated treatment groups.
+fungal_labels <- stats::setNames(c("fungus_A", "fungus_B"),
+  setdiff(unique(as.character(demo$metadata$treatment)), "control"))
+for (component in c("metadata", "colonies")) {
+  d <- demo[[component]]
+  d$treatment <- ifelse(d$treatment == "control", "control",
+    fungal_labels[as.character(d$treatment)])
+  for (field in intersect(c("centre_model", "partner_type"), names(d)))
+    d[[field]] <- ifelse(d$treatment == "control", "none", "fungus")
+  demo[[component]] <- d
+}
+validate_metadata(demo$metadata)
+with(demo$metadata,table(set_id,treatment))
+knitr::kable(head(demo$metadata[,c("file","plate_id","set_id","treatment","centre_model")]))
+```
+
+This synthetic design has three shared-control batches, each with control,
+`fungus_A` and `fungus_B` and three independent plates per group. Its true MI
+increments are 8 and 15, with added plate and colony variation. Plate IDs are
+unambiguous; treatment C must not reuse an ID like C1 that also names a control.
+
+```{r metadata-template, eval=FALSE}
+make_metadata("photos",recursive=TRUE)
+# Edit photos/plate_metadata.csv: fill experimental fields, do not guess them.
+meta <- read.csv("photos/plate_metadata.csv",stringsAsFactors=FALSE)
+files <- file.path("photos",meta$relative_file)
+validate_metadata(meta,files)
+# Alternative for any original photo ZIP, including enclosing folders:
+files <- prepare_photo_archive("original_photos.zip",meta,"extracted_photos")
+```
+
+The template records provenance but leaves unknown experimental fields blank and
+`metadata_confirmed=FALSE`. Validation checks unique files/plates, complete set
+IDs, controls within each set and constant recorded matching contexts. Different
+strains, days or media should have separate set IDs. Final pooling of multiple
+recorded contexts requires an explicit `pool_contexts=TRUE` decision. It is not
+a default biological recommendation.
+
+The twenty-row case-study metadata is available as
+`inst/examples/metadata_14_day_case_study.csv`, introduced at the start of this
+guide. Use it as a worked example; create a separate metadata table for each
+new experiment rather than reusing its assignments.
+
+## 4. Calculate replicate responses, then descriptive treatment summaries
+
+Average target-colony MI within each plate, giving each colony equal weight.
+Then average independent plate means within set and treatment, giving each plate
+equal weight. The ratio is
+
+\[
+MI_p=\frac{1}{n_p}\sum_j MI_{pj},\qquad
+MC_{s,t}=\frac{\operatorname{mean}_{p\in(s,t)} MI_p}
+{\operatorname{mean}_{p\in(s,control)} MI_p}.
+\]
+
+```{r exact-coefficient}
+d <- data.frame(plate_id=rep(c("C01","T01","T02","T03"),each=4),
+                set_id="S1",treatment=rep(c("control","A","A","A"),each=4),
+                colony_id=rep(c("TL","TR","BR","BL"),4),
+                MI_mean=rep(c(40,48,52,56),each=4))
+mc <- melanization_coefficient(d)
+mc$plate_means
+mc$per_plate_coefficients[,c("plate_id","melanization_coefficient")]
+mc$coefficients[,c("MI_treatment_mean","MI_control_mean","melanization_coefficient")]
+```
+
+The replicate ratios are 1.2, 1.3 and 1.4; the treatment coefficient is
+`mean(48,52,56)/40 = 1.3`. Independent plate measurements remain available for
+analysis. This is not a mean of position-specific ratios. The partner is excluded
+using target flags/central IDs. Missing target MI is an error by default;
+`na_action="omit"` is an explicit documented-exclusion option. A whole unusable
+plate remains unavailable. A nonpositive control denominator gives no ratio.
+
+If a treatment occurs in several sets, its overall descriptive coefficient is
+an equal-set mean of matched ratios, not a ratio against pooled unrelated controls.
+
+```{r pooling}
+x <- data.frame(plate_id=c("C1","T1","C2","T2"),set_id=c("S1","S1","S2","S2"),
+                treatment=c("control","A","control","A"),colony_id="TL",
+                MI_mean=c(20,40,80,80))
+z <- melanization_coefficient(x)$coefficients
+z[,c("set_id","melanization_coefficient")]
+mean(z$melanization_coefficient) # 1.5; pooled 120/100 would be 1.2
+```
+
+A ratio of 1.3 is not evidence of 30% more melanin. MI is an image-darkness proxy.
+Replicate-ratio SD/SE does not include uncertainty in a shared control denominator.
+
+## 5. Assess treatments while retaining independent plates
+
+```{r assessment}
+a <- assess_experiment(demo$colonies,comparison_scope="common_sets")
+a$status
+knitr::kable(a$overall_coefficients,digits=3)
+# Preserve small p-values in the displayed tables; do not round them to zero.
+format_tests <- function(x) {
+  for(nm in intersect(c("p_value","p_adjusted"),names(x)))
+    x[[nm]] <- base::format.pval(x[[nm]],digits=2,eps=0.001)
+  x
+}
+knitr::kable(format_tests(a$overall_effects),digits=3)
+knitr::kable(format_tests(a$treatment_comparisons),digits=3)
+```
+
+The descriptive ratios and inferential effects are different outputs. The mixed
+model uses original colony MI with one random intercept per independent plate:
+
+\[
+MI_{spj}=\mu_{s,t(p)}+b_p+\epsilon_{spj},\quad
+b_p\sim N(0,\sigma^2_{plate}),\quad \epsilon_{spj}\sim N(0,\sigma^2).
+\]
+
+Every observed set-treatment cell has its own fixed mean. `lme4` fits this model;
+`lmerTest` gives Satterthwaite contrast inference. Within-set effects subtract
+that set's control. A-versus-B compares matched effects, preserving shared-control
+covariance. No test treats treatment averages as biological replicates. An
+explicit `method="plate_means"` fits the same cell-specific fixed means to one
+arithmetic mean per plate; with unequal colony counts it need not match the mixed
+model's weighting exactly.
+
+`comparison_scope="common_sets"` uses shared sets only; an absent common set gives
+`no_common_sets`. The default `matched_effects` uses each treatment's observed
+sets and flags different coverage. A treatment observed only in one batch cannot
+automatically be separated from batch-specific effects. Holm-adjusted p values
+are reported separately from unadjusted contrast-wise confidence intervals.
+
+### How this relates to the usual treatment-plus-batch model
+
+The confrontation-assay principle is retained: independent replicate measurements,
+own-batch control normalization for interpretation, and modelling that accounts
+for experimental structure. FunMel's cell-specific model estimates effects in
+observed sets; it does **not** fit a common treatment effect across random batches.
+An additive model instead assumes treatment differences are common across batches.
+For a sufficiently crossed design, the following is an advanced alternative on
+individual plate means, not treatment averages:
+
+```{r additive-model}
+pm <- melanization_coefficient(demo$colonies)$plate_means
+additive <- lm(MI_plate ~ treatment + factor(set_id),data=pm)
+coef(additive)
+```
+
+This example is separate from `assess_experiment()`, not an automatic fallback.
+Check estimability, residual variance and whether a common treatment effect is
+scientifically justified. A random-batch model such as
+`lme4::lmer(MI_plate ~ treatment + (1 | set_id), data=pm)` additionally requires
+an appropriate population-of-batches interpretation and enough batches to estimate
+variance. Very few batches can make this unstable. More complex factorial,
+longitudinal, spatial or heteroscedastic designs need their own models.
+
+### Replication and diagnostics
+
+The built-in assessment requires at least two independent plates per cell and
+within-plate replication for its mixed model. This is a conservative computational
+guard, not a universal requirement of all confrontation assays or proof of power.
+One control plate still permits a descriptive ratio. Some sparse designs may
+support other justified models; additional assumptions must not be hidden.
+
+```{r sparse-design}
+sparse <- suppressWarnings(assess_experiment(d))
+sparse$status # insufficient_plate_replication
+```
+
+Singular fits, convergence problems and insufficient replication return explicit
+status and withhold inferential tables. No significance test is silently substituted.
+
+```{r diagnostics, fig.width=7.2, fig.height=3.5}
+a$diagnostics$plates_per_cell
+a$diagnostics$variance_components
+op <- par(mfrow=c(1,2))
+plot(fitted(a$model),residuals(a$model),xlab="Fitted MI",ylab="Residual")
+abline(h=0,lty=2)
+qqnorm(residuals(a$model));qqline(residuals(a$model))
+par(op)
+```
+
+Spatial block-bootstrap intervals describe within-image pixel sampling, not
+plate-to-plate biological variation. Normality and equal residual variance remain
+model assumptions. Account for review/exclusion decisions and design limitations.
+
+## 6. Process a real batch, review it and reuse saved measurements
+
+```{r real-batch, eval=FALSE}
+out <- analyze_plates(files,metadata=meta,
+                      layout=function(row) layout_by_treatment(row),
+                      qc_dir="FunMel_results/qc")
+saveRDS(out,"FunMel_results/image_analysis.rds")
+out$failed
+out$coefficient_error
+# STOP and inspect every QC image, measurement warning and metadata mapping.
+# Correct images/masks if needed. Then edit the CSV's confirmation/review flags.
+reviewed_meta <- read.csv("photos/plate_metadata.csv",stringsAsFactors=FALSE)
+reviewed <- finalize_analysis(out,reviewed_meta)
+write.csv(reviewed$melanization_coefficient,
+          "FunMel_results/matched_coefficients.csv",row.names=FALSE)
+saveRDS(reviewed,"FunMel_results/reviewed_analysis.rds")
+```
+
+`finalize_analysis()` requires explicit complete logical `metadata_confirmed=TRUE`
+and `qc_pass=TRUE`. These record user decisions, not automatic biological proof.
+It applies verified labels to saved measurements without repeating image processing.
+A changed central-partner recipe or layout requires reanalysis. Failed images must
+be resolved before finalization. Do not silently discard an inconvenient replicate.
+The generic `scripts/analyse_experiment.R` saves measurement tables, statuses and
+session information and separates the review stage from final assessment.
+
+## 7. Export a treatment comparison figure
+
+```{r comparison, fig.height=5.2}
+plot_treatment_comparison(demo,
+  labels=c(fungus_A="Fungal partner A",fungus_B="Fungal partner B"))
+```
+
+```{r figure-export, eval=FALSE}
+p <- plot_treatment_comparison(reviewed,file="FunMel_results/treatment_comparison")
+# Vector PDF/SVG, 600-dpi PNG and _statistics.csv are written.
+attr(p,"FunMel_statistics") # means, SDs, independent plate counts, descriptive delta_MI
+```
+
+Panel A displays independent plate MI means and matching controls. Panel B
+displays treatment replicate ratios and the set's ratio of means. Outlined squares are controls; coloured circles are treatment plates. Lower
+diamonds show treatment means, with bars spanning mean ± one between-plate SD.
+Each row reports control and treatment mean MI, treatment SD, coefficient and
+coefficient SD. A single control plate has no estimable SD (shown as unavailable). Shared controls remain shared,
+not new replicates. Coefficient SD measures treatment variability conditional on
+the shared control mean; it excludes denominator uncertainty. These SDs are not
+confidence intervals. The separate model results from `assess_experiment()` are
+needed for supported inferential comparisons. Inferential estimates and confidence intervals are reported separately by
+`assess_experiment()` when the design and model diagnostics support them.
+`preview=TRUE` labels a provisional view; it never confirms metadata or overrides
+failed QC. Figures need verified identities, adequate imaging and a suitable
+caption before publication. Export settings do not establish scientific validity.
+
+## 8. Interpret measurements and act on warnings
+
+| Output | What it measures |
+|---|---|
+| `MI_mean`, `MI_median` | Target-colony image darkness |
+| `area_mm2`, `circularity`, `solidity` | Detected mask geometry, conditional on scale and segmentation |
+| `delta_MI_facing` | Facing-minus-away darkness difference within a target |
+| `radial_asymmetry_pct` | Toward/away radial asymmetry; alias of legacy `growth_inhibition_pct` |
+| `gap_partner_mm` | Geometric gap to the detected central partner |
+| `profiles` | Distance-from-edge ring summaries, not independent plates |
+| `halo_status` | Resolved colour-zone candidate or unresolved boundary |
+
+Control-referenced growth inhibition is `(C - T)/C * 100`, with a specified,
+consistent growth outcome (e.g. radius or area). It is distinct from MI ratios
+and from radial asymmetry. FunMel's matched assessment currently targets MI;
+other outcomes and inhibition models must be specified separately.
+
+| Warning/status | Meaning and action |
+|---|---|
+| Fitted illumination range | Pre-correction green-channel surface range, not residual error |
+| `flat_field_clipped_fraction` | Fraction of dish pixels where gains exceed correction limits; inspect calibration |
+| `residual_agar_range_pct` | Remaining spatial-bin median variation on fitted agar pixels; not validated colony-level error |
+| `segmentation_trim_fraction` | Narrow target/central connection removed; inspect the refined outline |
+| Undetected colony | No adequate region found; do not invent MI |
+| `not_resolved` halo | Uncertain boundary; do not call it biological zero |
+| Pending coefficient | Metadata/QC/missing-value issue; read its explicit reason |
+| Inferential status other than `ok` | Review model/replication; descriptive ratios may still be available |
+
+Flat-field fitting is not a substitute for comparable photography and exposure.
+Use diffuse, consistent lighting and an appropriate reference where possible.
+An agar reference is justified only for comparable, untinted medium; a reference
+card needs known colour and suitable placement. Unrecoverable clipping or organism
+colour gradients cannot be solved reliably by an image-only illumination model.
+
+## 9. More beginner examples and further reading
+
+```{r runnable-examples, eval=FALSE}
+source(system.file("examples","01_image_quickstart.R",package="FunMel"))
+source(system.file("examples","02_coefficient_arithmetic.R",package="FunMel"))
+source(system.file("examples","03_fungal_matched_experiment.R",package="FunMel"))
+```
+
+The bundled 14-day dataset is a worked case study. Its metadata has
+unverified folder-derived identities, and each set has three treatment plates
+and one control plate. That does not meet the built-in inference guard. Its
+technical review is bundled in `validation/photo_review.zip`; successful detection
+counts do not certify biological masks or calibration. None of its filenames
+are required by the generic image or coefficient functions.
+
+The separate `guides/FunMel_overview.md` explains ImageJ complementarity,
+properties, functions and the algorithms. ImageJ/Fiji already offers ROI measurement
+and macro automation; no head-to-head superiority in accuracy or speed is claimed.

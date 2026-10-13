@@ -1,0 +1,27 @@
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.o
+*.so
+*.dll
+*.dylib
+*.tar.gz
+*.Rcheck/
+FunMel_results/
+FunMel_14_day_review/
+FunMel_photo_review/
+photos/
+private_data/
+*.DS_Store
+__MACOSX/
+._*
+.Renviron
+.Rprofile
+# pkgdown output is generated locally; commit it only if your hosting needs it.
+docs/
+# Keep authored R, man, vignettes, tests, inst and README files tracked.
+*.zip
+!inst/validation/*.zip
+!tests/testthat/fixtures/*.zip
+inst/doc/

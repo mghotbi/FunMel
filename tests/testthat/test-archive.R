@@ -1,0 +1,35 @@
+archive_fixture<-function(n) testthat::test_path('fixtures',n)
+archive_meta<-function() data.frame(file='test.JPG',relative_file='folder/test.JPG')
+test_that('archive files are resolved through an enclosing folder', {
+  x<-prepare_photo_archive(archive_fixture('nested.zip'),archive_meta(),tempfile())
+  expect_length(x,1L);expect_true(file.exists(x));expect_match(x,'outer/folder/test.JPG',fixed=TRUE)
+})
+test_that('wrong archives stop before extraction even if stale files exist', {
+  d<-withr::local_tempdir();dir.create(file.path(d,'folder'))
+  writeLines('old data',file.path(d,'folder','test.JPG'))
+  expect_error(prepare_photo_archive(archive_fixture('wrong.zip'),archive_meta(),d),'missing expected photographs')
+  expect_equal(length(list.files(d,all.files=FALSE)),1L)
+})
+test_that('ambiguous images are rejected and Mac resource files are ignored', {
+  expect_error(prepare_photo_archive(archive_fixture('ambiguous.zip'),archive_meta(),tempfile()),'exactly one')
+  x<-prepare_photo_archive(archive_fixture('mac.zip'),archive_meta(),tempfile())
+  expect_length(x,1L);expect_false(grepl('__MACOSX',x))
+})
+test_that('batch preflight prevents missing-file loops and unnecessary QC folders', {
+  d<-tempfile()
+  expect_error(analyze_plates('missing-image.JPG',qc_dir=d,verbose=FALSE),'Analysis has not started')
+  expect_false(dir.exists(d))
+})
+test_that('all failed existing images return usable empty schemas', {
+  d<-withr::local_tempdir();f<-file.path(d,'invalid.JPG');writeLines('not an image',f)
+  out<-analyze_plates(f,verbose=FALSE)
+  expect_equal(nrow(out$failed),1L);expect_equal(nrow(out$plates),0L)
+  expect_true(all(c('plate_id','n_colonies_detected','central_detected','halo_status') %in% names(out$plates)))
+  expect_match(out$coefficient_error,'No plates completed')
+})
+test_that('pending batch coefficient exports retain meaningful headers', {
+  d<-withr::local_tempdir();f<-file.path(d,'invalid.JPG');writeLines('not an image',f)
+  x<-analyze_plates(f,verbose=FALSE)
+  expect_true(all(c('set_id','treatment','melanization_coefficient','status') %in% names(x$melanization_coefficient)))
+  expect_true('MI_plate' %in% names(x$coefficient_plate_means))
+})
