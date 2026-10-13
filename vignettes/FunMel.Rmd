@@ -1,11 +1,19 @@
 ---
+<<<<<<< HEAD
 title: "Get started with FunMel"
+=======
+title: "FunMel: fungal confrontation assays from photographs to treatment assessment"
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 author: "Mitra Ghotbi"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
+<<<<<<< HEAD
   %\VignetteIndexEntry{Get started with FunMel}
+=======
+  %\VignetteIndexEntry{FunMel: fungal confrontation assays from photographs to treatment assessment}
+>>>>>>> origin/Rhizosphere-nitrogen-fate
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,6 +23,7 @@ knitr::opts_chunk$set(collapse=TRUE,comment="#>",fig.width=7.2,fig.height=4.2)
 library(FunMel)
 ```
 
+<<<<<<< HEAD
 ## From a plate photograph to a matched response
 
 This guide introduces the FunMel workflow: analyze plate photographs, inspect
@@ -56,6 +65,8 @@ not a confirmed inhibition boundary.
 concentration. Colonies within a dish are subsamples, not independent plates.
 Each treatment uses only the controls assigned to its matching set.
 
+=======
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 ## Install FunMel
 
 Install a GitHub-hosted copy of the package using `remotes`. R >= 4.1 and
@@ -87,7 +98,32 @@ repositories require GitHub authentication. Restart R before replacing a loaded
 FunMel installation. For a downloaded source archive, use
 `install.packages(file.choose(), repos=NULL, type="source")` instead.
 
+<<<<<<< HEAD
 ## Explore the measured 14-day case study
+=======
+## What you will learn
+
+This guide introduces the FunMel workflow: analyze plate photographs, inspect
+segmentation masks, organize experimental metadata, calculate matched-control
+melanization coefficients, assess treatment effects and export comparison
+figures. FunMel retains the original MycoHalo functions for compatibility.
+
+The first worked example uses a bundled measured dataset from a 14-day
+confrontation assay. Subsequent examples use simulated plates and measurements
+to demonstrate image analysis and statistical methods. All runnable examples
+in this guide use bundled or simulated inputs; no photograph download is needed.
+
+The default assay has four approximately round *Zymoseptoria tritici* colonies
+surrounding a central fungal colony and its halo candidate. Target-colony MI
+quantifies darkness in the four *Z. tritici* colonies. The central fungus and
+halo are measured separately and excluded from those MI summaries.
+A known inoculation layout supplies search
+regions and seeds. Detected outlines need not be round. These are image classes,
+not automated species identification. A central colour zone is a halo candidate,
+not a confirmed inhibition boundary.
+
+## Worked example: one control and three treatment plates per set
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 The bundled 14-day dataset contains twenty photographs organized into five
 matching sets. Each set contains one control dish and three treatment dishes,
@@ -113,17 +149,23 @@ plates use their set's single control. Folder-derived treatment identities and
 experimental mappings are provisional. Each control dish appears once in the
 metadata and serves as the denominator for all treatment plates in its set.
 
+<<<<<<< HEAD
 <details class="funmel-details">
 <summary>View measurements from all 20 independent plates</summary>
 
+=======
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 ```{r own-measurements}
 real_plate_means <- aggregate(MI_mean ~ plate_id + set_id + treatment,
                              data=real_colonies,FUN=mean)
 knitr::kable(real_plate_means,digits=2)
 ```
 
+<<<<<<< HEAD
 </details>
 
+=======
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 These are measured image-darkness values rather than simulated outputs.
 Interpretation as biological treatment responses requires verification of
 experimental assignments, segmentation masks and colour calibration. The
@@ -151,7 +193,11 @@ The case-study metadata illustrates one row per independent plate and explicit
 matching-set assignments. The following sections use synthetic data to explain
 image analysis and statistical calculations step by step.
 
+<<<<<<< HEAD
 ## 1. Analyze and review a plate
+=======
+## 1. Analyze a plate and inspect its masks
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 ```{r first-image, fig.height=5.5}
 lay <- plate_layout(centre="none")
@@ -192,7 +238,11 @@ r$warnings
 large image arrays. Mean MI is `100 - L*` on retained, non-specular colony-interior
 pixels: higher MI means darker images, not measured pigment concentration.
 
+<<<<<<< HEAD
 ## 2. Set the inoculation layout
+=======
+## 2. Adapt the layout to new photographs
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 ```{r layouts}
 plate_layout(centre="fungus",rotation_deg=15,radius_frac=0.5)
@@ -210,7 +260,11 @@ Explicit layout arguments take priority. Arbitrary image names and supported
 layouts are allowed; severely merged colonies, reflections or uncertain class
 identity still need review/training or manual analysis.
 
+<<<<<<< HEAD
 ## 3. Match treatments to their controls
+=======
+## 3. Metadata defines which control is relevant
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 One row is one independently prepared dish photographed once. Four colonies on
 one plate are subsamples. Multiple photographs of the same dish are repeated
@@ -279,7 +333,11 @@ The twenty-row case-study metadata is available as
 guide. Use it as a worked example; create a separate metadata table for each
 new experiment rather than reusing its assignments.
 
+<<<<<<< HEAD
 ## 4. Calculate the melanization coefficient
+=======
+## 4. Calculate replicate responses, then descriptive treatment summaries
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 Average target-colony MI within each plate, giving each colony equal weight.
 Then average independent plate means within set and treatment, giving each plate
@@ -324,7 +382,11 @@ mean(z$melanization_coefficient) # 1.5; pooled 120/100 would be 1.2
 A ratio of 1.3 is not evidence of 30% more melanin. MI is an image-darkness proxy.
 Replicate-ratio SD/SE does not include uncertainty in a shared control denominator.
 
+<<<<<<< HEAD
 ## 5. Assess treatment effects
+=======
+## 5. Assess treatments while retaining independent plates
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 ```{r assessment}
 a <- assess_experiment(demo$colonies,comparison_scope="common_sets")
@@ -416,7 +478,11 @@ Spatial block-bootstrap intervals describe within-image pixel sampling, not
 plate-to-plate biological variation. Normality and equal residual variance remain
 model assumptions. Account for review/exclusion decisions and design limitations.
 
+<<<<<<< HEAD
 ## 6. Process and finalize an experiment
+=======
+## 6. Process a real batch, review it and reuse saved measurements
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 ```{r real-batch, eval=FALSE}
 out <- analyze_plates(files,metadata=meta,
@@ -442,7 +508,11 @@ be resolved before finalization. Do not silently discard an inconvenient replica
 The generic `scripts/analyse_experiment.R` saves measurement tables, statuses and
 session information and separates the review stage from final assessment.
 
+<<<<<<< HEAD
 ## 7. Export figures and statistics
+=======
+## 7. Export a treatment comparison figure
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 ```{r comparison, fig.height=5.2}
 plot_treatment_comparison(demo,
@@ -469,7 +539,11 @@ needed for supported inferential comparisons. Inferential estimates and confiden
 failed QC. Figures need verified identities, adequate imaging and a suitable
 caption before publication. Export settings do not establish scientific validity.
 
+<<<<<<< HEAD
 ## 8. Interpret outputs and resolve warnings
+=======
+## 8. Interpret measurements and act on warnings
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 | Output | What it measures |
 |---|---|
@@ -503,7 +577,11 @@ An agar reference is justified only for comparable, untinted medium; a reference
 card needs known colour and suitable placement. Unrecoverable clipping or organism
 colour gradients cannot be solved reliably by an image-only illumination model.
 
+<<<<<<< HEAD
 ## 9. Continue with runnable examples
+=======
+## 9. More beginner examples and further reading
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 
 ```{r runnable-examples, eval=FALSE}
 source(system.file("examples","01_image_quickstart.R",package="FunMel"))
@@ -521,4 +599,7 @@ are required by the generic image or coefficient functions.
 The separate `guides/FunMel_overview.md` explains ImageJ complementarity,
 properties, functions and the algorithms. ImageJ/Fiji already offers ROI measurement
 and macro automation; no head-to-head superiority in accuracy or speed is claimed.
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/Rhizosphere-nitrogen-fate

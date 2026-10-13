@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # FunMel 0.3.7
 
 - Fit QC legends to the graphics device, omit absent classes and use a neutral non-target-material label.
@@ -8,6 +9,8 @@
 - Include the documentation site for branch-based GitHub Pages hosting.
 - Retain image-analysis and matched-control statistical methods; qualify stats::setNames to resolve the namespace check note.
 
+=======
+>>>>>>> origin/Rhizosphere-nitrogen-fate
 # FunMel 0.3.6
 
 - Focus primary documentation on four target Zymoseptoria colonies around
