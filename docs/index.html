@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,11 +90,11 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cli"</span>, <span class="st">"magick"</span>, <span class="st">"Rcpp"</span>, <span class="st">"lme4"</span>, <span class="st">"lmerTest"</span>, <span class="st">"ggplot2"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.choose.html" class="external-link">file.choose</a></span><span class="op">(</span><span class="op">)</span>, repos<span class="op">=</span><span class="cn">NULL</span>, type<span class="op">=</span><span class="st">"source"</span><span class="op">)</span></span>
-<span><span class="co"># Choose FunMel_0.3.7.tar.gz. Restart R again after installation.</span></span></code></pre></div>
+<span><span class="co"># Choose FunMel_0.3.8.tar.gz. Restart R again after installation.</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mghotbi/FunMel" class="external-link">FunMel</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"FunMel"</span><span class="op">)</span>                 <span class="co"># installed version: 0.3.7</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/ns-reflect.html" class="external-link">getNamespaceVersion</a></span><span class="op">(</span><span class="st">"FunMel"</span><span class="op">)</span>            <span class="co"># loaded version: also 0.3.7</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"FunMel"</span><span class="op">)</span>                 <span class="co"># installed version: 0.3.8</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/ns-reflect.html" class="external-link">getNamespaceVersion</a></span><span class="op">(</span><span class="st">"FunMel"</span><span class="op">)</span>            <span class="co"># loaded version: also 0.3.8</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"FunMel"</span>, package<span class="op">=</span><span class="st">"FunMel"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/help.html" class="external-link">help</a></span><span class="op">(</span>package<span class="op">=</span><span class="st">"FunMel"</span><span class="op">)</span></span></code></pre></div>
 <p>With a custom library, pass the same <code>lib</code> to installation and <code>lib.loc</code> to <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library()</a></code>. If the installed and loaded versions differ, restart R; loading again does not replace an already loaded namespace.</p>
@@ -192,6 +192,33 @@
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/make_metadata.html">make_metadata</a></span><span class="op">(</span><span class="st">"photos"</span>, recursive<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co"># Edit photos/plate_metadata.csv before analysis.</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="review-metadata-before-finalization">Review metadata before finalization<a class="anchor" aria-label="anchor" href="#review-metadata-before-finalization"></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>
+<p><strong>Create or load metadata.</strong> New templates include <code>metadata_confirmed</code> and <code>qc_pass</code>, both initially <code>FALSE</code>. For an older table without the QC column:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="st">"qc_pass"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span><span class="op">)</span> <span class="va">metadata</span><span class="op">$</span><span class="va">qc_pass</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span></code></pre></div>
+</li>
+<li>
+<p><strong>Review every independent plate.</strong> Inspect the target-colony masks, central fungus/halo candidate, calibration and warnings. Verify treatment labels and the <code>set_id</code> that links each treatment to its own controls. Mark only reviewed plates as passing; replace the example IDs below:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reviewed_ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_1"</span>, <span class="st">"plate_2"</span><span class="op">)</span></span>
+<span><span class="va">metadata</span><span class="op">$</span><span class="va">qc_pass</span><span class="op">[</span><span class="va">metadata</span><span class="op">$</span><span class="va">plate_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">reviewed_ids</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span><span class="co"># Separately confirm experimentally verified metadata rows:</span></span>
+<span><span class="va">confirmed_ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_1"</span>, <span class="st">"plate_2"</span><span class="op">)</span></span>
+<span><span class="va">metadata</span><span class="op">$</span><span class="va">metadata_confirmed</span><span class="op">[</span><span class="va">metadata</span><span class="op">$</span><span class="va">plate_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">confirmed_ids</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span></code></pre></div>
+</li>
+<li>
+<p><strong>Save and finalize when every included plate is ready.</strong> The metadata must contain exactly the analyzed plate IDs. Both flags must be logical <code>TRUE</code> for every included plate, with no missing values. Use <code>TRUE</code> and <code>FALSE</code> without quotation marks. Resolve failed images and unacceptable QC before finalization; the flags record user review, not automatic approval.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">metadata</span>, <span class="st">"plate_metadata_reviewed.csv"</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/finalize_analysis.html">finalize_analysis</a></span><span class="op">(</span><span class="va">result</span>, <span class="va">metadata</span><span class="op">)</span></span></code></pre></div>
+</li>
+</ol>
+<p>Here <code>metadata</code> is the reviewed metadata data frame and <code>result</code> is the batch result returned by <code><a href="reference/analyze_plates.html">analyze_plates()</a></code>; use the actual object names in the analysis. Adding a review column does not require repeating image processing. Changing segmentation settings or a central-partner recipe does require reanalysis.</p>
+<p>The template includes logical <code>metadata_confirmed</code> and <code>qc_pass</code> columns, both initially <code>FALSE</code>. Review each plate’s masks and calibration, and verify its treatment and matching control set before changing its flags to <code>TRUE</code>. For an existing CSV without <code>qc_pass</code>, add <code>metadata$qc_pass &lt;- FALSE</code> in R or add a <code>qc_pass</code> column in the CSV. Finalization requires both flags to be <code>TRUE</code> for every included plate; adding a review column does not require repeating image analysis.</p>
 <p>The template keeps relative source paths but leaves experimental fields for you to fill. Folder names are provenance, not sufficient evidence of treatment or control identity. A ZIP needs your metadata too: the package cannot infer the experimental design just by unzipping it. Image basenames must be unique.</p>
 <table class="table">
 <colgroup>
@@ -260,10 +287,11 @@
 <p>All treatment replicates in set S use only controls in S. Several treatments may share S’s controls: list each control plate <strong>once</strong>. The same treatment label in several sets must represent the same intervention. Give different strains, days or media separate set IDs. Four colonies on one dish are subsamples, not four independent plates. Multiple photos of one dish do not create biological replication.</p>
 <p>The bundled <code>inst/examples/metadata_14_day_case_study.csv</code> illustrates this structure. For a new experiment, generate and complete a metadata template using the actual plate IDs, treatments and control assignments.</p>
 </div>
+</div>
 <div class="section level2">
 <h2 id="id_5-analyze-a-folder-or-a-zip">5. Analyze a folder or a ZIP<a class="anchor" aria-label="anchor" href="#id_5-analyze-a-folder-or-a-zip"></a>
 </h2>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"photos/plate_metadata.csv"</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"photos"</span>, <span class="va">meta</span><span class="op">$</span><span class="va">relative_file</span><span class="op">)</span></span>
 <span><span class="co"># Alternatively, with an arbitrary original photo ZIP:</span></span>
@@ -277,7 +305,7 @@
 <span><span class="va">out</span><span class="op">$</span><span class="va">coefficient_error</span></span></code></pre></div>
 <p>For a complete generic workflow, copy and configure <code>scripts/analyse_experiment.R</code>. It takes any valid metadata and image paths; it does not assume particular filenames, treatment codes or replicate counts. It stops at the review stage unless both confirmation flags are TRUE. The 14-day archive script is a separately named <strong>case study</strong>, not the general entry point.</p>
 <p>After inspecting and, where necessary, correcting the photographs/masks, update your metadata CSV. Do not set flags TRUE merely to obtain a coefficient.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reviewed_meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"photos/plate_metadata.csv"</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/finalize_analysis.html">finalize_analysis</a></span><span class="op">(</span><span class="va">out</span>, <span class="va">reviewed_meta</span><span class="op">)</span></span>
 <span><span class="va">reviewed</span><span class="op">$</span><span class="va">melanization_coefficient</span></span>
@@ -296,7 +324,7 @@
 <div class="section level2">
 <h2 id="id_7-save-results-and-a-comparison-figure">7. Save results and a comparison figure<a class="anchor" aria-label="anchor" href="#id_7-save-results-and-a-comparison-figure"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">reviewed</span><span class="op">$</span><span class="va">colonies</span>, <span class="st">"FunMel_results/colonies.csv"</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">reviewed</span><span class="op">$</span><span class="va">melanization_coefficient</span>,</span>
 <span>          <span class="st">"FunMel_results/matched_coefficients.csv"</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
@@ -349,7 +377,7 @@
 <div class="section level2">
 <h2 id="id_8-adapt-layouts-and-resolve-common-problems">8. Adapt layouts and resolve common problems<a class="anchor" aria-label="anchor" href="#id_8-adapt-layouts-and-resolve-common-problems"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lay</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plate_layout.html">plate_layout</a></span><span class="op">(</span>centre<span class="op">=</span><span class="st">"fungus"</span>, rotation_deg<span class="op">=</span><span class="fl">15</span>, radius_frac<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="co"># For a different inoculation pattern, supply positions explicitly:</span></span>
 <span><span class="va">pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"N"</span>, <span class="st">"E"</span>, <span class="st">"S"</span>, <span class="st">"W"</span><span class="op">)</span>,</span>

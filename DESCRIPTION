@@ -1,7 +1,7 @@
 Package: FunMel
 Title: Colour-Calibrated Quantification of Fungal Melanization in
         Confrontation Assays
-Version: 0.3.7
+Version: 0.3.8
 Authors@R: 
     person("Mitra", "Ghotbi", email = "mitra.ghotbi@gmail.com",
            role = c("aut", "cre"),

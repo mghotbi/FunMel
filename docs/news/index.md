@@ -1,5 +1,14 @@
 # Changelog
 
+## FunMel 0.3.8
+
+- Metadata templates now include qc_pass = FALSE alongside
+  metadata_confirmed.
+- Clarify review flags and migration of existing metadata in the README,
+  vignette and help.
+- Add regression coverage for review flags in returned metadata and
+  written CSV files.
+
 ## FunMel 0.3.7
 
 - Fit QC legends to the graphics device, omit absent classes and use a

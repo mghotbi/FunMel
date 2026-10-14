@@ -35,7 +35,7 @@ Alternatively, build and check from a terminal:
 
 ``` sh
 R CMD build .
-R CMD check --no-manual FunMel_0.3.7.tar.gz
+R CMD check --no-manual FunMel_0.3.8.tar.gz
 ```
 
 Inspect warnings, notes and model/image diagnostics; successful software

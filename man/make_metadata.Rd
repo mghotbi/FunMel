@@ -40,4 +40,6 @@ Writes one row per image. Fill set_id, treatment and centre_model before
 analysis. All controls use the treatment label control; set_id decides which
 controls belong to which treatments. The same treatment label across sets
 must represent the same intervention. See \code{\link[=validate_metadata]{validate_metadata()}}.
+Review flags metadata_confirmed and qc_pass start at FALSE. Set them to TRUE
+only after verifying experimental assignments and inspecting plate QC plots.
 }

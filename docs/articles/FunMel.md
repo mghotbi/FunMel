@@ -346,6 +346,60 @@ validate_metadata(meta,files)
 files <- prepare_photo_archive("original_photos.zip",meta,"extracted_photos")
 ```
 
+### Review metadata before finalization
+
+1.  **Create or load metadata.** New templates include
+    `metadata_confirmed` and `qc_pass`, both initially `FALSE`. For an
+    older table without the QC column:
+
+    ``` r
+
+    if (!"qc_pass" %in% names(metadata)) metadata$qc_pass <- FALSE
+    ```
+
+2.  **Review every independent plate.** Inspect the target-colony masks,
+    central fungus/halo candidate, calibration and warnings. Verify
+    treatment labels and the `set_id` that links each treatment to its
+    own controls. Mark only reviewed plates as passing; replace the
+    example IDs below:
+
+    ``` r
+
+    reviewed_ids <- c("plate_1", "plate_2")
+    metadata$qc_pass[metadata$plate_id %in% reviewed_ids] <- TRUE
+    # Separately confirm experimentally verified metadata rows:
+    confirmed_ids <- c("plate_1", "plate_2")
+    metadata$metadata_confirmed[metadata$plate_id %in% confirmed_ids] <- TRUE
+    ```
+
+3.  **Save and finalize when every included plate is ready.** The
+    metadata must contain exactly the analyzed plate IDs. Both flags
+    must be logical `TRUE` for every included plate, with no missing
+    values. Use `TRUE` and `FALSE` without quotation marks. Resolve
+    failed images and unacceptable QC before finalization; the flags
+    record user review, not automatic approval.
+
+    ``` r
+
+    write.csv(metadata, "plate_metadata_reviewed.csv", row.names = FALSE)
+    reviewed <- finalize_analysis(result, metadata)
+    ```
+
+Here `metadata` is the reviewed metadata data frame and `result` is the
+batch result returned by
+[`analyze_plates()`](https://mghotbi.github.io/FunMel/reference/analyze_plates.md);
+use the actual object names in the analysis. Adding a review column does
+not require repeating image processing. Changing segmentation settings
+or a central-partner recipe does require reanalysis.
+
+The template includes logical `metadata_confirmed` and `qc_pass`
+columns, both initially `FALSE`. Review each plate’s masks and
+calibration, and verify its treatment and matching control set before
+changing its flags to `TRUE`. For an existing CSV without `qc_pass`, add
+`metadata$qc_pass <- FALSE` in R or add a `qc_pass` column in the CSV.
+Finalization requires both flags to be `TRUE` for every included plate;
+adding a review column does not require repeating image analysis.
+
 The template records provenance but leaves unknown experimental fields
 blank and `metadata_confirmed=FALSE`. Validation checks unique
 files/plates, complete set IDs, controls within each set and constant

@@ -5,6 +5,9 @@ analysis. All controls use the treatment label control; set_id decides
 which controls belong to which treatments. The same treatment label
 across sets must represent the same intervention. See
 [`validate_metadata()`](https://mghotbi.github.io/FunMel/reference/validate_metadata.md).
+Review flags metadata_confirmed and qc_pass start at FALSE. Set them to
+TRUE only after verifying experimental assignments and inspecting plate
+QC plots.
 
 ## Usage
 
