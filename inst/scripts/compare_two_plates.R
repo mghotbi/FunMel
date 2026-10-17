@@ -13,7 +13,7 @@ partner <- "fungus"
 central_model <- partner
 meta <- data.frame(file=basename(c(control_file,treatment_file)),
                    plate_id=c("control_plate","treatment_plate"),set_id="pair1",
-                   treatment=c("control",partner),metadata_confirmed=FALSE,qc_pass=FALSE,
+                   treatment=c("control",partner),qc_pass=FALSE,
                    centre_model=c("none","fungus"),partner_type=c("none",partner),
                    stringsAsFactors=FALSE,check.names=FALSE)
 output_dir <- "FunMel_comparison"
@@ -32,7 +32,7 @@ write.csv(res$failed,file.path(output_dir,"failed.csv"),row.names=FALSE)
 write.csv(res$melanization_coefficient,file.path(output_dir,"melanization_coefficient.csv"),row.names=FALSE)
 write.csv(res$coefficient_plate_means,file.path(output_dir,"coefficient_plate_means.csv"),row.names=FALSE)
 saveRDS(res,file.path(output_dir,"analysis.rds"))
-message("Verify plate_metadata.csv assignments and set metadata_confirmed=TRUE per verified row.")
+message("Review experimental assignments and image QC before interpretation. No approval-flag edits are required.")
 message("Then: reviewed <- finalize_analysis(res, read.csv(file.path(output_dir, 'plate_metadata.csv')))")
 message("Unconfirmed image QC warns by default; optional require_qc=TRUE enforces approval.")
 if(!is.null(res$coefficient_error)) warning(res$coefficient_error)

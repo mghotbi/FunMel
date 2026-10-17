@@ -27,9 +27,9 @@ test_that("legacy MycoHalo exported function names are retained", {
   expect_equal(r$status,'ok')
   expect_true(all(c('model','coefficients','descriptives','matched_coefficients') %in% names(r)))
 })
-test_that("provisional metadata cannot produce biological coefficients", {
+test_that("supplied review records do not gate matched coefficients", {
   d<-example_experiment()$colonies;d$metadata_confirmed<-FALSE
-  expect_error(melanization_coefficient(d),'Confirm')
+  expect_equal(nrow(melanization_coefficient(d)$coefficients),6L)
   d$metadata_confirmed<-TRUE
   expect_equal(nrow(melanization_coefficient(d)$coefficients),6L)
   z<-melanization_coefficient(d)

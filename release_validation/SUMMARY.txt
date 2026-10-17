@@ -1,39 +1,45 @@
-FunMel 0.4.4 validation
+FunMel 0.4.7 validation
 
-The capture.output namespace reference in write_experiment_tables is now
-utils::capture.output. The only R-code change from 0.4.3 is that qualification;
-all other R sources and all eight original example photographs were compared.
-No image-analysis, measurement, control matching or QC policy changed.
+Mandatory metadata approval has been removed throughout coefficient calculation,
+finalization and plotting. New templates and supplied example metadata do not
+generate a metadata_confirmed column. Existing user-supplied columns, including
+review records, are preserved without a metadata approval gate. Informative
+review reminders do not block valid processing. The optional strict image-QC
+policy remains opt-in; it is never used by the standard workflow.
 
-Full test run: FAIL 0 | WARN 0 | SKIP 0 | PASS 401.
-Examples, including --run-donttest, and vignette rebuilding passed.
-R code for possible problems: OK, including in --as-cran mode.
+Structural checks remain: experimental labels must be complete, every treatment
+uses controls from its own set, analyzed plate identities must match, changed
+image-layout settings require reanalysis, and failed images prevent finalization.
+No automatic experimental or image approval is claimed.
 
-Supplementary R CMD check --as-cran --no-manual --no-tests --no-examples:
-0 errors, 0 warnings, 1 installed-size NOTE. This confirmation does not repeat
-already-passed tests/examples. The NOTE reflects included original photographs.
-The initial full check ran before qpdf was installed and used Ubuntu's default
-compiler flags: it recorded a missing-qpdf WARNING and a system compiler-flag
-NOTE. qpdf was installed and portable validation Makevars were used for the
-confirmation check. No such environment files are shipped in the package.
-The full initial check log is retained as full_test_check.log; R_CMD_check.log
-is the supplementary confirmation. This distinction is intentional.
+Full test suite: 484 passed, zero failures, zero warnings, zero skips.
+The actual uploaded eight-plate saved analysis was finalized with every supplied
+metadata_confirmed value still FALSE. No images were reprocessed, all measured
+MI values were preserved, both matched coefficients were generated and PDF/SVG/
+PNG figures exported. The coefficients were 1.628250 and 1.302033 (rounded).
+One control per set limits this case to descriptive results. These are image-
+darkness ratios, not melanin concentration ratios or significance tests.
 
-Website rebuilt: 51 HTML pages, 18 PNGs opened; no missing local HTML/CSS assets
-or file:// references. Display assets and the eight-photo subset remain compact.
-A container-local in-process rendering workaround was used; it was not added
-to the package. The built website and install archive both show version 0.4.4.
+R CMD check --as-cran --no-manual --no-tests: zero errors, zero warnings and two
+NOTEs (installed size due to original photographs; current system time could not
+be verified). Tests ran separately as above. Examples, --run-donttest examples,
+help checks and vignette rebuilding passed within the package check. Validation
+used an external temporary Makevars to avoid distribution-specific compiler flag
+NOTEs; that environment workaround is not shipped as user code.
 
-Real-data operational evidence is carried forward from 0.4.3, with unchanged
-images and algorithms: A60_2 and B20_2, one control plus three treatment plates
-per set; four targets and finite MI on every image; five spots per target at
-the illustrative 90-mm scale/max_dim=1200/n_boot=20. Flags remained FALSE.
-That is not experimentally verified calibration or blinded biological validation.
-The figure overlays and real_data_smoke.log describe that earlier operational
-run. Warnings, masks, metadata and illumination still need scientific review.
+Image-processing sources (background, analyze, detect_plate, segment, measure,
+classify and spots) were compared byte-for-byte against 0.4.6 and are unchanged.
+The illumination safeguard and all eight original JPEGs are retained. Existing
+teaching measurements retain their stated illustrative calibration/provenance;
+the software change concerns approval gates, not measurement algorithms.
 
-Default unconfirmed QC warns and continues without approving or excluding
-plates. require_qc=TRUE enforces approval. Experimental metadata confirmation
-remains required. One independent control per set permits descriptive ratios,
-not inferential treatment tests. Colonies and spots are within-plate subsamples.
-Both final downloads were verified below 25,000,000 bytes.
+README, vignette, installed vignette, help, examples, scripts, metadata templates
+and rendered website were updated. Public workflow guides no longer contain
+metadata confirmation-switch instructions. The website has 51 HTML pages and
+18 verified PNGs, with no missing local assets or file:// links. A container-only
+PID/rendering workaround was used without adding it to the package. The code
+font, logo and site design are retained. Both downloads are under 25,000,000 bytes.
+
+Computation is not biological validation. Check experimental assignments before
+analysis and masks, sampling, calibration, illumination and warnings before
+interpretation. These responsibilities are reminders, not mandatory checkboxes.

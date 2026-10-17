@@ -8,6 +8,7 @@ model_background(
   plate,
   flat_field = TRUE,
   degree = 2L,
+  max_clipped_fraction = 0.02,
   min_delta_e = 3,
   texture_z = 4,
   shadow_texture_z = 2.5,
@@ -20,9 +21,22 @@ model_background(
 \arguments{
 \item{plate}{A \code{funmel_plate} with a detected dish.}
 
-\item{flat_field}{Logical; apply the illumination correction.}
+\item{flat_field}{Logical; request the illumination correction. The fitted
+correction is applied only if it passes the \code{max_clipped_fraction} check
+below; \code{plate$bg$flat_field} records whether it was actually applied.}
 
 \item{degree}{Polynomial degree of the illumination surface (1 or 2).}
+
+\item{max_clipped_fraction}{Largest fraction of dish pixels whose fitted
+gain may reach the correction limits (0.5x-2x) before the whole
+correction is judged degenerate and withheld. A correction that saturates
+over a substantial part of the dish is not a mild illumination gradient:
+it rescales colonies by a position-dependent factor and shifts MI by
+several units, which would be read as a melanization difference. This
+can occur with reflections or strongly nonuniform backgrounds. Gain
+saturation alone does not identify the cause of the failed fit.
+Use \code{Inf} to apply the correction unconditionally, and inspect
+\code{flat_field_status} in the plate summary either way.}
 
 \item{min_delta_e}{Minimum CIE76 colour difference from agar for a pixel
 to be considered object.}
@@ -60,7 +74,7 @@ every dish pixel that differs significantly from agar.
 \details{
 \strong{1. Agar colour by mode seeking.} The agar is the most frequent colour
 inside the dish even on crowded confrontation plates, because agar pixels
-are concentrated in colour space while colonies, bacteria and hyphaes are
+are concentrated in colour space while colonies, bacteria and hyphae are
 spread along gradients. The mode of the (smoothed) \eqn{L^*a^*b^*}
 distribution of low-texture pixels is found with a coarse 3-D histogram
 followed by mean-shift refinement (Comaniciu & Meer 2002). It works on

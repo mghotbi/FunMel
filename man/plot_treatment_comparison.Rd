@@ -24,9 +24,9 @@ plot_treatment_comparison(
 
 \item{by}{Additional matching columns passed to melanization_coefficient().}
 
-\item{preview}{Explicit TRUE allows an unconfirmed metadata mapping only for
-a clearly labelled provisional preview. Does not change or confirm metadata.
-Unconfirmed image QC warns by default and is labelled in the caption.}
+\item{preview}{TRUE labels the figure as a provisional preview. No metadata
+approval flags are required in either mode. Unconfirmed image QC warns by
+default and is labelled in the caption.}
 
 \item{labels}{Optional named character vector of treatment display names.}
 

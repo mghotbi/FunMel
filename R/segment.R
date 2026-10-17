@@ -277,28 +277,6 @@ refine_edges <- function(plate, labels, frac = 0.5, band = 3) {
   labels
 }
 
-#' Re-assign pixels to their most probable class, excluding some classes
-#' @keywords internal
-#' @noRd
-reassign_pixels <- function(plate, map, which_px, exclude) {
-  cl <- plate$classes
-  keep_k <- which(!cl$post_names %in% exclude)
-  if (!length(keep_k)) {
-    map[which_px] <- 4L
-    return(map)
-  }
-  pos <- match(which(which_px), cl$obj_idx)
-  ok <- !is.na(pos)
-  P <- cl$post[pos[ok], keep_k, drop = FALSE]
-  code <- c(fungus = 1L, bacteria = 2L, hyphae = 3L)[cl$post_names[keep_k]]
-  newlab <- code[max.col(P, ties.method = "first")]
-  idx <- which(which_px)
-  map[idx[ok]] <- newlab
-  map[idx[!ok]] <- 4L
-  map
-}
-
-
 #' Candidate colony cores by non-maximum suppression of the EDT (internal)
 #' @keywords internal
 #' @noRd

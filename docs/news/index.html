@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,32 @@
       <small>Source: <a href="https://github.com/mghotbi/FunMel/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.7" id="funmel-047">FunMel 0.4.7<a class="anchor" aria-label="anchor" href="#funmel-047"></a></h2>
+<ul><li>Remove mandatory metadata approval throughout coefficient calculation, finalization and plotting. Valid inputs proceed without changing FALSE to TRUE.</li>
+<li>Replace approval prompts with informative review reminders; new metadata templates do not generate a metadata_confirmed column.</li>
+<li>Preserve supplied metadata columns and values, including any supplied review records, without treating them as a metadata approval gate.</li>
+<li>Retain checks for missing experimental labels, own-set controls, file identity, layout changes and failed images.</li>
+<li>Rewrite the beginner guidance and real-data walkthrough around prepare, run and finish without approval-column editing.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.6" id="funmel-046">FunMel 0.4.6<a class="anchor" aria-label="anchor" href="#funmel-046"></a></h2>
+<ul><li>Retain the 0.4.5 illumination safeguard and its diagnostic outputs.</li>
+<li>Reject invalid diameter, pixel scale and spot inputs before processing or resetting project QC flags.</li>
+<li>Explain missing project metadata and photograph paths with recovery instructions; never replace experimental assignments silently.</li>
+<li>Report complete and partial batch failures accurately, retaining error reports and withholding finalization.</li>
+<li>Replace the interactive diameter prompt with a directly editable numeric value throughout the beginner walkthrough.</li>
+<li>Align README, vignette, generated help and examples; explain illumination status and its implications for matched coefficients.</li>
+<li>Keep long comparison-panel titles and captions within the default export canvas.</li>
+<li>Add regression tests covering invalid inputs, file recovery, preserved metadata and batch failures.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.5" id="funmel-045">FunMel 0.4.5<a class="anchor" aria-label="anchor" href="#funmel-045"></a></h2>
+<ul><li>Withhold the flat-field illumination correction when fitted gains saturate over more than <code>max_clipped_fraction</code> of the dish (default 2 %) instead of clipping and applying it. Saturated gains can introduce position-dependent shifts in image lightness. This is a quality safeguard, not validation of the photograph or proof of a particular lighting artifact. MI values and matched treatment-to-control ratios may change; reanalyze matched plates consistently and review the new QC. <code>max_clipped_fraction = Inf</code> applies the correction unconditionally.</li>
+<li>Report <code>flat_field_applied</code> and <code>flat_field_status</code> in the plate summary, and replace the three downstream warnings about an unusable correction with one statement that it was withheld and why.</li>
+<li>Remove a duplicated internal <code>reassign_pixels()</code> definition and an unreachable branch in the <code>hyphae_status</code> summary.</li>
+<li>Drop <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code> row-name artefacts (<code>.x</code>, <code>.x1</code>, …) from combined colony, profile, spot and plate tables.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.4" id="funmel-044">FunMel 0.4.4<a class="anchor" aria-label="anchor" href="#funmel-044"></a></h2>
 <ul><li>Qualify utils::capture.output when exporting session information, resolving the namespace NOTE reported by R CMD check –as-cran.</li>

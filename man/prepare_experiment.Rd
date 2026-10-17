@@ -41,7 +41,7 @@ time points of a plate are not independent replicates.
 project <- prepare_experiment(file.choose(), "FunMel_project")
 # Edit project$metadata_file: verify set_id, treatment and centre_model.
 result <- run_experiment(project, n_spots = 5, spot_radius_mm = 0.4)
-# Verify metadata_confirmed; inspect project$qc_dir. qc_pass records optional approval.
+# Inspect project$qc_dir; review reminders do not require approval-flag edits.
 reviewed <- finish_experiment(project)
 }
 }

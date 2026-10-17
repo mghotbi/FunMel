@@ -61,8 +61,6 @@ melanization_coefficient <- function(colonies, control="control",
     keep <- keep & colonies$is_target
   }
   df <- colonies[keep,,drop=FALSE]
-  if("metadata_confirmed" %in% names(df) && (!is.logical(df$metadata_confirmed) || anyNA(df$metadata_confirmed) || any(!df$metadata_confirmed)))
-    stop("Confirm the proposed plate-to-treatment/control metadata before calculating coefficients (metadata_confirmed=TRUE).")
   if (!nrow(df)) stop("No target colonies remain after excluding partner IDs.")
   qc_review <- check_qc_review(df,require_qc,plate,warn_missing=FALSE)
   for (nm in c(group,plate,"colony_id",by)) {

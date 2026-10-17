@@ -5,7 +5,7 @@ if(package_version(as.character(getNamespaceVersion('FunMel'))) < '0.4.3')
 output_dir <- 'FunMel_14_day_review'
 meta <- read.csv(file.path(output_dir,'proposed_metadata.csv'),stringsAsFactors=FALSE,check.names=FALSE)
 out <- readRDS(file.path(output_dir,'image_analysis.rds'))
-# Edit the CSV first: metadata_confirmed=TRUE only for verified mappings;
+# Review experimental assignments before interpretation; no approval-flag edits are required.
 # Optionally record qc_pass=TRUE after acceptable masks and calibration review.
 # Default unconfirmed QC warns; use require_qc=TRUE for mandatory approval.
 reviewed <- FunMel::finalize_analysis(out,meta)

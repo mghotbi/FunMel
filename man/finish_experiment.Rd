@@ -18,7 +18,7 @@ Set TRUE to require qc_pass=TRUE before finalization and plotting.}
 Reviewed result saved as reviewed_analysis.rds.
 }
 \description{
-Loads saved measurements and metadata, enforces metadata confirmation and
+Loads saved measurements and metadata without a manual approval gate, and
 applies the requested image-QC policy (warning by default), then
 computes whole-colony matched coefficients and plate-level assessment, and
 exports the comparison figure and tables. Spot summaries stay separate;

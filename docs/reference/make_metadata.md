@@ -5,10 +5,9 @@ analysis. All controls use the treatment label control; set_id decides
 which controls belong to which treatments. The same treatment label
 across sets must represent the same intervention. See
 [`validate_metadata()`](https://mghotbi.github.io/FunMel/reference/validate_metadata.md).
-Review flags metadata_confirmed and qc_pass start at FALSE. Set them to
-TRUE only after verifying experimental assignments and inspecting plate
-QC plots. Metadata confirmation is required for finalization. Image QC
-warns by default; require_qc=TRUE can enforce explicit QC approval.
+Review experimental assignments and image masks before interpretation.
+No metadata approval flag is generated or required. Image QC warns by
+default; no review-flag edits are needed for the standard workflow.
 Standard optional fields (fungus, zymo_strain, medium, day, replicate,
 photo_date and notes) are included even when unrecorded. Custom columns
 supplied through extra are retained.

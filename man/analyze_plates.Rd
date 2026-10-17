@@ -55,8 +55,8 @@ every plate — inspect them before using the numbers.
 \dontrun{
 meta <- data.frame(file = c("2026_05_26_20.JPG", "2026_05_26_37.JPG"),
                    plate_id = c("t1", "c1"), set_id = "set1",
-                   treatment = c("bacteria", "control"))
-lay <- function(row) plate_layout(centre = if (row$treatment == "control") "none" else "bacteria")
+                   treatment = c("fungus_A", "control"))
+lay <- function(row) plate_layout(centre = if (row$treatment == "control") "none" else "fungus")
 out <- analyze_plates("plates/", metadata = meta, layout = lay, qc_dir = "qc/")
 write.csv(out$colonies, "colonies.csv", row.names = FALSE)
 }

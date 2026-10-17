@@ -22,7 +22,7 @@ check_qc_review <- function(data, require_qc=FALSE, plate="plate_id", warn_missi
   if(review$status!="confirmed") {
     msg <- paste0("Image QC is not confirmed for ",length(review$pending_plate_ids),
       " plate(s). Inspect colony masks, central fungal tissue/hyphae, sampling spots, calibration and warnings before interpreting or publishing results. ",
-      "Set qc_pass=TRUE only for reviewed acceptable plates; no plates were automatically approved or excluded.")
+      "The standard workflow continues without editing review flags; no plates were automatically approved or excluded.")
     if(require_qc) stop("require_qc=TRUE: every included plate requires qc_pass=TRUE after review. ",msg)
     if(review$status!="not_recorded" || warn_missing) warning(msg,call.=FALSE)
   }

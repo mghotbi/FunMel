@@ -7,7 +7,7 @@
 #' @details
 #' **1. Agar colour by mode seeking.** The agar is the most frequent colour
 #' inside the dish even on crowded confrontation plates, because agar pixels
-#' are concentrated in colour space while colonies, bacteria and hyphaes are
+#' are concentrated in colour space while colonies, bacteria and hyphae are
 #' spread along gradients. The mode of the (smoothed) \eqn{L^*a^*b^*}
 #' distribution of low-texture pixels is found with a coarse 3-D histogram
 #' followed by mean-shift refinement (Comaniciu & Meer 2002). It works on
@@ -41,8 +41,20 @@
 #' every colony.
 #'
 #' @param plate A `funmel_plate` with a detected dish.
-#' @param flat_field Logical; apply the illumination correction.
+#' @param flat_field Logical; request the illumination correction. The fitted
+#'   correction is applied only if it passes the `max_clipped_fraction` check
+#'   below; `plate$bg$flat_field` records whether it was actually applied.
 #' @param degree Polynomial degree of the illumination surface (1 or 2).
+#' @param max_clipped_fraction Largest fraction of dish pixels whose fitted
+#'   gain may reach the correction limits (0.5x-2x) before the whole
+#'   correction is judged degenerate and withheld. A correction that saturates
+#'   over a substantial part of the dish is not a mild illumination gradient:
+#'   it rescales colonies by a position-dependent factor and shifts MI by
+#'   several units, which would be read as a melanization difference. This
+#'   can occur with reflections or strongly nonuniform backgrounds. Gain
+#'   saturation alone does not identify the cause of the failed fit.
+#'   Use `Inf` to apply the correction unconditionally, and inspect
+#'   `flat_field_status` in the plate summary either way.
 #' @param min_delta_e Minimum CIE76 colour difference from agar for a pixel
 #'   to be considered object.
 #' @param texture_z Robust z-score of log local texture (relative to agar)
@@ -71,11 +83,15 @@
 #' p$bg$illumination_range_pct
 #' @export
 model_background <- function(plate, flat_field = TRUE, degree = 2L,
+                              max_clipped_fraction = 0.02,
                               min_delta_e = 3, texture_z = 4, shadow_texture_z = 2.5,
                               smooth_mm = 0.08,
                               feature_smooth_mm = 0.25,
                               reference = NULL, reference_lab = c(50, 0, 0)) {
   stopifnot(is_funmel_plate(plate), !is.null(plate$dish))
+  if (!is.numeric(max_clipped_fraction) || length(max_clipped_fraction) != 1L ||
+      is.na(max_clipped_fraction) || max_clipped_fraction < 0)
+    stop("max_clipped_fraction must be a single non-negative number (Inf never withholds the correction).")
   m <- dish_masks(plate)
   mmpp <- plate$dish$mm_per_px
   sig_px <- max(1, smooth_mm / mmpp)
@@ -102,6 +118,8 @@ model_background <- function(plate, flat_field = TRUE, degree = 2L,
   illum_range <- NA_real_
   gain_rng <- c(1, 1)
   illum_robust <- residual_range <- clipped_fraction <- NA_real_
+  flat_field_applied <- FALSE
+  flat_field_status <- if (flat_field) "applied" else "not_requested"
   if (flat_field) {
     xn <- (m$x - plate$dish$x) / plate$dish$r_outer
     yn <- (m$y - plate$dish$y) / plate$dish$r_outer
@@ -116,6 +134,10 @@ model_background <- function(plate, flat_field = TRUE, degree = 2L,
     d0 <- design(0, 0)
     ysurf <- NULL
     clipped <- matrix(FALSE,H,W)
+    # Gains are collected first and applied only after the fit has been judged
+    # usable: a clipped, implausible correction must not silently reach the
+    # colony pixels that the melanization index is measured on.
+    G <- matrix(1, nrow(lin), 3L)
     for (ch in 1:3) {
       yv <- log(lin[fit_idx, ch] + 1e-4)
       keep <- rep(TRUE, length(yv))
@@ -133,7 +155,7 @@ model_background <- function(plate, flat_field = TRUE, degree = 2L,
       g <- exp(as.numeric(d0 %*% beta) - surf)
       clipped <- clipped | matrix(g < 0.5 | g > 2,H,W)
       g <- pmin(pmax(g, 0.5), 2)
-      lin[, ch] <- lin[, ch] * g
+      G[, ch] <- g
       if (ch == 2) ysurf <- exp(surf)
       gain_rng <- range(c(gain_rng, g[m$agar]))
     }
@@ -141,19 +163,36 @@ model_background <- function(plate, flat_field = TRUE, degree = 2L,
     illum_range <- 100 * (max(ys) - min(ys)) / mean(ys)
     illum_robust <- 100 * diff(stats::quantile(ys,c(0.01,0.99),names=FALSE)) / stats::median(ys)
     clipped_fraction <- mean(clipped[m$agar])
-    # Spatial medians on fitted agar pixels; diagnostic, not a validation test.
-    tile <- paste(floor((xn[fit_idx]+1)*4),floor((yn[fit_idx]+1)*4),sep=":")
-    bins <- split(lin[fit_idx,2],tile)
-    med <- vapply(bins[lengths(bins)>=30],stats::median,numeric(1))
-    if(length(med)>=4 && stats::median(med)>0)
-      residual_range <- 100*diff(stats::quantile(med,c(0.1,0.9),names=FALSE))/stats::median(med)
-    rgb <- srgb_compand(pmin(pmax(lin, 0), 1))
-    plate$rgb <- array(rgb, dim = dim(plate$rgb))
-    plate$lab <- srgb_to_lab(plate$rgb)
-    S <- smooth_lab(plate$lab)
-    X <- cbind(S$L[sub], S$a[sub], S$b[sub])
-    mu <- lab_mode(X[low_tex, , drop = FALSE])
-    agar_set <- agar_set_from(X, mu)
+    # A correction that saturates its own limits over a substantial part of the
+    # dish is not a mild illumination gradient. It arises when the fitted agar
+    # signal is dominated by something the multiplicative model does not
+    # describe (for example a transparent dish photographed over a dark
+    # background, where the recorded agar brightness is mostly a specular
+    # reflection that falls off far faster than any quadratic illumination
+    # surface). Applying it then rescales the colonies by a position-dependent
+    # factor and biases MI by several units. Withhold it instead, and report why.
+    flat_field_applied <- !(is.finite(clipped_fraction) &&
+                            clipped_fraction > max_clipped_fraction)
+    if (!flat_field_applied) {
+      flat_field_status <- "withheld_degenerate_fit"
+      gain_rng <- c(1, 1)
+    }
+    if (flat_field_applied) {
+      lin <- lin * G
+      # Spatial medians on fitted agar pixels; diagnostic, not a validation test.
+      tile <- paste(floor((xn[fit_idx]+1)*4),floor((yn[fit_idx]+1)*4),sep=":")
+      bins <- split(lin[fit_idx,2],tile)
+      med <- vapply(bins[lengths(bins)>=30],stats::median,numeric(1))
+      if(length(med)>=4 && stats::median(med)>0)
+        residual_range <- 100*diff(stats::quantile(med,c(0.1,0.9),names=FALSE))/stats::median(med)
+      rgb <- srgb_compand(pmin(pmax(lin, 0), 1))
+      plate$rgb <- array(rgb, dim = dim(plate$rgb))
+      plate$lab <- srgb_to_lab(plate$rgb)
+      S <- smooth_lab(plate$lab)
+      X <- cbind(S$L[sub], S$a[sub], S$b[sub])
+      mu <- lab_mode(X[low_tex, , drop = FALSE])
+      agar_set <- agar_set_from(X, mu)
+    }
   }
 
   # ---- 2b. exposure / white-balance calibration (after flat-field, so the
@@ -168,7 +207,7 @@ model_background <- function(plate, flat_field = TRUE, degree = 2L,
       ref_mask <- (m$x - reference[1] * W)^2 + (m$y - reference[2] * H)^2 <=
         (reference[3] * min(H, W))^2
       where <- "reference patch"
-      if (flat_field && any(ref_mask & m$rr > plate$dish$r_outer)) {
+      if (flat_field_applied && any(ref_mask & m$rr > plate$dish$r_outer)) {
         cli::cli_inform(c("i" = "The reference patch lies outside the dish; its illumination is extrapolated from the flat-field model. Place the card close to the dish and evenly lit."))
       }
     }
@@ -222,7 +261,10 @@ model_background <- function(plate, flat_field = TRUE, degree = 2L,
     texture = tex,
     texture_z = tz,
     shadow = shadow,
-    flat_field = flat_field,
+    flat_field = flat_field_applied,
+    flat_field_requested = flat_field,
+    flat_field_status = flat_field_status,
+    max_clipped_fraction = max_clipped_fraction,
     illumination_range_pct = illum_range,
     illumination_robust_range_pct = illum_robust,
     residual_agar_range_pct = residual_range,

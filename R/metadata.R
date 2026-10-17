@@ -4,10 +4,9 @@
 #' analysis. All controls use the treatment label control; set_id decides which
 #' controls belong to which treatments. The same treatment label across sets
 #' must represent the same intervention. See [validate_metadata()].
-#' Review flags metadata_confirmed and qc_pass start at FALSE. Set them to TRUE
-#' only after verifying experimental assignments and inspecting plate QC plots.
-#' Metadata confirmation is required for finalization. Image QC warns by default;
-#' require_qc=TRUE can enforce explicit QC approval.
+#' Review experimental assignments and image masks before interpretation.
+#' No metadata approval flag is generated or required. Image QC warns by default;
+#' no review-flag edits are needed for the standard workflow.
 #' Standard optional fields (fungus, zymo_strain, medium, day, replicate,
 #' photo_date and notes) are included even when unrecorded. Custom columns
 #' supplied through extra are retained.
@@ -34,13 +33,13 @@ make_metadata <- function(dir,file=file.path(dir,"plate_metadata.csv"),
                    set_id=rep(set_id,length(files)),treatment=trt,
                    centre_model=ifelse(!is.na(trt) & trt=="control","none",NA_character_),
                    partner_type=ifelse(!is.na(trt) & trt=="control","none",NA_character_),
-                   metadata_confirmed=FALSE,qc_pass=FALSE,relative_file=files,
+                   qc_pass=FALSE,relative_file=files,
                    stringsAsFactors=FALSE)
   for(nm in names(extra)) meta[[nm]]<-extra[[nm]]
   meta <- complete_metadata_columns(meta)
   if(file.exists(file) && !overwrite) stop("Metadata file exists; use overwrite=TRUE only if intended.")
   utils::write.csv(meta,file,row.names=FALSE,na="")
-  message("Metadata template saved. Fill set_id, treatment and centre_model; record biological partner_type separately. Review flags metadata_confirmed and qc_pass start FALSE; confirm each plate after metadata and QC review.")
+  message("Metadata template saved. Fill set_id, treatment and centre_model; record biological partner_type separately. Review assignments before processing and image QC before interpretation. No approval-flag edits are required.")
   invisible(meta)
 }
 

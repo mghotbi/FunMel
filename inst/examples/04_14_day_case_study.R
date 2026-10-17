@@ -14,7 +14,7 @@ write.csv(metadata,file.path(example_output,'metadata_for_review.csv'),row.names
 write.csv(plate_means,file.path(example_output,'plate_means.csv'),row.names=FALSE)
 plot_treatment_comparison(list(colonies=colonies,failed=data.frame()),preview=TRUE,
                          file=file.path(example_output,'case_study_comparison_PREVIEW'))
-# Experimental metadata must be confirmed before final coefficients.
+# Review experimental assignments before interpreting coefficients; no approval switch is required.
 # Image QC warns by default; require_qc=TRUE enforces reviewed QC approval.
 message('Design: 1 control + 3 treatment plates per set; 4 target colonies per plate.')
 message('Metadata identities and calibration/masks need review before finalization.')

@@ -11,6 +11,7 @@ model_background(
   plate,
   flat_field = TRUE,
   degree = 2L,
+  max_clipped_fraction = 0.02,
   min_delta_e = 3,
   texture_z = 4,
   shadow_texture_z = 2.5,
@@ -29,11 +30,26 @@ model_background(
 
 - flat_field:
 
-  Logical; apply the illumination correction.
+  Logical; request the illumination correction. The fitted correction is
+  applied only if it passes the `max_clipped_fraction` check below;
+  `plate$bg$flat_field` records whether it was actually applied.
 
 - degree:
 
   Polynomial degree of the illumination surface (1 or 2).
+
+- max_clipped_fraction:
+
+  Largest fraction of dish pixels whose fitted gain may reach the
+  correction limits (0.5x-2x) before the whole correction is judged
+  degenerate and withheld. A correction that saturates over a
+  substantial part of the dish is not a mild illumination gradient: it
+  rescales colonies by a position-dependent factor and shifts MI by
+  several units, which would be read as a melanization difference. This
+  can occur with reflections or strongly nonuniform backgrounds. Gain
+  saturation alone does not identify the cause of the failed fit. Use
+  `Inf` to apply the correction unconditionally, and inspect
+  `flat_field_status` in the plate summary either way.
 
 - min_delta_e:
 
@@ -85,7 +101,7 @@ The plate with corrected `rgb`/`lab` and an element `bg`.
 **1. Agar colour by mode seeking.** The agar is the most frequent colour
 inside the dish even on crowded confrontation plates, because agar
 pixels are concentrated in colour space while colonies, bacteria and
-hyphaes are spread along gradients. The mode of the (smoothed)
+hyphae are spread along gradients. The mode of the (smoothed)
 \\L^\*a^\*b^\*\\ distribution of low-texture pixels is found with a
 coarse 3-D histogram followed by mean-shift refinement (Comaniciu & Meer
 2002). It works on dark and on light agar.

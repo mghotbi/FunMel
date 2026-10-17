@@ -33,7 +33,7 @@ File path(s).
 ``` r
 example_plate("control")
 #>                                                                                                                                                  control 
-#> "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpVEPw2F/temp_libpath4334741d4bfc/FunMel/extdata/14-days/A60_2_14_days/2026_10_02_99_41.JPG" 
+#> "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpIk8twa/temp_libpath13c21f9d7262/FunMel/extdata/14-days/A60_2_14_days/2026_10_02_99_41.JPG" 
 # \donttest{
 res <- analyze_plate(example_plate("control"), layout = plate_layout(centre = "none"))
 #> ℹ Reading image
@@ -43,11 +43,9 @@ res <- analyze_plate(example_plate("control"), layout = plate_layout(centre = "n
 #> ℹ Classifying target colonies, central core and hyphal growth
 #> ℹ Separating colonies
 #> ℹ Measuring
-#> Warning: Fitted pre-correction illumination range 139 % (not residual error); inspect
-#> correction diagnostics and QC.
-#> Warning: Flat-field gains reached correction limits for > 1 % of dish pixels; inspect
-#> masks and calibration.
-#> Warning: Remaining fitted-agar spatial variation exceeds 30 %; review illumination
-#> correction.
+#> Warning: Illumination correction withheld: fitted gains saturated for 9 % of dish
+#> pixels. Measurements are uncorrected and comparable across plates only if the
+#> lighting was constant. This is expected for transparent dishes photographed
+#> over a dark background.
 # }
 ```

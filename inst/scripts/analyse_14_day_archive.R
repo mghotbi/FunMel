@@ -33,7 +33,7 @@ if(nrow(out$failed)) {
   warning('Some plates failed; final assessment has not been attempted.')
 } else if(!is.null(out$coefficient_error)) {
   message('Coefficient assessment pending: ',out$coefficient_error)
-  message('Review metadata and every QC image before confirming the analysis set.')
+  message('Review metadata and every QC image before interpreting the results.')
   utils::write.csv(data.frame(status='pending_review',reason=out$coefficient_error),
     file.path(output_dir,'coefficient_status.csv'),row.names=FALSE)
   tryCatch(FunMel::plot_treatment_comparison(out,preview=TRUE,

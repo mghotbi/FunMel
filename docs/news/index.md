@@ -1,5 +1,56 @@
 # Changelog
 
+## FunMel 0.4.7
+
+- Remove mandatory metadata approval throughout coefficient calculation,
+  finalization and plotting. Valid inputs proceed without changing FALSE
+  to TRUE.
+- Replace approval prompts with informative review reminders; new
+  metadata templates do not generate a metadata_confirmed column.
+- Preserve supplied metadata columns and values, including any supplied
+  review records, without treating them as a metadata approval gate.
+- Retain checks for missing experimental labels, own-set controls, file
+  identity, layout changes and failed images.
+- Rewrite the beginner guidance and real-data walkthrough around
+  prepare, run and finish without approval-column editing.
+
+## FunMel 0.4.6
+
+- Retain the 0.4.5 illumination safeguard and its diagnostic outputs.
+- Reject invalid diameter, pixel scale and spot inputs before processing
+  or resetting project QC flags.
+- Explain missing project metadata and photograph paths with recovery
+  instructions; never replace experimental assignments silently.
+- Report complete and partial batch failures accurately, retaining error
+  reports and withholding finalization.
+- Replace the interactive diameter prompt with a directly editable
+  numeric value throughout the beginner walkthrough.
+- Align README, vignette, generated help and examples; explain
+  illumination status and its implications for matched coefficients.
+- Keep long comparison-panel titles and captions within the default
+  export canvas.
+- Add regression tests covering invalid inputs, file recovery, preserved
+  metadata and batch failures.
+
+## FunMel 0.4.5
+
+- Withhold the flat-field illumination correction when fitted gains
+  saturate over more than `max_clipped_fraction` of the dish (default 2
+  %) instead of clipping and applying it. Saturated gains can introduce
+  position-dependent shifts in image lightness. This is a quality
+  safeguard, not validation of the photograph or proof of a particular
+  lighting artifact. MI values and matched treatment-to-control ratios
+  may change; reanalyze matched plates consistently and review the new
+  QC. `max_clipped_fraction = Inf` applies the correction
+  unconditionally.
+- Report `flat_field_applied` and `flat_field_status` in the plate
+  summary, and replace the three downstream warnings about an unusable
+  correction with one statement that it was withheld and why.
+- Remove a duplicated internal `reassign_pixels()` definition and an
+  unreachable branch in the `hyphae_status` summary.
+- Drop [`rbind()`](https://rdrr.io/r/base/cbind.html) row-name artefacts
+  (`.x`, `.x1`, …) from combined colony, profile, spot and plate tables.
+
 ## FunMel 0.4.4
 
 - Qualify utils::capture.output when exporting session information,

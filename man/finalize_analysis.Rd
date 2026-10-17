@@ -9,9 +9,8 @@ finalize_analysis(result, metadata, ..., require_qc = FALSE)
 \arguments{
 \item{result}{Batch result returned by analyze_plates(), possibly read from RDS.}
 
-\item{metadata}{Reviewed metadata with one row per plate, metadata_confirmed
-and optional qc_pass logical columns. Use FALSE for unconfirmed image QC;
-do not mark it TRUE merely to obtain a coefficient.}
+\item{metadata}{Metadata with one row per independent plate. User-defined
+columns are retained; review flags do not gate the standard workflow.}
 
 \item{...}{Arguments forwarded to assess_experiment().}
 
@@ -23,8 +22,8 @@ automatically changed to TRUE; calculated results retain their QC status.}
 Updated batch result, including matched coefficients and assessment.
 }
 \description{
-Reuses measurements; no photograph needs to be processed again. This function
-records user review, not automatic biological validation. All included plates
-must have metadata_confirmed explicitly TRUE. Unconfirmed image QC warns by
-default; require_qc=TRUE requires qc_pass=TRUE for every included plate.
+Reuses saved measurements without reprocessing photographs. Valid experimental
+metadata proceeds automatically; no metadata approval flags are required.
+A reminder asks users to review assignments, masks and calibration before
+interpreting results. Computation does not establish biological validation.
 }

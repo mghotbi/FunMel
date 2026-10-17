@@ -304,6 +304,8 @@ measure_plate <- function(plate) {
     mm_per_px = mmpp, dish_fit_rmse_px = d$fit_rmse_px, dish_arc_coverage = d$arc_coverage,
     agar_L = mu[["L"]], agar_a = mu[["a"]], agar_b = mu[["b"]],
     agar_sd_L = plate$bg$agar_sd[["L"]],
+    flat_field_applied = isTRUE(plate$bg$flat_field),
+    flat_field_status = if (is.null(plate$bg$flat_field_status)) NA_character_ else plate$bg$flat_field_status,
     illumination_range_pct = plate$bg$illumination_range_pct,
     illumination_robust_range_pct = plate$bg$illumination_robust_range_pct,
     residual_agar_range_pct = plate$bg$residual_agar_range_pct,
@@ -315,7 +317,7 @@ measure_plate <- function(plate) {
     central_area_mm2 = ba, central_radius_mm = bact_r, central_L = bact_L,
     central_detected = ba>0,
     central_fungus_area_mm2 = if(is.null(ob$central_fungus)) 0 else sum(ob$central_fungus)*mmpp^2,
-    hyphae_status = if(!identical(ob$partner_type,"fungus")) "not_applicable" else if(ha>0) "growth_detected" else if(!identical(ob$partner_type,"fungus")) "not_applicable" else "not_resolved",
+    hyphae_status = if(!identical(ob$partner_type,"fungus")) "not_applicable" else if(ha>0) "growth_detected" else "not_resolved",
     bacteria_area_mm2 = sum(ob$bacteria)*mmpp^2, bacteria_radius_mm = if(any(ob$bacteria)) bact_r else NA_real_, bacteria_L = if(any(ob$bacteria)) bact_L else NA_real_,
     hyphae_area_mm2 = if(identical(ob$partner_type,"none")) NA_real_ else ha, hyphae_outer_radius_mm = hyphae_r, hyphae_r95_mm = hyphae_r95,
     hyphae_delta_b = hyphae_db, hyphae_delta_L = hyphae_dL,
@@ -338,5 +340,10 @@ bind_rows_fill <- function(rows) {
     for (mm in miss) r[[mm]] <- rep(NA,nrow(r))
     r[cols]
   })
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  # rbind() derives row names from the input frames, which turns into
+  # ".x", ".x1", ... once several plates are combined; the row index carries
+  # no information here and only clutters printed and exported tables.
+  rownames(out) <- NULL
+  out
 }

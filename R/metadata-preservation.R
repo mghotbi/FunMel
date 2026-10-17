@@ -5,11 +5,11 @@ complete_metadata_columns <- function(metadata) {
   if(!is.data.frame(metadata) || anyDuplicated(names(metadata))) stop("Metadata must be a data frame with unique column names.")
   defaults <- list(fungus=NA_character_,zymo_strain=NA_character_,medium=NA_character_,
     day=NA_real_,replicate=NA_integer_,photo_date=NA_character_,notes=NA_character_,
-    metadata_confirmed=FALSE,qc_pass=FALSE)
+    qc_pass=FALSE)
   for(nm in setdiff(names(defaults),names(metadata))) metadata[[nm]] <- rep(defaults[[nm]],nrow(metadata))
   standard <- c("file","relative_file","plate_id","set_id","treatment","centre_model",
     "partner_type","fungus","zymo_strain","medium","day","replicate","photo_date",
-    "notes","metadata_confirmed","qc_pass")
+    "notes","qc_pass")
   metadata[c(intersect(standard,names(metadata)),setdiff(names(metadata),standard))]
 }
 

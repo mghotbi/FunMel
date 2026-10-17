@@ -40,7 +40,7 @@ test_that("project finalization warns by default and strict QC remains optional"
   expect_false(status$require_qc)
   expect_equal(status$n_confirmed_plates,0L)
   m$qc_pass <- TRUE;write.csv(m,p$metadata_file,row.names=FALSE)
-  expect_silent(strict <- finalize_analysis(r,m,require_qc=TRUE))
+  expect_message(strict <- finalize_analysis(r,m,require_qc=TRUE),"Review reminder")
   expect_identical(strict$qc_review$status,"confirmed")
   expect_true(all(strict$metadata$qc_pass))
 })

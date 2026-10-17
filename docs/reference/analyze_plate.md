@@ -19,6 +19,7 @@ analyze_plate(
   reference_lab = c(50, 0, 0),
   max_dim = 2000,
   flat_field = TRUE,
+  max_clipped_fraction = 0.02,
   classifier = NULL,
   min_delta_e = 3,
   min_area_mm2 = 0.5,
@@ -90,7 +91,16 @@ analyze_plate(
 
 - flat_field:
 
-  Apply illumination correction (recommended).
+  Request illumination correction (recommended). It is applied only if
+  the fitted correction passes the `max_clipped_fraction` check;
+  `plate_summary$flat_field_status` records the outcome.
+
+- max_clipped_fraction:
+
+  Largest fraction of dish pixels whose fitted flat-field gain may
+  saturate before the correction is withheld as degenerate; see
+  [`model_background()`](https://mghotbi.github.io/FunMel/reference/model_background.md).
+  `Inf` restores unconditional correction.
 
 - classifier:
 
@@ -192,11 +202,11 @@ res
 #>                -0.3681
 #>                -7.7772
 res$colonies[, c("colony_id", "MI_mean", "delta_MI_facing")]
-#>    colony_id  MI_mean delta_MI_facing
-#> x         TL 48.75959        2.299796
-#> x1        TR 53.03797        2.491872
-#> x2        BR 59.95116        2.551580
-#> x3        BL 42.25989       -2.565176
+#>   colony_id  MI_mean delta_MI_facing
+#> 1        TL 48.75959        2.299796
+#> 2        TR 53.03797        2.491872
+#> 3        BR 59.95116        2.551580
+#> 4        BL 42.25989       -2.565176
 if (FALSE) { # \dontrun{
 res <- analyze_plate("plates/2026_05_26_20.JPG", layout = plate_layout())
 plot_qc(res)

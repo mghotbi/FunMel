@@ -1,4 +1,4 @@
-test_that("metadata templates include pending logical review flags in memory and CSV", {
+test_that("metadata templates do not require a metadata approval column", {
   d <- tempfile("metadata-review-")
   dir.create(d)
   on.exit(unlink(d, recursive = TRUE), add = TRUE)
@@ -7,9 +7,8 @@ test_that("metadata templates include pending logical review flags in memory and
   saved <- read.csv(file.path(d, "plate_metadata.csv"))
   for (x in list(m, saved)) {
     expect_type(x$qc_pass, "logical")
-    expect_type(x$metadata_confirmed, "logical")
+    expect_false("metadata_confirmed" %in% names(x))
     expect_identical(x$qc_pass, c(FALSE, FALSE))
-    expect_identical(x$metadata_confirmed, c(FALSE, FALSE))
   }
   expect_error(make_metadata(d), "exists")
 })
@@ -17,7 +16,7 @@ test_that("standard optional fields and custom columns remain in templates", {
   d <- withr::local_tempdir();file.create(file.path(d,"one.JPG"))
   m <- suppressMessages(make_metadata(d,extra=list(operator="A",`free text`="note")))
   expect_true(all(c("set_id","centre_model","partner_type","fungus","zymo_strain","medium",
-    "day","replicate","photo_date","notes","metadata_confirmed","qc_pass") %in% names(m)))
+    "day","replicate","photo_date","notes","qc_pass") %in% names(m)))
   saved <- read.csv(file.path(d,"plate_metadata.csv"),check.names=FALSE)
   expect_identical(saved[["free text"]],"note");expect_identical(saved$operator,"A")
   expect_true(all(is.na(m$day)));expect_false(m$qc_pass)

@@ -54,6 +54,7 @@
 detect_plate <- function(plate, dish = NULL, dish_diameter_mm = 90,
                          agar_fraction = 0.88, background = c("auto", "dark", "light"),
                          mm_per_px = NULL, seed = 1L) {
+  validate_image_settings(list(dish_diameter_mm=dish_diameter_mm,mm_per_px=mm_per_px))
   stopifnot(is_funmel_plate(plate))
   background <- match.arg(background)
   if (!is.null(dish)) {

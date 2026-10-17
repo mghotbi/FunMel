@@ -18,7 +18,13 @@
 #'   [model_background()].
 #' @param reference_lab Known CIELAB of the reference.
 #' @param max_dim Working resolution (longest side, px).
-#' @param flat_field Apply illumination correction (recommended).
+#' @param flat_field Request illumination correction (recommended). It is
+#'   applied only if the fitted correction passes the `max_clipped_fraction`
+#'   check; `plate_summary$flat_field_status` records the outcome.
+#' @param max_clipped_fraction Largest fraction of dish pixels whose fitted
+#'   flat-field gain may saturate before the correction is withheld as
+#'   degenerate; see [model_background()]. `Inf` restores unconditional
+#'   correction.
 #' @param classifier Optional supervised classifier ([train_classifier()]).
 #' @param min_delta_e Minimum colour difference from agar for objects.
 #' @param min_area_mm2,min_core_mm,morph_mm,edge_criterion Segmentation settings, see
@@ -61,13 +67,17 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
                           dish_diameter_mm = 90, agar_fraction = 0.88, dish = NULL,
                           mm_per_px = NULL,
                           reference = NULL, reference_lab = c(50, 0, 0),
-                          max_dim = 2000, flat_field = TRUE, classifier = NULL,
+                          max_dim = 2000, flat_field = TRUE, max_clipped_fraction = 0.02,
+                          classifier = NULL,
                           min_delta_e = 3, min_area_mm2 = 0.5, min_core_mm = 0.4,
                           morph_mm = 0.08, edge_criterion = 0.5, edge_exclude_mm = 0.1, dark_L = NULL,
                           n_boot = 200L, block_mm = 0.5, ring_width_mm = 0.5,
                           profile_mode = c("absolute", "relative"), n_rings = 10L,
                           qc_file = NULL, keep_images = TRUE, verbose = TRUE,
                           n_spots = NULL, spot_radius_mm = 0.5) {
+  validate_image_settings(list(dish_diameter_mm=dish_diameter_mm,mm_per_px=mm_per_px,
+    max_dim=max_dim,n_spots=n_spots,spot_radius_mm=spot_radius_mm,
+    max_clipped_fraction=max_clipped_fraction))
   profile_mode <- match.arg(profile_mode)
   stopifnot(inherits(layout, "funmel_layout"))
   params <- as.list(environment())
@@ -84,6 +94,7 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
   step(sprintf("Dish r = %.0f px, %.4f mm/px", plate$dish$r_outer, plate$dish$mm_per_px))
   step("Modelling agar background and illumination")
   plate <- model_background(plate, flat_field = flat_field, min_delta_e = min_delta_e,
+                            max_clipped_fraction = max_clipped_fraction,
                             reference = reference, reference_lab = reference_lab)
   step("Classifying target colonies, central core and hyphal growth")
   plate <- classify_pixels(plate, layout, classifier = classifier)
@@ -99,8 +110,8 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
   spot_result <- if(is.null(n_spots)) NULL else sample_colony_spots(plate,
     n_spots=n_spots,spot_radius_mm=spot_radius_mm,edge_exclude_mm=edge_exclude_mm)
   if(!is.null(spot_result)) {
-    summary <- spot_result$summary[match(col$colony_id,spot_result$summary$colony_id),,drop=FALSE]
-    col <- cbind(col,summary[setdiff(names(summary),"colony_id")])
+    spot_summary <- spot_result$summary[match(col$colony_id,spot_result$summary$colony_id),,drop=FALSE]
+    col <- cbind(col,spot_summary[setdiff(names(spot_summary),"colony_id")])
   }
   ps <- measure_plate(plate)
 
@@ -108,9 +119,14 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
   if (any(!col$detected)) warn <- c(warn, sprintf("Colony not detected: %s", paste(col$colony_id[!col$detected], collapse = ", ")))
   if (!is.na(plate$dish$arc_coverage) && plate$dish$arc_coverage < 0.4)
     warn <- c(warn, "Dish edge visible on < 40 % of its circumference; check the scale.")
-  if (isTRUE(ps$illumination_range_pct > 30))
+  if (isTRUE(ps$illumination_range_pct > 30) && !identical(ps$flat_field_status, "withheld_degenerate_fit"))
     warn <- c(warn, sprintf("Fitted pre-correction illumination range %.0f %% (not residual error); inspect correction diagnostics and QC.", ps$illumination_range_pct))
-  if (isTRUE(ps$flat_field_clipped_fraction > 0.01))
+  if (identical(ps$flat_field_status, "withheld_degenerate_fit"))
+    warn <- c(warn, sprintf(paste("Illumination correction withheld: fitted gains saturated for %.0f %% of dish pixels.",
+                                  "Measurements are uncorrected and comparable across plates only if the lighting was constant.",
+                                  "This is expected for transparent dishes photographed over a dark background."),
+                            100 * ps$flat_field_clipped_fraction))
+  else if (isTRUE(ps$flat_field_clipped_fraction > 0.01))
     warn <- c(warn, "Flat-field gains reached correction limits for > 1 % of dish pixels; inspect masks and calibration.")
   if (isTRUE(ps$residual_agar_range_pct > 30))
     warn <- c(warn, "Remaining fitted-agar spatial variation exceeds 30 %; review illumination correction.")
@@ -197,8 +213,8 @@ print.funmel_result <- function(x, ...) {
 #' \dontrun{
 #' meta <- data.frame(file = c("2026_05_26_20.JPG", "2026_05_26_37.JPG"),
 #'                    plate_id = c("t1", "c1"), set_id = "set1",
-#'                    treatment = c("bacteria", "control"))
-#' lay <- function(row) plate_layout(centre = if (row$treatment == "control") "none" else "bacteria")
+#'                    treatment = c("fungus_A", "control"))
+#' lay <- function(row) plate_layout(centre = if (row$treatment == "control") "none" else "fungus")
 #' out <- analyze_plates("plates/", metadata = meta, layout = lay, qc_dir = "qc/")
 #' write.csv(out$colonies, "colonies.csv", row.names = FALSE)
 #' }
@@ -206,6 +222,7 @@ print.funmel_result <- function(x, ...) {
 analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
                            qc_dir = NULL, ..., verbose = TRUE,
                            coefficient_control = "control", coefficient_by = NULL) {
+  validate_image_settings(list(...))
   if(!is.character(files) || anyNA(files) || any(!nzchar(files))) stop("files must be image paths without missing values.")
   if (length(files) == 1 && dir.exists(files)) {
     files <- list.files(files, pattern = "\\.(jpe?g|png|tiff?|heic)$",

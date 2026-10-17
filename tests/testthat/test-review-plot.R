@@ -6,7 +6,7 @@ review_fixture <- function() {
 }
 test_that('preview retains unconfirmed metadata and warns on unconfirmed QC', {
   x<-review_fixture()
-  expect_error(plot_treatment_comparison(x),'Confirm')
+  expect_s3_class(plot_treatment_comparison(x),'ggplot')
   p<-plot_treatment_comparison(x,preview=TRUE)
   expect_s3_class(p,'ggplot');expect_match(p$labels$caption,'PROVISIONAL')
   expect_true(all(!x$colonies$metadata_confirmed))
@@ -17,7 +17,8 @@ test_that('preview retains unconfirmed metadata and warns on unconfirmed QC', {
 })
 test_that('review reuses measurements and applies exactly matched metadata', {
   x<-review_fixture();m<-x$plates
-  expect_error(finalize_analysis(x,m),'metadata_confirmed')
+  expect_warning(auto <- finalize_analysis(x,m),'Image QC')
+  expect_equal(nrow(auto$melanization_coefficient),6L)
   m$metadata_confirmed<-TRUE
   expect_warning(pending <- finalize_analysis(x,m),'Image QC')
   expect_identical(pending$qc_review$status,'unconfirmed')

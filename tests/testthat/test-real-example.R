@@ -11,8 +11,9 @@ test_that('the real example has one control and three treatments in each of two 
   }
   expect_equal(nrow(d),32L);expect_true(all(table(d$plate_id)==4L))
   expect_setequal(m$plate_id,d$plate_id)
-  expect_true(all(!m$metadata_confirmed));expect_true(all(!d$metadata_confirmed))
-  expect_error(melanization_coefficient(d),'Confirm')
+  expect_false("metadata_confirmed" %in% names(m));expect_false("metadata_confirmed" %in% names(d))
+  expect_warning(mc <- melanization_coefficient(d),'Image QC')
+  expect_equal(nrow(mc$coefficients),2L)
   expect_warning(p <- plot_treatment_comparison(d,preview=TRUE),'Image QC')
   expect_s3_class(p,'ggplot')
   expect_match(p$labels$caption,'QC UNCONFIRMED')

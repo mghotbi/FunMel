@@ -11,7 +11,7 @@ every dish pixel that differs significantly from agar."><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,7 @@ every dish pixel that differs significantly from agar.</p>
 <span>  <span class="va">plate</span>,</span>
 <span>  flat_field <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  degree <span class="op">=</span> <span class="fl">2L</span>,</span>
+<span>  max_clipped_fraction <span class="op">=</span> <span class="fl">0.02</span>,</span>
 <span>  min_delta_e <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  texture_z <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  shadow_texture_z <span class="op">=</span> <span class="fl">2.5</span>,</span>
@@ -68,11 +69,26 @@ every dish pixel that differs significantly from agar.</p>
 
 
 <dt id="arg-flat-field">flat_field<a class="anchor" aria-label="anchor" href="#arg-flat-field"></a></dt>
-<dd><p>Logical; apply the illumination correction.</p></dd>
+<dd><p>Logical; request the illumination correction. The fitted
+correction is applied only if it passes the <code>max_clipped_fraction</code> check
+below; <code>plate$bg$flat_field</code> records whether it was actually applied.</p></dd>
 
 
 <dt id="arg-degree">degree<a class="anchor" aria-label="anchor" href="#arg-degree"></a></dt>
 <dd><p>Polynomial degree of the illumination surface (1 or 2).</p></dd>
+
+
+<dt id="arg-max-clipped-fraction">max_clipped_fraction<a class="anchor" aria-label="anchor" href="#arg-max-clipped-fraction"></a></dt>
+<dd><p>Largest fraction of dish pixels whose fitted
+gain may reach the correction limits (0.5x-2x) before the whole
+correction is judged degenerate and withheld. A correction that saturates
+over a substantial part of the dish is not a mild illumination gradient:
+it rescales colonies by a position-dependent factor and shifts MI by
+several units, which would be read as a melanization difference. This
+can occur with reflections or strongly nonuniform backgrounds. Gain
+saturation alone does not identify the cause of the failed fit.
+Use <code>Inf</code> to apply the correction unconditionally, and inspect
+<code>flat_field_status</code> in the plate summary either way.</p></dd>
 
 
 <dt id="arg-min-delta-e">min_delta_e<a class="anchor" aria-label="anchor" href="#arg-min-delta-e"></a></dt>
@@ -122,7 +138,7 @@ all plates use the same medium batch and the agar is not tinted).</p></dd>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><strong>1. Agar colour by mode seeking.</strong> The agar is the most frequent colour
 inside the dish even on crowded confrontation plates, because agar pixels
-are concentrated in colour space while colonies, bacteria and hyphaes are
+are concentrated in colour space while colonies, bacteria and hyphae are
 spread along gradients. The mode of the (smoothed) \(L^*a^*b^*\)
 distribution of low-texture pixels is found with a coarse 3-D histogram
 followed by mean-shift refinement (Comaniciu &amp; Meer 2002). It works on

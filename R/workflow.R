@@ -20,7 +20,7 @@
 #' project <- prepare_experiment(file.choose(), "FunMel_project")
 #' # Edit project$metadata_file: verify set_id, treatment and centre_model.
 #' result <- run_experiment(project, n_spots = 5, spot_radius_mm = 0.4)
-#' # Verify metadata_confirmed; inspect project$qc_dir. qc_pass records optional approval.
+#' # Inspect project$qc_dir; review reminders do not require approval-flag edits.
 #' reviewed <- finish_experiment(project)
 #' }
 #' @export
@@ -74,10 +74,9 @@ prepare_experiment <- function(input = NULL, project_dir = "FunMel_project",
     metadata <- data.frame(file=basename(rel),relative_file=rel,plate_id=ids,
       set_id=sets,treatment=trt,centre_model=ifelse(is.na(trt),NA_character_,ifelse(ctrl,"none","fungus")),
       partner_type=ifelse(is.na(trt),NA_character_,ifelse(ctrl,"none","fungus")),
-      metadata_confirmed=FALSE,qc_pass=FALSE,stringsAsFactors=FALSE,check.names=FALSE)
+      qc_pass=FALSE,stringsAsFactors=FALSE,check.names=FALSE)
   } else {
     if(!is.data.frame(metadata) || !nrow(metadata)) stop("metadata must be a nonempty table.")
-    if(!"metadata_confirmed" %in% names(metadata)) metadata$metadata_confirmed <- FALSE
     # A new analysis requires a fresh image review, even if the supplied design was confirmed.
     metadata$qc_pass <- FALSE
     ix <- match_image_rows(file.path(root,rel),metadata)
@@ -93,7 +92,7 @@ prepare_experiment <- function(input = NULL, project_dir = "FunMel_project",
   utils::write.csv(metadata,project$metadata_file,row.names=FALSE,na="")
   saveRDS(project,file.path(home,"project.rds"))
   message("Prepared ",nrow(metadata)," photographs. Edit ",project$metadata_file,
-    " to verify set_id, treatment and centre_model. Then run run_experiment(project).")
+    " to review set_id, treatment and centre_model before analysis. No approval-flag edits are required. Then run run_experiment(project).")
   project
 }
 
@@ -108,36 +107,60 @@ prepare_experiment <- function(input = NULL, project_dir = "FunMel_project",
 #' @param spot_radius_mm Radius of each optional circular ROI (mm).
 #' @param ... Other analyze_plate() settings, such as dish_diameter_mm and max_dim.
 #' @return Batch result saved to image_analysis.rds and CSV tables.
+#' @details Dish diameter and any supplied pixel scale must be finite positive numeric scalars. Invalid settings stop before image processing or changes to project QC flags.
+#' Missing project metadata must be restored or its recorded path corrected.
+#' A batch with failed images saves error reports and warns; it does not report success.
+#' Inspect result$failed and resolve every failed image before finalization.
 #' @export
 run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5, ...) {
   project <- as_funmel_project(project)
-  meta <- utils::read.csv(project$metadata_file,stringsAsFactors=FALSE,check.names=FALSE)
+  dots <- list(...)
+  validate_image_settings(dots)
+  validate_image_settings(list(n_spots=n_spots, spot_radius_mm=spot_radius_mm))
+  meta <- read_project_metadata(project)
   validate_metadata(meta)
   if(!"relative_file" %in% names(meta)) stop("Project metadata requires relative_file; preserve the prepared image paths.")
   files <- file.path(project$image_root,meta$relative_file)
+  missing <- files[!file.exists(files) | dir.exists(files)]
+  if(length(missing)) stop("Photographs are missing or unavailable locally: ",
+    paste(utils::head(missing,5L),collapse="; "),
+    ". Restore the files or correct the recorded image paths before rerunning.",call.=FALSE)
   roots <- normalizePath(files,mustWork=TRUE)
   if(any(!startsWith(roots,paste0(project$image_root,.Platform$file.sep)))) stop("Image paths must remain within the project image root.")
-  meta$qc_pass <- FALSE
-  utils::write.csv(meta,project$metadata_file,row.names=FALSE,na="")
-  dots <- list(...)
+  # Preflight settings and file checks precede any changes to review flags.
   if(any(names(dots) %in% c("files","metadata","layout","qc_dir","coefficient_control","keep_images")))
     stop("Project files, metadata, layouts and QC are managed by run_experiment; pass only image settings.")
+  message("Review reminder: check plate identities, treatment/control assignments, matching sets and dish calibration before analysis. Processing does not require approval flags.")
+  meta$qc_pass <- FALSE
+  utils::write.csv(meta,project$metadata_file,row.names=FALSE,na="")
   result <- analyze_plates(files,metadata=meta,layout=layout_by_treatment,
     qc_dir=project$qc_dir,n_spots=n_spots,spot_radius_mm=spot_radius_mm,
     coefficient_control=NULL,...)
   result$qc_review <- qc_review_summary(meta)
   result$qc_review$require_qc <- FALSE
-  result$coefficient_error <- "Awaiting metadata confirmation and finalization; inspect image QC before using finish_experiment(project)."
+  n_failed <- nrow(result$failed)
+  result$analysis_status <- if(n_failed==length(files)) "failed" else if(n_failed>0L) "partial" else "complete"
+  result$coefficient_error <- if(n_failed) "Resolve failed photographs and rerun before finalization." else
+    "Awaiting finalization; inspect image QC and use finish_experiment(project)."
   saveRDS(result,project$result_file)
   write_experiment_tables(result,project$project_dir)
-  message("Measurements saved. Inspect ",project$qc_dir,"; confirm metadata_confirmed and optionally record qc_pass per plate in ",
-          project$metadata_file,". Then run finish_experiment(project).")
+  if(n_failed==length(files)) {
+    warning("No photographs were successfully analyzed. Failure details saved in result$failed and failed.csv. ",
+      "Correct the errors and rerun run_experiment(project); do not finalize this run.",call.=FALSE)
+  } else if(n_failed>0L) {
+    warning(length(files)-n_failed," of ",length(files)," photographs analyzed; ",n_failed,
+      " failed. Inspect result$failed or failed.csv, correct the errors and rerun before finalization.",call.=FALSE)
+  } else {
+    message("Successfully analyzed ",length(files)," photographs. Inspect ",project$qc_dir,
+      "; check masks, calibration and experimental labels before interpreting results. ",
+      "No approval-flag edits are required. Run finish_experiment(project) to export final tables and figures.")
+  }
   result
 }
 
 #' Finalize a prepared experiment after plate review
 #'
-#' Loads saved measurements and metadata, enforces metadata confirmation and
+#' Loads saved measurements and metadata without a manual approval gate, and
 #' applies the requested image-QC policy (warning by default), then
 #' computes whole-colony matched coefficients and plate-level assessment, and
 #' exports the comparison figure and tables. Spot summaries stay separate;
@@ -153,7 +176,7 @@ finish_experiment <- function(project, ..., require_qc=FALSE) {
   project <- as_funmel_project(project)
   if(!file.exists(project$result_file)) stop("Run run_experiment(project) before finalization.")
   result <- readRDS(project$result_file)
-  meta <- utils::read.csv(project$metadata_file,stringsAsFactors=FALSE,check.names=FALSE)
+  meta <- read_project_metadata(project)
   if(nrow(result$failed)) stop("Resolve all failed photographs before finalization.")
   context <- recorded_context_columns(meta)
   contexts <- if(length(context)) unique(meta[context]) else data.frame(.context="all")
@@ -191,7 +214,7 @@ finish_experiment <- function(project, ..., require_qc=FALSE) {
     write_experiment_tables(reviewed,project$project_dir)
     utils::write.csv(contexts,file.path(project$project_dir,"context_index.csv"),row.names=FALSE)
   }
-  message("Reviewed outputs saved in ",project$project_dir,
+  message("Final outputs saved in ",project$project_dir,
           "; different recorded day/strain/medium contexts are reported separately.")
   reviewed
 }
@@ -239,4 +262,16 @@ match_image_rows <- function(files, metadata) {
   },integer(1))
   if(anyDuplicated(ix) || !setequal(ix,seq_len(nrow(metadata)))) stop("Files and metadata must match one-to-one, without unused rows or duplicate image paths.")
   unname(ix)
+}
+
+# Read the edited design, never silently reconstruct missing assignments.
+read_project_metadata <- function(project) {
+  p <- project$metadata_file
+  if(!is.character(p) || length(p)!=1L || is.na(p) || !file.exists(p) || dir.exists(p))
+    stop("Project metadata CSV is missing: ",paste(p,collapse="; "),
+      ". Restore your edited plate_metadata.csv or set project$metadata_file to its existing location. ",
+      "Do not recreate the project or guess treatment-control assignments.",call.=FALSE)
+  tryCatch(utils::read.csv(p,stringsAsFactors=FALSE,check.names=FALSE),
+    error=function(e) stop("Cannot read project metadata CSV at ",p,": ",conditionMessage(e),
+      ". Check permissions and download cloud files locally.",call.=FALSE))
 }

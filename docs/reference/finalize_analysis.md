@@ -1,10 +1,10 @@
 # Finalize saved measurements after reviewing metadata and image masks
 
-Reuses measurements; no photograph needs to be processed again. This
-function records user review, not automatic biological validation. All
-included plates must have metadata_confirmed explicitly TRUE.
-Unconfirmed image QC warns by default; require_qc=TRUE requires
-qc_pass=TRUE for every included plate.
+Reuses saved measurements without reprocessing photographs. Valid
+experimental metadata proceeds automatically; no metadata approval flags
+are required. A reminder asks users to review assignments, masks and
+calibration before interpreting results. Computation does not establish
+biological validation.
 
 ## Usage
 
@@ -20,9 +20,8 @@ finalize_analysis(result, metadata, ..., require_qc = FALSE)
 
 - metadata:
 
-  Reviewed metadata with one row per plate, metadata_confirmed and
-  optional qc_pass logical columns. Use FALSE for unconfirmed image QC;
-  do not mark it TRUE merely to obtain a coefficient.
+  Metadata with one row per independent plate. User-defined columns are
+  retained; review flags do not gate the standard workflow.
 
 - ...:
 

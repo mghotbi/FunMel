@@ -133,9 +133,9 @@ centre (controls, so that the same metrics give the null expectation).
 sim <- simulate_plate(width = 300, height = 400, seed = 7)
 res <- analyze_plate(sim$image, verbose = FALSE)
 res$colonies[, c("colony_id", "area_mm2", "L_mean", "MI_mean")]
-#>    colony_id area_mm2   L_mean  MI_mean
-#> x         TL 154.4311 52.30603 47.69397
-#> x1        TR 154.9466 46.53839 53.46161
-#> x2        BR 154.5456 41.47310 58.52690
-#> x3        BL 154.8893 58.45871 41.54129
+#>   colony_id area_mm2   L_mean  MI_mean
+#> 1        TL 154.4311 52.30603 47.69397
+#> 2        TR 154.9466 46.53839 53.46161
+#> 3        BR 154.5456 41.47310 58.52690
+#> 4        BL 154.8893 58.45871 41.54129
 ```

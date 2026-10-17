@@ -38,7 +38,7 @@ test_that('nested metadata templates record provenance without guessing identity
   expect_setequal(x$file,c('arbitrary_control.JPG','unseen_photo.png'))
   expect_true(all(file.exists(file.path(d,x$relative_file))))
   expect_true(all(is.na(x$set_id)));expect_true(all(is.na(x$treatment)))
-  expect_true(all(!x$metadata_confirmed))
+  expect_false("metadata_confirmed" %in% names(x))
   writeLines('duplicate',file.path(d,'second','arbitrary_control.JPG'))
   y <- suppressMessages(make_metadata(d,recursive=TRUE,overwrite=TRUE))
   expect_equal(nrow(y),3L); expect_equal(length(unique(y$plate_id)),3L)

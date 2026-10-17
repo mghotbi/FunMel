@@ -1,7 +1,7 @@
 Package: FunMel
 Title: Colour-Calibrated Quantification of Fungal Melanization in
         Confrontation Assays
-Version: 0.4.4
+Version: 0.4.7
 Authors@R: 
     person("Mitra", "Ghotbi", email = "mitra.ghotbi@gmail.com",
            role = c("aut", "cre"),
@@ -21,10 +21,9 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Depends: R (>= 4.1.0)
 Imports: cli, graphics, grDevices, magick, Rcpp, stats, tools, utils,
-    lme4, lmerTest, ggplot2, grid, rlang
+        lme4, lmerTest, ggplot2, grid, rlang
 LinkingTo: Rcpp
-Suggests: knitr, rmarkdown, png, testthat (>= 3.0.0),
-        withr
+Suggests: knitr, rmarkdown, png, testthat (>= 3.0.0), withr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 NeedsCompilation: yes

@@ -9,9 +9,9 @@
 #' @param colonies Colony table or an analyze_plates() batch result.
 #' @param control Control treatment label.
 #' @param by Additional matching columns passed to melanization_coefficient().
-#' @param preview Explicit TRUE allows an unconfirmed metadata mapping only for
-#'   a clearly labelled provisional preview. Does not change or confirm metadata.
-#'   Unconfirmed image QC warns by default and is labelled in the caption.
+#' @param preview TRUE labels the figure as a provisional preview. No metadata
+#'   approval flags are required in either mode. Unconfirmed image QC warns by
+#'   default and is labelled in the caption.
 #' @param labels Optional named character vector of treatment display names.
 #' @param file Optional output prefix. Writes vector PDF and SVG and 600-dpi PNG.
 #' @param palette Optional named vector of treatment colours. Controls always
@@ -35,9 +35,6 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
     colonies<-colonies$colonies
   }
   if(!is.data.frame(colonies)) stop("Supply a colony table or batch result.")
-  pending <- "metadata_confirmed" %in% names(colonies) &&
-    (!is.logical(colonies$metadata_confirmed) || anyNA(colonies$metadata_confirmed) || any(!colonies$metadata_confirmed))
-  if(pending && preview) colonies$metadata_confirmed<-NULL
   mc<-melanization_coefficient(colonies,control=control,by=by,require_qc=require_qc)
   cf<-mc$coefficients
   if(any(cf$status!="ok")) stop("Resolve unavailable coefficients before plotting.")
@@ -64,7 +61,7 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
   summary<-cf
   summary$MI_control_sd<-summary$MI_treatment_sd<-summary$coefficient_sd<-NA_real_
   summary$statistical_scope<-"descriptive; coefficient SD conditional on matching control mean"
-  summary$metadata_status<-if(pending) "provisional" else "confirmed or no confirmation field"
+  summary$metadata_status<-"not independently verified"
   sd_text<-function(x,digits=2) if(is.finite(x)) formatC(x,format="f",digits=digits) else "unavailable"
   panel_a<-"A  Plate melanization index"
   panel_b<-"B  Matched melanization coefficient"
@@ -120,7 +117,9 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
     ggplot2::geom_point(data=a,shape=18,size=2.7,show.legend=FALSE)+
     ggplot2::geom_segment(data=intervals,ggplot2::aes(x=.data$x-.data$sd,xend=.data$x+.data$sd,y=.data$y,yend=.data$y,colour=.data$key),inherit.aes=FALSE,linewidth=0.65)+
     ggplot2::geom_text(data=ann,ggplot2::aes(x=.data$x,y=.data$y,label=.data$text),inherit.aes=FALSE,size=2.25,colour="#303840")+
-    ggplot2::facet_wrap(~panel,scales="free_x",nrow=1)+
+    ggplot2::facet_wrap(~panel,scales="free_x",nrow=1,
+      labeller=ggplot2::labeller(panel=function(x) vapply(x,function(z)
+        paste(strwrap(z,width=26),collapse="\n"),character(1))))+
     ggplot2::scale_y_continuous(breaks=seq_len(nrow(cf)),labels=countlabels,limits=c(0.5,nrow(cf)+0.5))+
     ggplot2::scale_colour_manual(values=colours,guide="none")+
     ggplot2::scale_fill_manual(values=colours,guide="none")+
@@ -132,12 +131,12 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
       axis.line.y=ggplot2::element_blank(),axis.ticks.y=ggplot2::element_blank(),
       axis.text=ggplot2::element_text(colour="#263238"),axis.text.y=ggplot2::element_text(size=8),
       panel.grid.major.y=ggplot2::element_line(colour="#E8ECEE",linewidth=0.3),
-      legend.position="top",legend.justification="left",plot.caption=ggplot2::element_text(hjust=0,size=7,colour="#47535D"),
+      legend.position="top",legend.justification="left",plot.caption.position="plot",plot.caption=ggplot2::element_text(hjust=0,size=7,colour="#47535D"),
       plot.margin=ggplot2::margin(10,12,10,10),panel.spacing=grid::unit(14,"pt"))
   attr(plt,"FunMel_statistics")<-summary
   if(!is.null(file)) {
     if(length(file)!=1L || is.na(file) || !nzchar(file)) stop("file must be an output prefix.")
-    if(is.null(height)) height<-max(4,2.2+0.65*nrow(cf))
+    if(is.null(height)) height<-max(5,3.2+0.65*nrow(cf))
     utils::write.csv(summary,paste0(file,"_statistics.csv"),row.names=FALSE)
     for(ext in c("pdf","svg","png")) ggplot2::ggsave(paste0(file,".",ext),plt,width=width,height=height,dpi=600,
       device=if(ext=="svg") grDevices::svg else if(ext=="pdf") grDevices::cairo_pdf else "png",bg="white")

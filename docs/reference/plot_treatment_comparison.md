@@ -41,10 +41,9 @@ plot_treatment_comparison(
 
 - preview:
 
-  Explicit TRUE allows an unconfirmed metadata mapping only for a
-  clearly labelled provisional preview. Does not change or confirm
-  metadata. Unconfirmed image QC warns by default and is labelled in the
-  caption.
+  TRUE labels the figure as a provisional preview. No metadata approval
+  flags are required in either mode. Unconfirmed image QC warns by
+  default and is labelled in the caption.
 
 - labels:
 

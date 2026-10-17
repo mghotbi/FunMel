@@ -16,6 +16,7 @@ analyze_plate(
   reference_lab = c(50, 0, 0),
   max_dim = 2000,
   flat_field = TRUE,
+  max_clipped_fraction = 0.02,
   classifier = NULL,
   min_delta_e = 3,
   min_area_mm2 = 0.5,
@@ -61,7 +62,14 @@ region \code{c(x, y, r)} in relative image coordinates, or \code{"agar"}; see
 
 \item{max_dim}{Working resolution (longest side, px).}
 
-\item{flat_field}{Apply illumination correction (recommended).}
+\item{flat_field}{Request illumination correction (recommended). It is
+applied only if the fitted correction passes the \code{max_clipped_fraction}
+check; \code{plate_summary$flat_field_status} records the outcome.}
+
+\item{max_clipped_fraction}{Largest fraction of dish pixels whose fitted
+flat-field gain may saturate before the correction is withheld as
+degenerate; see \code{\link[=model_background]{model_background()}}. \code{Inf} restores unconditional
+correction.}
 
 \item{classifier}{Optional supervised classifier (\code{\link[=train_classifier]{train_classifier()}}).}
 

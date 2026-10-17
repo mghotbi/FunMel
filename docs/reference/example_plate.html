@@ -31,7 +31,7 @@ four colonies without an interacting partner
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -92,7 +92,7 @@ spreading hyphal growth (2026_10_02_99_38.JPG).</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">example_plate</span><span class="op">(</span><span class="st">"control"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                                                  control </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpVEPw2F/temp_libpath4334741d4bfc/FunMel/extdata/14-days/A60_2_14_days/2026_10_02_99_41.JPG" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpIk8twa/temp_libpath13c21f9d7262/FunMel/extdata/14-days/A60_2_14_days/2026_10_02_99_41.JPG" </span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="analyze_plate.html">analyze_plate</a></span><span class="op">(</span><span class="fu">example_plate</span><span class="op">(</span><span class="st">"control"</span><span class="op">)</span>, layout <span class="op">=</span> <span class="fu"><a href="plate_layout.html">plate_layout</a></span><span class="op">(</span>centre <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Reading image</span>
@@ -102,12 +102,10 @@ spreading hyphal growth (2026_10_02_99_38.JPG).</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Classifying target colonies, central core and hyphal growth</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Separating colonies</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Measuring</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Fitted pre-correction illumination range 139 % (not residual error); inspect</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> correction diagnostics and QC.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Flat-field gains reached correction limits for &gt; 1 % of dish pixels; inspect</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> masks and calibration.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Remaining fitted-agar spatial variation exceeds 30 %; review illumination</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> correction.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Illumination correction withheld: fitted gains saturated for 9 % of dish</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> pixels. Measurements are uncorrected and comparable across plates only if the</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> lighting was constant. This is expected for transparent dishes photographed</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> over a dark background.</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
