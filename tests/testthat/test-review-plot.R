@@ -4,20 +4,25 @@ review_fixture <- function() {
   list(colonies=d,plates=unique(d[c('plate_id','file','set_id','treatment','metadata_confirmed')]),
        profiles=data.frame(),failed=data.frame())
 }
-test_that('preview cannot silently confirm metadata or bypass failed QC', {
+test_that('preview retains unconfirmed metadata and warns on unconfirmed QC', {
   x<-review_fixture()
   expect_error(plot_treatment_comparison(x),'Confirm')
   p<-plot_treatment_comparison(x,preview=TRUE)
   expect_s3_class(p,'ggplot');expect_match(p$labels$caption,'PROVISIONAL')
   expect_true(all(!x$colonies$metadata_confirmed))
   x$colonies$qc_pass<-FALSE
-  expect_error(plot_treatment_comparison(x,preview=TRUE),'qc_pass')
+  expect_warning(p <- plot_treatment_comparison(x,preview=TRUE),'Image QC')
+  expect_match(p$labels$caption,'QC UNCONFIRMED')
+  expect_error(plot_treatment_comparison(x,preview=TRUE,require_qc=TRUE),'qc_pass')
 })
 test_that('review reuses measurements and applies exactly matched metadata', {
   x<-review_fixture();m<-x$plates
   expect_error(finalize_analysis(x,m),'metadata_confirmed')
   m$metadata_confirmed<-TRUE
-  expect_error(finalize_analysis(x,m),'qc_pass')
+  expect_warning(pending <- finalize_analysis(x,m),'Image QC')
+  expect_identical(pending$qc_review$status,'unconfirmed')
+  expect_false(any(pending$metadata$qc_pass))
+  expect_error(finalize_analysis(x,m,require_qc=TRUE),'qc_pass')
   m$qc_pass<-TRUE
   y<-finalize_analysis(x,m)
   expect_equal(y$colonies$MI_mean,x$colonies$MI_mean)

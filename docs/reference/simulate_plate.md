@@ -1,14 +1,10 @@
 # Simulate a plate photograph with known ground truth
 
-Generates a synthetic confrontation (or control) plate that reproduces
-the difficulties of real photographs: grey, wrinkled fungal colonies
-with irregular lobed outlines, a whitish central bacterium with a
-diffuse yellow halo that overlaps the colonies in brightness, satellite
-micro-colonies, a bright dish wall, vignetting, exposure errors and
-sensor noise. Because every pixel's true class and colour are known, the
-simulator is used to validate FunMel's accuracy (see the unit tests and
-the vignette) and to test new settings before applying them to real
-data.
+Generates schematic target colonies and central fungal growth with known
+image masks, colour and geometry. Tests include illumination gradients,
+texture, noise and irregular outlines. The synthetic central growth is
+not a mechanistic model of fungal development or interspecies
+interaction.
 
 ## Usage
 
@@ -27,9 +23,9 @@ simulate_plate(
   texture_sd = 5,
   bacteria = NULL,
   bacteria_radius_mm = 6,
-  halo_radius_mm = 17,
+  hyphae_radius_mm = 17,
   bacteria_lab = c(86, 0, 9),
-  halo_lab = c(42, -2, 22),
+  hyphae_lab = c(42, -2, 22),
   agar_lab = c(22, -1, -4),
   background_lab = c(8, 0, 1),
   satellite = TRUE,
@@ -94,13 +90,13 @@ simulate_plate(
   including fungus). The simulated body and zone are schematic, not a
   mechanistic fungal-growth or inhibition model.
 
-- bacteria_radius_mm, halo_radius_mm:
+- bacteria_radius_mm, hyphae_radius_mm:
 
-  Radii of bacterium and halo.
+  Radii of the dense central core and peripheral growth extent.
 
-- bacteria_lab, halo_lab:
+- bacteria_lab, hyphae_lab:
 
-  CIELAB of bacterium and of the halo core.
+  CIELAB of the dense central core and peripheral hyphal growth.
 
 - agar_lab, background_lab:
 
@@ -134,7 +130,7 @@ simulate_plate(
 
 A list with `image` (H x W x 3 sRGB array) and `truth` (dish circle,
 `mm_per_px`, per-colony true area and mean \\L^\*\\ before illumination
-effects, label matrix, bacteria and halo masks, grey-card region).
+effects, label matrix, bacteria and hyphae masks, grey-card region).
 
 ## Examples
 

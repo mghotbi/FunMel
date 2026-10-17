@@ -40,7 +40,9 @@ test_that('nested metadata templates record provenance without guessing identity
   expect_true(all(is.na(x$set_id)));expect_true(all(is.na(x$treatment)))
   expect_true(all(!x$metadata_confirmed))
   writeLines('duplicate',file.path(d,'second','arbitrary_control.JPG'))
-  expect_error(make_metadata(d,recursive=TRUE,overwrite=TRUE),'unique across folders')
+  y <- suppressMessages(make_metadata(d,recursive=TRUE,overwrite=TRUE))
+  expect_equal(nrow(y),3L); expect_equal(length(unique(y$plate_id)),3L)
+  expect_equal(length(unique(y$relative_file)),3L)
 })
 test_that('saved review cannot change image-layout settings without reanalysis', {
   d<-example_experiment()$colonies;d$metadata_confirmed<-FALSE

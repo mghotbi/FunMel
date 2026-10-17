@@ -6,7 +6,7 @@
 #'
 #' @param path Image file or H x W x 3 sRGB array.
 #' @param layout A [plate_layout()]. Use `plate_layout(centre = "none")` for
-#'   control plates without bacteria.
+#'   control plates without a central partner.
 #' @param id Plate identifier (default: file name).
 #' @param dish_diameter_mm Outer diameter of the dish (mm); sets the scale.
 #' @param agar_fraction Fraction of the dish radius that is analysed.
@@ -25,6 +25,8 @@
 #'   [segment_colonies()].
 #' @param edge_exclude_mm,dark_L,n_boot,block_mm Measurement settings, see
 #'   [measure_colonies()].
+#' @param n_spots Optional spots per target colony; NULL keeps only whole-colony measurements.
+#' @param spot_radius_mm Circular spot radius (mm); see [sample_colony_spots()].
 #' @param ring_width_mm,profile_mode,n_rings Profile settings, see
 #'   [colony_profiles()].
 #' @param qc_file Optional path of a PNG quality-control figure.
@@ -35,6 +37,7 @@
 #' @return An object of class `funmel_result`, a list with
 #'   \describe{
 #'     \item{colonies}{One row per expected colony ([measure_colonies()]).}
+#'     \item{spots}{Optional circular ROI measurements and locations; whole-colony MI stays unchanged.}
 #'     \item{profiles}{Edge-to-centre profiles ([colony_profiles()]).}
 #'     \item{plate_summary}{One row of plate-level measures and QC.}
 #'     \item{plate}{The processed plate (images and masks) if
@@ -63,7 +66,8 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
                           morph_mm = 0.08, edge_criterion = 0.5, edge_exclude_mm = 0.1, dark_L = NULL,
                           n_boot = 200L, block_mm = 0.5, ring_width_mm = 0.5,
                           profile_mode = c("absolute", "relative"), n_rings = 10L,
-                          qc_file = NULL, keep_images = TRUE, verbose = TRUE) {
+                          qc_file = NULL, keep_images = TRUE, verbose = TRUE,
+                          n_spots = NULL, spot_radius_mm = 0.5) {
   profile_mode <- match.arg(profile_mode)
   stopifnot(inherits(layout, "funmel_layout"))
   params <- as.list(environment())
@@ -81,7 +85,7 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
   step("Modelling agar background and illumination")
   plate <- model_background(plate, flat_field = flat_field, min_delta_e = min_delta_e,
                             reference = reference, reference_lab = reference_lab)
-  step("Classifying pixels (fungus / bacteria / halo)")
+  step("Classifying target colonies, central core and hyphal growth")
   plate <- classify_pixels(plate, layout, classifier = classifier)
   step("Separating colonies")
   plate <- segment_colonies(plate, layout, min_area_mm2 = min_area_mm2,
@@ -92,6 +96,12 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
                           n_boot = n_boot, block_mm = block_mm)
   prof <- colony_profiles(plate, ring_width_mm = ring_width_mm, mode = profile_mode,
                           n_rings = n_rings, n_boot = n_boot, block_mm = block_mm)
+  spot_result <- if(is.null(n_spots)) NULL else sample_colony_spots(plate,
+    n_spots=n_spots,spot_radius_mm=spot_radius_mm,edge_exclude_mm=edge_exclude_mm)
+  if(!is.null(spot_result)) {
+    summary <- spot_result$summary[match(col$colony_id,spot_result$summary$colony_id),,drop=FALSE]
+    col <- cbind(col,summary[setdiff(names(summary),"colony_id")])
+  }
   ps <- measure_plate(plate)
 
   # ---- QC warnings
@@ -104,6 +114,8 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
     warn <- c(warn, "Flat-field gains reached correction limits for > 1 % of dish pixels; inspect masks and calibration.")
   if (isTRUE(ps$residual_agar_range_pct > 30))
     warn <- c(warn, "Remaining fitted-agar spatial variation exceeds 30 %; review illumination correction.")
+  if(any(col$n_pixels<30 & col$detected,na.rm=TRUE))
+    warn <- c(warn,"A target has fewer than 30 usable interior pixels; inspect resolution, mask and colour summary.")
   if (any(col$specular_fraction > 0.02, na.rm = TRUE))
     warn <- c(warn, "Colonies contain > 2 % specular / over-exposed pixels; reduce exposure or use diffuse light.")
   if (any(col$segmentation_trim_fraction > 0.1, na.rm=TRUE))
@@ -112,6 +124,8 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
     warn <- c(warn, "A colony centroid is > 8 mm from its expected position; check layout / orientation.")
   if (layout$centre %in% c("bacteria","fungus") && !isTRUE(ps$central_detected))
     warn <- c(warn, "No central partner region was resolved; inspect the central-object mask.")
+  if(!is.null(spot_result) && any(spot_result$summary$spot_status!="ok"))
+    warn <- c(warn,"Requested spots could not fit in every target colony; inspect spot_status. Reduce radius or count consistently across the experiment.")
   for (w in warn) cli::cli_warn(w)
 
   col$is_target <- col$colony_id %in% as.character(layout$positions$id)
@@ -120,7 +134,7 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
   ps <- cbind(plate_id = plate$id, n_warnings = length(warn),
               warnings = paste(warn, collapse = " | "), ps, stringsAsFactors = FALSE)
 
-  res <- structure(list(colonies = col, profiles = prof, plate_summary = ps,
+  res <- structure(list(colonies = col, profiles = prof, spots = if(is.null(spot_result)) data.frame() else spot_result$spots, plate_summary = ps,
                         plate = plate, params = params, warnings = warn,
                         version = as.character(utils::packageVersion("FunMel"))),
                    class = "funmel_result")
@@ -143,7 +157,7 @@ print.funmel_result <- function(x, ...) {
   cli::cli_bullets(c(
     "*" = "Scale: {signif(ps$mm_per_px, 4)} mm/px; agar L* = {round(ps$agar_L, 1)}",
     "*" = "Colonies detected: {ps$n_colonies_detected} / {nrow(x$colonies)}; satellites: {ps$n_satellites}",
-    "*" = if (!is.na(cr)) "Central object r = {round(cr, 2)} mm; surrounding zone outer r = {round(ps$halo_outer_radius_mm, 2)} mm" else "No central object class"
+    "*" = if (!is.na(cr)) "Central fungal/partner extent: equivalent r = {round(cr, 2)} mm" else "No central object class"
   ))
   cols <- intersect(c("colony_id", "area_mm2", "L_mean", "MI_mean", "MI_lo", "MI_hi",
                       "delta_MI_facing", "growth_inhibition_pct"), names(x$colonies))
@@ -201,21 +215,18 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
   missing<-files[!file.exists(files) | dir.exists(files)]
   if(length(missing)) stop("Image paths missing or not files (",length(missing),"): ",
     paste(utils::head(missing,5L),collapse="; "),". Analysis has not started. Check extraction and use prepare_photo_archive() for ZIP files.")
-  if (anyDuplicated(tools::file_path_sans_ext(basename(files))))
+  if (is.null(metadata) && anyDuplicated(tools::file_path_sans_ext(basename(files))))
     stop("Image basenames must be unique; duplicate names would overwrite plate results.")
   if (!is.null(metadata)) validate_metadata(metadata,files=files,
     control=if(is.null(coefficient_control)) "control" else coefficient_control)
+  metadata_index <- if(is.null(metadata)) NULL else match_image_rows(files,metadata)
   if (!is.null(qc_dir)) dir.create(qc_dir, showWarnings = FALSE, recursive = TRUE)
-  out_c <- list(); out_p <- list(); out_s <- list(); failed <- list()
+  out_c <- list(); out_p <- list(); out_s <- list(); out_spots <- list(); failed <- list()
   for (k in seq_along(files)) {
     f <- files[k]
     pid <- tools::file_path_sans_ext(basename(f))
     mrow <- NULL
-    if (!is.null(metadata)) {
-      if ("file" %in% names(metadata)) mrow <- metadata[basename(metadata$file) == basename(f), , drop = FALSE]
-      else if ("plate_id" %in% names(metadata)) mrow <- metadata[metadata$plate_id == pid, , drop = FALSE]
-      if (!is.null(mrow) && nrow(mrow) == 0) mrow <- NULL
-    }
+    if (!is.null(metadata)) mrow <- metadata[metadata_index[k],,drop=FALSE]
     if (!is.null(metadata) && (is.null(mrow) || nrow(mrow)!=1L))
       stop("Exactly one metadata row must match each image: ",basename(f))
     if (!is.null(mrow)) pid <- as.character(mrow$plate_id[1])
@@ -230,21 +241,19 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
       if (verbose) cli::cli_alert_danger(conditionMessage(r))
       next
     }
-    addm <- function(df) {
-      if (is.null(mrow) || !nrow(df)) return(df)
-      extra <- mrow[1, setdiff(names(mrow), names(df)), drop = FALSE]
-      cbind(df, extra[rep(1, nrow(df)), , drop = FALSE], row.names = NULL)
-    }
-    out_c[[pid]] <- addm(r$colonies)
-    out_p[[pid]] <- addm(r$profiles)
-    out_s[[pid]] <- addm(cbind(r$plate_summary, file = f))
+    out_spots[[pid]] <- r$spots
+    out_c[[pid]] <- r$colonies
+    out_p[[pid]] <- r$profiles
+    out_s[[pid]] <- cbind(r$plate_summary, file=f)
+
   }
   result <- list(colonies = bind_rows_fill(out_c), profiles = bind_rows_fill(out_p),
+       spots = bind_rows_fill(out_spots),
        plates = bind_rows_fill(out_s),
        failed = if (length(failed)) do.call(rbind, failed) else data.frame(file = character(), error = character()))
   if(!nrow(result$colonies)) result$colonies<-data.frame(plate_id=character(),colony_id=character(),MI_mean=double(),detected=logical())
   if(!nrow(result$profiles)) result$profiles<-data.frame(plate_id=character(),colony_id=character(),ring=integer(),MI_mean=double())
-  if(!nrow(result$plates)) result$plates<-data.frame(plate_id=character(),n_colonies_detected=integer(),central_detected=logical(),halo_status=character())
+  if(!nrow(result$plates)) result$plates<-data.frame(plate_id=character(),n_colonies_detected=integer(),central_detected=logical(),hyphae_status=character())
   result$melanization_coefficient <- data.frame(set_id=character(),treatment=character(),control=character(),
     MI_treatment_mean=double(),MI_control_mean=double(),melanization_coefficient=double(),
     n_treatment_plates=integer(),n_control_plates=integer(),status=character())
@@ -252,6 +261,7 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
   result$per_plate_coefficients <- data.frame(plate_id=character(),treatment=character(),set_id=character(),
     MI_treatment_plate=double(),MI_matching_control=double(),melanization_coefficient=double(),status=character())
   result$coefficient_error <- if(!nrow(result$plates)) "No plates completed; inspect failed results before assessment." else NULL
+  if(!is.null(metadata)) result <- attach_result_metadata(result,metadata,initial=TRUE)
   if (!is.null(coefficient_control) && "treatment" %in% names(result$colonies)) {
     if (nrow(result$failed)) {
       result$coefficient_error <- "Some plates failed analysis; automatic coefficient withheld. Inspect failed plates before choosing a complete subset."

@@ -8,7 +8,11 @@ regular graphics devices.
 ## Usage
 
 ``` r
-annotate_plate(plate, classes = c("fungus", "bacteria", "halo"), r_mm = 0.5)
+annotate_plate(
+  plate,
+  classes = c("zymo", "central_partner", "hyphae"),
+  r_mm = 0.5
+)
 ```
 
 ## Arguments

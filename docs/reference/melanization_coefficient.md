@@ -20,7 +20,8 @@ melanization_coefficient(
   by = NULL,
   exclude_ids = c("centre", "center"),
   na_action = c("error", "omit"),
-  set = "set_id"
+  set = "set_id",
+  require_qc = FALSE
 )
 ```
 
@@ -74,6 +75,13 @@ melanization_coefficient(
 
   Matching-set column, required. Controls are never pooled across sets.
 
+- require_qc:
+
+  Require every included plate to have logical qc_pass=TRUE. Default
+  FALSE warns for unconfirmed recorded QC and continues without
+  approving or excluding plates. Plain tables without review flags are
+  reported as not_recorded. Finalization warns if review is unrecorded.
+
 ## Value
 
 List with coefficients (one row per contrast and matching stratum),
@@ -95,8 +103,8 @@ melanization_coefficient(d)$coefficients  # 60 / 40 = 1.5
 #> 1   set1    fungus control                60              40
 #>   melanization_coefficient delta_MI n_treatment_plates n_control_plates
 #> 1                      1.5       20                  1                1
-#>    control_replication n_treatment_colonies n_control_colonies
-#> 1 single_control_plate                    4                  4
+#>   qc_review_status  control_replication n_treatment_colonies n_control_colonies
+#> 1      unconfirmed single_control_plate                    4                  4
 #>   n_excluded_target_colonies status                         interpretation
 #> 1                          0     ok Higher treatment image-darkness index.
 ```

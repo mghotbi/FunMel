@@ -1,0 +1,35 @@
+
+R version 4.3.3 (2024-02-29) -- "Angel Food Cake"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(testthat)
+> library(FunMel)
+> 
+> test_check("FunMel")
+Prepared 4 photographs. Edit /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d69d73f3a/plate_metadata.csv to verify set_id, treatment and centre_model. Then run run_experiment(project).
+Prepared 4 photographs. Edit /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d193428f1/plate_metadata.csv to verify set_id, treatment and centre_model. Then run run_experiment(project).
+Prepared 1 photographs. Edit /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d4fbb028e/plate_metadata.csv to verify set_id, treatment and centre_model. Then run run_experiment(project).
+Prepared 4 photographs. Edit /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d32b45122/plate_metadata.csv to verify set_id, treatment and centre_model. Then run run_experiment(project).
+Prepared 2 photographs. Edit /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d3ada61ce/plate_metadata.csv to verify set_id, treatment and centre_model. Then run run_experiment(project).
+Measurements saved. Inspect /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d3ada61ce/qc; confirm metadata_confirmed and optionally record qc_pass per plate in /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d3ada61ce/plate_metadata.csv. Then run finish_experiment(project).
+Reviewed outputs saved in /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d3ada61ce; different recorded day/strain/medium contexts are reported separately.
+Reviewed outputs saved in /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21db796643; different recorded day/strain/medium contexts are reported separately.
+Reviewed outputs saved in /tmp/Rtmplxee9j/working_dir/Rtmp1U73DA/file21d49a34251; different recorded day/strain/medium contexts are reported separately.
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 401 ]
+> 
+> proc.time()
+   user  system elapsed 
+ 94.731   0.580  95.029 

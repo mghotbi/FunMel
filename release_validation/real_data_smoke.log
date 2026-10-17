@@ -1,0 +1,26 @@
+There were 12 warnings (use warnings() to see them)
+Warning message:
+Image QC is not confirmed for 8 plate(s). Inspect colony masks, central fungal tissue/hyphae, sampling spots, calibration and warnings before interpreting or publishing results. Set qc_pass=TRUE only for reviewed acceptable plates; no plates were automatically approved or excluded. 
+                         plate_id n_colonies_detected central_detected
+2026_10_02_99_38 2026_10_02_99_38                   4             TRUE
+2026_10_02_99_39 2026_10_02_99_39                   4             TRUE
+2026_10_02_99_40 2026_10_02_99_40                   4             TRUE
+2026_10_02_99_41 2026_10_02_99_41                   4            FALSE
+2026_10_02_99_42 2026_10_02_99_42                   4             TRUE
+2026_10_02_99_43 2026_10_02_99_43                   4             TRUE
+2026_10_02_99_44 2026_10_02_99_44                   4             TRUE
+2026_10_02_99_45 2026_10_02_99_45                   4            FALSE
+                   hyphae_status
+2026_10_02_99_38 growth_detected
+2026_10_02_99_39 growth_detected
+2026_10_02_99_40 growth_detected
+2026_10_02_99_41  not_applicable
+2026_10_02_99_42 growth_detected
+2026_10_02_99_43 growth_detected
+2026_10_02_99_44 growth_detected
+2026_10_02_99_45  not_applicable
+
+ok 
+32 
+All eight selected images have four detected targets and finite MI; preview calculated without approving metadata or QC.
+Software smoke test uses illustrative 90-mm scale and n_boot=20; not a biological calibration or segmentation validation.

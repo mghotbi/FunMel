@@ -51,6 +51,8 @@ lightness coordinate; it is not a direct pigment concentration.}
 \item{\code{MI_mean}, \code{MI_median}}{Melanization index \eqn{MI = 100 - L^*}.
 Higher = darker; attribution to melanin requires validation. Linear in \eqn{L^*}, so MI
 differences are comparable across the whole range.}
+\item{\code{MI_min}, \code{MI_max}}{Observed minimum and maximum eligible-pixel MI;
+these are noise-sensitive extrema, not confidence limits.}
 \item{\code{MI_lo}, \code{MI_hi}}{Nominal 95 \% spatial block-bootstrap interval
 of \code{MI_mean}, conditional on image and segmentation; this does not
 represent variation between biological replicate plates.}
@@ -72,21 +74,21 @@ from control plates, e.g. the 10th percentile of control colonies.}
 \subsection{Interaction readouts}{
 
 The \emph{interaction direction} of a colony is the vector from its centroid
-to the centroid of the bacterial colony (confrontations), or to the dish
+to the centroid of the central partner (confrontations), or to the dish
 centre (controls, so that the same metrics give the null expectation).
 \describe{
 \item{\code{MI_facing}, \code{MI_away}, \code{delta_MI_facing}}{MI of the colony half
-facing the bacterium (angle < 90 deg to the interaction direction)
+facing the central partner (angle < 90 deg to the interaction direction)
 and of the opposite half, and their difference. A localized
-melanization response to the bacterium gives \code{delta_MI_facing > 0}.}
+melanization response towards the central partner gives \code{delta_MI_facing > 0}.}
 \item{\code{R_toward_mm}, \code{R_away_mm}, \code{growth_inhibition_pct}}{Colony radius
-from the centroid towards / away from the bacterium (maximum radius
+from the centroid towards / away from the central partner (maximum radius
 in a +/- 20 deg sector), and the percent inhibition of radial growth
 100 (R_away - R_toward) / R_away, a within-colony radial asymmetry
 index. Despite the legacy column name, this is not control-referenced
 percent inhibition of radial growth.}
-\item{\code{gap_bacteria_mm}, \code{gap_halo_mm}}{Shortest edge-to-edge distance
-from the colony to the bacterial colony and to the halo (0 = contact).}
+\item{\code{gap_bacteria_mm}, \code{gap_hyphae_mm}}{Shortest edge-to-edge distance
+from the colony to the central partner and its peripheral hyphal extent (0 = contact).}
 }
 }
 }

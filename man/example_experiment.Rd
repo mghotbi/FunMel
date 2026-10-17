@@ -13,7 +13,7 @@ example_experiment(seed = 42L)
 List containing metadata and colonies. No image files are created.
 }
 \description{
-Three sets, each with control, fungus_A and bacterium_B; three independent
+Three sets, each with control, fungus_A and fungus_B; three independent
 plates per cell and four target colonies per plate. This is synthetic data,
 not an experimental result. True treatment MI differences are 8 and 15.
 }

@@ -71,6 +71,11 @@ colony/agar pixels, "partial-volume" effect) and specular highlights
   to melanin requires validation. Linear in \\L^\*\\, so MI differences
   are comparable across the whole range.
 
+- `MI_min`, `MI_max`:
+
+  Observed minimum and maximum eligible-pixel MI; these are
+  noise-sensitive extrema, not confidence limits.
+
 - `MI_lo`, `MI_hi`:
 
   Nominal 95 % spatial block-bootstrap interval of `MI_mean`,
@@ -99,28 +104,28 @@ colony/agar pixels, "partial-volume" effect) and specular highlights
 ### Interaction readouts
 
 The *interaction direction* of a colony is the vector from its centroid
-to the centroid of the bacterial colony (confrontations), or to the dish
+to the centroid of the central partner (confrontations), or to the dish
 centre (controls, so that the same metrics give the null expectation).
 
 - `MI_facing`, `MI_away`, `delta_MI_facing`:
 
-  MI of the colony half facing the bacterium (angle \< 90 deg to the
-  interaction direction) and of the opposite half, and their difference.
-  A localized melanization response to the bacterium gives
-  `delta_MI_facing > 0`.
+  MI of the colony half facing the central partner (angle \< 90 deg to
+  the interaction direction) and of the opposite half, and their
+  difference. A localized melanization response towards the central
+  partner gives `delta_MI_facing > 0`.
 
 - `R_toward_mm`, `R_away_mm`, `growth_inhibition_pct`:
 
-  Colony radius from the centroid towards / away from the bacterium
-  (maximum radius in a +/- 20 deg sector), and the percent inhibition of
-  radial growth 100 (R_away - R_toward) / R_away, a within-colony radial
-  asymmetry index. Despite the legacy column name, this is not
-  control-referenced percent inhibition of radial growth.
+  Colony radius from the centroid towards / away from the central
+  partner (maximum radius in a +/- 20 deg sector), and the percent
+  inhibition of radial growth 100 (R_away - R_toward) / R_away, a
+  within-colony radial asymmetry index. Despite the legacy column name,
+  this is not control-referenced percent inhibition of radial growth.
 
-- `gap_bacteria_mm`, `gap_halo_mm`:
+- `gap_bacteria_mm`, `gap_hyphae_mm`:
 
-  Shortest edge-to-edge distance from the colony to the bacterial colony
-  and to the halo (0 = contact).
+  Shortest edge-to-edge distance from the colony to the central partner
+  and its peripheral hyphal extent (0 = contact).
 
 ## Examples
 
@@ -129,8 +134,8 @@ sim <- simulate_plate(width = 300, height = 400, seed = 7)
 res <- analyze_plate(sim$image, verbose = FALSE)
 res$colonies[, c("colony_id", "area_mm2", "L_mean", "MI_mean")]
 #>    colony_id area_mm2   L_mean  MI_mean
-#> x         TL 154.6602 52.29070 47.70930
-#> x1        TR 155.3476 46.52899 53.47101
-#> x2        BR 155.4621 41.44714 58.55286
-#> x3        BL 155.2903 58.41531 41.58469
+#> x         TL 154.4311 52.30603 47.69397
+#> x1        TR 154.9466 46.53839 53.46161
+#> x2        BR 154.5456 41.47310 58.52690
+#> x3        BL 154.8893 58.45871 41.54129
 ```

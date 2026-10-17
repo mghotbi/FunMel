@@ -16,18 +16,20 @@
 #'   three plates per group, otherwise an explicit plate-mean model.
 #' @param by Extra control-matching columns for matched MI assessment.
 #' @param control Optional control label, alias of reference for matched MI.
+#' @param require_qc Require explicit image QC approval for matched MI analysis.
+#'   Default FALSE warns on unconfirmed recorded QC.
 #' @return A list with model, coefficients, descriptives and status; matched
 #'   MI results also contain the complete assessment and matched_coefficients.
 #' @export
 compare_melanization <- function(colonies,response="MI_mean",group="treatment",
                                  plate="plate_id",reference=NULL,
-                                 method=c("auto","mixed","plate_means"),by=NULL,control=NULL) {
+                                 method=c("auto","mixed","plate_means"),by=NULL,control=NULL,require_qc=FALSE) {
   method<-match.arg(method)
   if(!is.data.frame(colonies) || !all(c(response,group,plate) %in% names(colonies))) stop("Required comparison columns missing.")
   if(is.null(reference)) reference<-if(!is.null(control)) control else if("control" %in% colonies[[group]]) "control" else sort(unique(as.character(colonies[[group]])))[1]
   if(response=="MI_mean" && "set_id" %in% names(colonies)) {
     d<-colonies;d$treatment<-as.character(d[[group]]);d$plate_id<-as.character(d[[plate]])
-    a<-assess_experiment(d,control=reference,by=by,method=if(method=="plate_means") "plate_means" else "mixed")
+    a<-assess_experiment(d,control=reference,by=by,require_qc=require_qc,method=if(method=="plate_means") "plate_means" else "mixed")
     tab<-a$overall_effects
     if(nrow(tab)) tab$term<-tab$treatment
     return(list(method=if(method=="plate_means") "matched plate means" else "matched mixed model",

@@ -31,14 +31,16 @@ analyze_plate(
   n_rings = 10L,
   qc_file = NULL,
   keep_images = TRUE,
-  verbose = TRUE
+  verbose = TRUE,
+  n_spots = NULL,
+  spot_radius_mm = 0.5
 )
 }
 \arguments{
 \item{path}{Image file or H x W x 3 sRGB array.}
 
 \item{layout}{A \code{\link[=plate_layout]{plate_layout()}}. Use \code{plate_layout(centre = "none")} for
-control plates without bacteria.}
+control plates without a central partner.}
 
 \item{id}{Plate identifier (default: file name).}
 
@@ -80,11 +82,16 @@ region \code{c(x, y, r)} in relative image coordinates, or \code{"agar"}; see
 \code{\link[=plot_qc]{plot_qc()}} later; set \code{FALSE} in large batches to save memory).}
 
 \item{verbose}{Print progress.}
+
+\item{n_spots}{Optional spots per target colony; NULL keeps only whole-colony measurements.}
+
+\item{spot_radius_mm}{Circular spot radius (mm); see \code{\link[=sample_colony_spots]{sample_colony_spots()}}.}
 }
 \value{
 An object of class \code{funmel_result}, a list with
 \describe{
 \item{colonies}{One row per expected colony (\code{\link[=measure_colonies]{measure_colonies()}}).}
+\item{spots}{Optional circular ROI measurements and locations; whole-colony MI stays unchanged.}
 \item{profiles}{Edge-to-centre profiles (\code{\link[=colony_profiles]{colony_profiles()}}).}
 \item{plate_summary}{One row of plate-level measures and QC.}
 \item{plate}{The processed plate (images and masks) if

@@ -3,9 +3,9 @@
 #' Turns a plate into a "melanization landscape". In 3D, each colony rises
 #' from the agar with a height and colour given by its local melanization
 #' index (MI = 100 - L*), so darker tissue forms higher, browner relief. The
-#' bacterium and its halo are painted on the floor. In 2D, the same MI field
-#' is drawn over a faded photograph, with the halo and bacterium outlined.
-#' An arrow on each colony points to the bacterium and is annotated with
+#' central fungus and its hyphae are painted on the floor. In 2D, the same MI field
+#' is drawn over a faded photograph, with the hyphae and central core outlined.
+#' An arrow on each colony points towards the central partner and is annotated with
 #' the side-specific response `delta_MI_facing`.
 #'
 #' @details
@@ -48,6 +48,7 @@ plot_melanization_map <- function(x, type = c("both", "3d", "2d"), mi_range = NU
   }
   p <- x$plate
   ob <- p$objects
+  if(!is.null(ob$central_core)) ob$bacteria <- ob$central_core
   if(!is.null(ob$central_object)) ob$bacteria <- ob$central_object
   d <- p$dish
   mmpp <- d$mm_per_px
@@ -101,7 +102,7 @@ plot_melanization_map <- function(x, type = c("both", "3d", "2d"), mi_range = NU
     # facet colours (nx-1) x (ny-1) from the lower-left vertex of each facet
     fc <- function(M) t(M[rs, cs])[-length(cs), -length(rs), drop = FALSE]
     floor_col <- matrix("#E6E8EB", nrow(z) - 1, ncol(z) - 1)
-    floor_col[fc(ob$halo)] <- "#E9CF7A"
+    floor_col[fc(ob$hyphae)] <- "#E9CF7A"
     floor_col[fc(ob$bacteria)] <- "#FFF6DC"
     floor_col[fc(ob$satellites)] <- "#B9B2A8"
     mif <- fc(MIs)
@@ -130,7 +131,7 @@ plot_melanization_map <- function(x, type = c("both", "3d", "2d"), mi_range = NU
       img
     }
     th <- max(1, round(length(rows) / 450))
-    if (any(ob$halo)) img <- paint_outline(img, (ob$halo | ob$bacteria)[rows, cols], "#C9971C", th)
+    if (any(ob$hyphae)) img <- paint_outline(img, (ob$hyphae | ob$bacteria)[rows, cols], "#C9971C", th)
     if (any(ob$bacteria)) img <- paint_outline(img, ob$bacteria[rows, cols], "#7A6A3A", th)
     img <- paint_outline(img, cm, "#2B2118", th)
     show_rgb(img, main = if (type == "2d") main else "Melanization index map")

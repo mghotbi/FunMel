@@ -13,7 +13,8 @@ melanization_coefficient(
   by = NULL,
   exclude_ids = c("centre", "center"),
   na_action = c("error", "omit"),
-  set = "set_id"
+  set = "set_id",
+  require_qc = FALSE
 )
 }
 \arguments{
@@ -42,6 +43,11 @@ colonies or omit, which warns and reports excluded counts. A plate with
 no eligible target measurements remains unavailable, not silently dropped.}
 
 \item{set}{Matching-set column, required. Controls are never pooled across sets.}
+
+\item{require_qc}{Require every included plate to have logical qc_pass=TRUE.
+Default FALSE warns for unconfirmed recorded QC and continues without
+approving or excluding plates. Plain tables without review flags are
+reported as not_recorded. Finalization warns if review is unrecorded.}
 }
 \value{
 List with coefficients (one row per contrast and matching stratum),

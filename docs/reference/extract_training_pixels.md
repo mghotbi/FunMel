@@ -20,9 +20,9 @@ extract_training_pixels(plate, regions)
 
 - regions:
 
-  Data frame with columns `class` (`"fungus"`, `"bacteria"`, `"halo"` or
-  aliases `"zymo"`, `"central_partner"`), `x`, `y`, `r` in working-image
-  pixels.
+  Data frame with columns `class` (`"fungus"`, `"bacteria"`, `"hyphae"`
+  or aliases `"zymo"`, `"central_partner"`), `x`, `y`, `r` in
+  working-image pixels.
 
 ## Value
 

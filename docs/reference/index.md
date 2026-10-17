@@ -18,8 +18,7 @@
   : Colour / exposure calibration against a reference patch
 
 - [`classify_pixels()`](https://mghotbi.github.io/FunMel/reference/classify_pixels.md)
-  : Classify pixels into peripheral targets, central partner and
-  surrounding zone
+  : Classify target colonies and central fungal growth
 
 - [`colony_profiles()`](https://mghotbi.github.io/FunMel/reference/colony_profiles.md)
   : Edge-to-centre melanization profiles
@@ -50,6 +49,9 @@
 
 - [`finalize_analysis()`](https://mghotbi.github.io/FunMel/reference/finalize_analysis.md)
   : Finalize saved measurements after reviewing metadata and image masks
+
+- [`finish_experiment()`](https://mghotbi.github.io/FunMel/reference/finish_experiment.md)
+  : Finalize a prepared experiment after plate review
 
 - [`is_funmel_plate()`](https://mghotbi.github.io/FunMel/reference/is_funmel_plate.md)
   : Test for a FunMel plate object
@@ -95,6 +97,9 @@
 - [`plot_treatment_comparison()`](https://mghotbi.github.io/FunMel/reference/plot_treatment_comparison.md)
   : Plot plate-level darkness and matched melanization coefficients
 
+- [`prepare_experiment()`](https://mghotbi.github.io/FunMel/reference/prepare_experiment.md)
+  : Prepare a folder or ZIP as a reviewable experiment project
+
 - [`prepare_photo_archive()`](https://mghotbi.github.io/FunMel/reference/prepare_photo_archive.md)
   : Extract and locate the photographs required by metadata
 
@@ -107,8 +112,14 @@
 - [`read_plate()`](https://mghotbi.github.io/FunMel/reference/read_plate.md)
   : Read a plate photograph
 
+- [`run_experiment()`](https://mghotbi.github.io/FunMel/reference/run_experiment.md)
+  : Analyze all photographs in a prepared experiment
+
+- [`sample_colony_spots()`](https://mghotbi.github.io/FunMel/reference/sample_colony_spots.md)
+  : Sample a chosen number of circular spots within each target colony
+
 - [`segment_colonies()`](https://mghotbi.github.io/FunMel/reference/segment_colonies.md)
-  : Separate individual colonies, the bacterium and its halo
+  : Separate Zymoseptoria targets and the central fungal colony
 
 - [`simulate_plate()`](https://mghotbi.github.io/FunMel/reference/simulate_plate.md)
   : Simulate a plate photograph with known ground truth

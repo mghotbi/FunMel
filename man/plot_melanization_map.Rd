@@ -49,9 +49,9 @@ Invisibly, a list with the MI matrix used and the colour ramp.
 Turns a plate into a "melanization landscape". In 3D, each colony rises
 from the agar with a height and colour given by its local melanization
 index (MI = 100 - L*), so darker tissue forms higher, browner relief. The
-bacterium and its halo are painted on the floor. In 2D, the same MI field
-is drawn over a faded photograph, with the halo and bacterium outlined.
-An arrow on each colony points to the bacterium and is annotated with
+central fungus and its hyphae are painted on the floor. In 2D, the same MI field
+is drawn over a faded photograph, with the hyphae and central core outlined.
+An arrow on each colony points towards the central partner and is annotated with
 the side-specific response \code{delta_MI_facing}.
 }
 \details{

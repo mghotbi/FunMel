@@ -1,0 +1,39 @@
+FunMel 0.4.4 validation
+
+The capture.output namespace reference in write_experiment_tables is now
+utils::capture.output. The only R-code change from 0.4.3 is that qualification;
+all other R sources and all eight original example photographs were compared.
+No image-analysis, measurement, control matching or QC policy changed.
+
+Full test run: FAIL 0 | WARN 0 | SKIP 0 | PASS 401.
+Examples, including --run-donttest, and vignette rebuilding passed.
+R code for possible problems: OK, including in --as-cran mode.
+
+Supplementary R CMD check --as-cran --no-manual --no-tests --no-examples:
+0 errors, 0 warnings, 1 installed-size NOTE. This confirmation does not repeat
+already-passed tests/examples. The NOTE reflects included original photographs.
+The initial full check ran before qpdf was installed and used Ubuntu's default
+compiler flags: it recorded a missing-qpdf WARNING and a system compiler-flag
+NOTE. qpdf was installed and portable validation Makevars were used for the
+confirmation check. No such environment files are shipped in the package.
+The full initial check log is retained as full_test_check.log; R_CMD_check.log
+is the supplementary confirmation. This distinction is intentional.
+
+Website rebuilt: 51 HTML pages, 18 PNGs opened; no missing local HTML/CSS assets
+or file:// references. Display assets and the eight-photo subset remain compact.
+A container-local in-process rendering workaround was used; it was not added
+to the package. The built website and install archive both show version 0.4.4.
+
+Real-data operational evidence is carried forward from 0.4.3, with unchanged
+images and algorithms: A60_2 and B20_2, one control plus three treatment plates
+per set; four targets and finite MI on every image; five spots per target at
+the illustrative 90-mm scale/max_dim=1200/n_boot=20. Flags remained FALSE.
+That is not experimentally verified calibration or blinded biological validation.
+The figure overlays and real_data_smoke.log describe that earlier operational
+run. Warnings, masks, metadata and illumination still need scientific review.
+
+Default unconfirmed QC warns and continues without approving or excluding
+plates. require_qc=TRUE enforces approval. Experimental metadata confirmation
+remains required. One independent control per set permits descriptive ratios,
+not inferential treatment tests. Colonies and spots are within-plate subsamples.
+Both final downloads were verified below 25,000,000 bytes.

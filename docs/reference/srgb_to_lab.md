@@ -30,8 +30,8 @@ with the CIE cube-root function and its linear segment below
 \\L^\*\\ (0 = black, 100 = diffuse white) is the perceptual lightness
 used by FunMel as the primary melanization readout; \\a^\*\\ (green-red)
 and \\b^\*\\ (blue-yellow) carry the chromatic information that
-separates achromatic melanized hyphae from warm-coloured bacteria,
-pigments and halos.
+separates achromatic melanized hyphae from warm-coloured bacteria, other
+fungal tissue.
 
 ## Examples
 

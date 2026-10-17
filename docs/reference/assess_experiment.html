@@ -15,7 +15,7 @@ a control denominator."><meta property="og:image" content="https://mghotbi.githu
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,8 @@ a control denominator.</p>
 <span>  level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  p_adjust <span class="op">=</span> <span class="st">"holm"</span>,</span>
 <span>  pool_contexts <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  comparison_scope <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matched_effects"</span>, <span class="st">"common_sets"</span><span class="op">)</span></span>
+<span>  comparison_scope <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matched_effects"</span>, <span class="st">"common_sets"</span><span class="op">)</span>,</span>
+<span>  require_qc <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -107,6 +108,11 @@ days or media. Default FALSE; subset to a context or explicitly justify pooling.
 <dd><p>matched_effects compares each treatment's own matched
 effects across its observed sets; common_sets restricts both to shared sets.
 Different set coverage is flagged and needs a comparability justification.</p></dd>
+
+
+<dt id="arg-require-qc">require_qc<a class="anchor" aria-label="anchor" href="#arg-require-qc"></a></dt>
+<dd><p>Require recorded QC approval for every plate. Default FALSE
+warns on unconfirmed QC and retains its status in qc_review.</p></dd>
 
 </dl></div>
     <div class="section level2">

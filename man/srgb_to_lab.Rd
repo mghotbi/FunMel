@@ -27,7 +27,7 @@ segment below \eqn{(6/29)^3}.
 used by FunMel as the primary melanization readout; \eqn{a^*}
 (green-red) and \eqn{b^*} (blue-yellow) carry the chromatic information
 that separates achromatic melanized hyphae from warm-coloured bacteria,
-pigments and halos.
+other fungal tissue.
 }
 \examples{
 srgb_to_lab(rbind(c(1, 1, 1), c(0.5, 0.5, 0.5), c(0, 0, 0)))

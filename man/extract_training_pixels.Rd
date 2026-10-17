@@ -10,7 +10,7 @@ extract_training_pixels(plate, regions)
 \item{plate}{A plate processed by \code{\link[=model_background]{model_background()}}.}
 
 \item{regions}{Data frame with columns \code{class} (\code{"fungus"},
-\code{"bacteria"}, \code{"halo"} or aliases \code{"zymo"}, \code{"central_partner"}), \code{x}, \code{y}, \code{r} in working-image pixels.}
+\code{"bacteria"}, \code{"hyphae"} or aliases \code{"zymo"}, \code{"central_partner"}), \code{x}, \code{y}, \code{r} in working-image pixels.}
 }
 \value{
 Data frame of features with a \code{class} column.

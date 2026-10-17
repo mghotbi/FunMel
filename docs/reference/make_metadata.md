@@ -7,7 +7,11 @@ across sets must represent the same intervention. See
 [`validate_metadata()`](https://mghotbi.github.io/FunMel/reference/validate_metadata.md).
 Review flags metadata_confirmed and qc_pass start at FALSE. Set them to
 TRUE only after verifying experimental assignments and inspecting plate
-QC plots.
+QC plots. Metadata confirmation is required for finalization. Image QC
+warns by default; require_qc=TRUE can enforce explicit QC approval.
+Standard optional fields (fungus, zymo_strain, medium, day, replicate,
+photo_date and notes) are included even when unrecorded. Custom columns
+supplied through extra are retained.
 
 ## Usage
 
@@ -56,7 +60,8 @@ make_metadata(
 
 - recursive:
 
-  Search nested image folders. Duplicate basenames require renaming.
+  Search nested image folders. Relative paths distinguish repeated
+  basenames.
 
 ## Value
 

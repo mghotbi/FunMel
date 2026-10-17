@@ -1,5 +1,65 @@
 # Changelog
 
+## FunMel 0.4.4
+
+- Qualify utils::capture.output when exporting session information,
+  resolving the namespace NOTE reported by R CMD check –as-cran.
+
+## FunMel 0.4.3
+
+- Keep eight original example photographs: complete A60_2 and B20_2
+  sets, each with one control and three treatment plates.
+- Warn on unconfirmed image QC by default; optional require_qc=TRUE
+  enforces approval. Experimental metadata confirmation remains required
+  for finalization.
+- Retain review flags and report QC status in coefficient tables, saved
+  assessments and comparison captions; never silently mark a plate as
+  passed.
+- Handle empty per-colony spot tables without failing to combine the
+  measured spots.
+- Update the vignette, README, scripts and fixture tests for the
+  eight-photo workflow and compact website display assets.
+
+## FunMel 0.4.2
+
+- Bundle the original 20 photographs in extdata/14-days with a combined,
+  pending-review metadata template.
+- Add a numbered real-data vignette walkthrough and a companion R
+  script, including explicit QC approval and saved-project recovery.
+- Document the two source metadata inconsistencies and the limits of
+  comparing treatments represented in separate sets with one control
+  each.
+
+## FunMel 0.4.1
+
+- Include standard optional metadata columns in every generated
+  template.
+- Preserve complete supplied metadata in saved results and
+  metadata_used.csv.
+- Protect measurements from same-named metadata columns and retain both
+  values.
+- Treat entirely unrecorded optional context columns as unrecorded;
+  partially filled contexts still require completion.
+
+## FunMel 0.4.0
+
+- Central fungal growth is represented as dense core plus peripheral
+  hyphae, excluded from Zymoseptoria MI. The default centre is fungus.
+  Output fields and class labels use hyphae terminology.
+- Add optional non-overlapping circular spot sampling (n_spots and
+  spot_radius_mm), exported ROI locations and separate spot summaries.
+  Add whole-colony MI_min/MI_max.
+- Add prepare_experiment(), run_experiment() and finish_experiment() for
+  folders or ZIPs, editable metadata, saved QC and reviewed outputs.
+- Support repeated photograph basenames across batch folders through
+  exact relative-path matching; controls stay within their reviewed
+  set_id.
+- Separate different recorded days, strains and media in project
+  finalization. Image processing never silently approves metadata or
+  masks.
+- Rewrite the user guide and examples around the current three-stage
+  workflow.
+
 ## FunMel 0.3.8
 
 - Metadata templates now include qc_pass = FALSE alongside
@@ -31,7 +91,7 @@
 ## FunMel 0.3.6
 
 - Focus primary documentation on four target Zymoseptoria colonies
-  around a central fungal colony and halo candidate; use two fungal
+  around a central fungal colony and hyphae candidate; use two fungal
   treatment labels in the matched statistical teaching example.
 
 - Rewrite README and vignette for general users, with the measured
@@ -129,10 +189,10 @@
 - Add a dedicated fungal central-partner path using separate peripheral,
   central and surrounding-zone image components. Exclude central fungus
   from MI.
-- Return central_fungus, central_object and halo masks; add neutral
-  central measurements and halo_status. Preserve the bacterial and
+- Return central_fungus, central_object and hyphae masks; add neutral
+  central measurements and hyphae_status. Preserve the bacterial and
   control pathways.
-- Draw resolved masks in QC instead of unlinked preliminary halo-class
+- Draw resolved masks in QC instead of unlinked preliminary hyphae-class
   pixels.
 - Add zymo and central_partner training aliases for fungal
   confrontations.
@@ -141,8 +201,8 @@
 - Match facing-bias corrections to controls from the same set.
 - Block coefficients when proposed metadata is unconfirmed.
 - Include technical review of all 20 supplied 14-day images and explicit
-  limits from metadata errors, single control plates and unresolved halo
-  boundaries.
+  limits from metadata errors, single control plates and unresolved
+  hyphae boundaries.
 
 ## FunMel 0.3.0
 

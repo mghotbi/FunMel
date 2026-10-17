@@ -11,11 +11,13 @@
 #' @param by Additional matching columns passed to melanization_coefficient().
 #' @param preview Explicit TRUE allows an unconfirmed metadata mapping only for
 #'   a clearly labelled provisional preview. Does not change or confirm metadata.
-#'   qc_pass=FALSE still blocks plotting; resolve failed quality review first.
+#'   Unconfirmed image QC warns by default and is labelled in the caption.
 #' @param labels Optional named character vector of treatment display names.
 #' @param file Optional output prefix. Writes vector PDF and SVG and 600-dpi PNG.
 #' @param palette Optional named vector of treatment colours. Controls always
 #'   use dark outlined squares; treatments use filled circles.
+#' @param require_qc Default FALSE warns on unconfirmed recorded QC. TRUE requires
+#'   every included plate to have qc_pass=TRUE.
 #' @param width,height Export dimensions in inches. Height defaults to row count.
 #' @return A ggplot object, invisibly when exported. Colours and typography can
 #'   be edited using standard ggplot2 methods. Match the target journal's size
@@ -26,7 +28,7 @@
 #' @export
 plot_treatment_comparison <- function(colonies, control="control", by=NULL,
                                      preview=FALSE, labels=NULL, file=NULL,
-                                     width=7.2, height=NULL, palette=NULL) {
+                                     width=7.2, height=NULL, palette=NULL,require_qc=FALSE) {
   if(!is.logical(preview) || length(preview)!=1L || is.na(preview)) stop("preview must be TRUE or FALSE.")
   if(is.list(colonies) && !is.data.frame(colonies)) {
     if(!is.null(colonies$failed) && nrow(colonies$failed)) stop("Resolve failed images before plotting.")
@@ -36,7 +38,7 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
   pending <- "metadata_confirmed" %in% names(colonies) &&
     (!is.logical(colonies$metadata_confirmed) || anyNA(colonies$metadata_confirmed) || any(!colonies$metadata_confirmed))
   if(pending && preview) colonies$metadata_confirmed<-NULL
-  mc<-melanization_coefficient(colonies,control=control,by=by)
+  mc<-melanization_coefficient(colonies,control=control,by=by,require_qc=require_qc)
   cf<-mc$coefficients
   if(any(cf$status!="ok")) stop("Resolve unavailable coefficients before plotting.")
   cf<-cf[order(as.character(cf$treatment),as.character(cf$set_id)),,drop=FALSE]
@@ -104,6 +106,7 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
   for(panel in c(panel_a,panel_b)) ann$x[ann$panel==panel]<-mean(range(d$x[d$panel==panel]))
   refs<-data.frame(panel=panel_b,x=1)
   note<-if(preview) "PROVISIONAL: verify metadata, masks and calibration." else "Descriptive matched plate comparison."
+  if(mc$qc_review$status!="confirmed") note<-paste0(note," QC UNCONFIRMED: inspect masks and calibration before interpretation.")
   caption<-paste0(note,"\nSquares: control plates; circles: treatment plates; lower diamonds: treatment means.",
     "\nBars and \u00b1 values: one between-plate SD, not a confidence interval. C = control; T = treatment; MC = T/C.",
     "\nMC SD describes treatment spread conditional on its own set's control mean; shared-control uncertainty is not included.",

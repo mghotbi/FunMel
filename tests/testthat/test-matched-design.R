@@ -25,7 +25,9 @@ test_that("metadata demands explicit, consistent plate to set mappings", {
 test_that("QC decisions and biological contexts are not silently ignored", {
   d<-example_experiment()$colonies
   d$qc_pass<-TRUE;d$qc_pass[1]<-FALSE
-  expect_error(melanization_coefficient(d),'qc_pass')
+  expect_warning(pending <- melanization_coefficient(d),'Image QC')
+  expect_identical(pending$qc_review$status,'unconfirmed')
+  expect_error(melanization_coefficient(d,require_qc=TRUE),'qc_pass')
   d$qc_pass<-NULL;d$day[d$set_id=='S2']<-8
   expect_error(assess_experiment(d),'Multiple day')
   expect_equal(assess_experiment(d,pool_contexts=TRUE)$status,'ok')
@@ -45,7 +47,7 @@ test_that("pairwise contrasts use common sets and share control covariance", {
   expect_equal(p$estimate,mean(a$estimate)-mean(b$estimate),tolerance=1e-8)
   # Disjoint treatments must not be compared across unrelated sets.
   d<-d[d$treatment=='control' | (d$treatment=='fungus_A' & d$set_id!='S3') |
-         (d$treatment=='bacterium_B' & d$set_id=='S3'),]
+         (d$treatment=='fungus_B' & d$set_id=='S3'),]
   z<-assess_experiment(d,method='plate_means',comparison_scope='common_sets')
   expect_equal(z$treatment_comparisons$status,'no_common_sets')
   expect_true(is.na(z$treatment_comparisons$p_value))
@@ -55,7 +57,7 @@ test_that("pairwise contrasts use common sets and share control covariance", {
 })
 test_that("singular mixed fits withhold inferential tables", {
   d<-example_experiment()$colonies
-  d$MI_mean<-40+8*(d$treatment=='fungus_A')+15*(d$treatment=='bacterium_B')+
+  d$MI_mean<-40+8*(d$treatment=='fungus_A')+15*(d$treatment=='fungus_B')+
     rep(c(-1,-.3,.3,1),nrow(d)/4)
   expect_warning(z<-suppressMessages(assess_experiment(d)),'diagnostics')
   expect_equal(z$status,'singular_fit')

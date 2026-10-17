@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,40 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.4" id="funmel-044">FunMel 0.4.4<a class="anchor" aria-label="anchor" href="#funmel-044"></a></h2>
+<ul><li>Qualify utils::capture.output when exporting session information, resolving the namespace NOTE reported by R CMD check –as-cran.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.3" id="funmel-043">FunMel 0.4.3<a class="anchor" aria-label="anchor" href="#funmel-043"></a></h2>
+<ul><li>Keep eight original example photographs: complete A60_2 and B20_2 sets, each with one control and three treatment plates.</li>
+<li>Warn on unconfirmed image QC by default; optional require_qc=TRUE enforces approval. Experimental metadata confirmation remains required for finalization.</li>
+<li>Retain review flags and report QC status in coefficient tables, saved assessments and comparison captions; never silently mark a plate as passed.</li>
+<li>Handle empty per-colony spot tables without failing to combine the measured spots.</li>
+<li>Update the vignette, README, scripts and fixture tests for the eight-photo workflow and compact website display assets.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.2" id="funmel-042">FunMel 0.4.2<a class="anchor" aria-label="anchor" href="#funmel-042"></a></h2>
+<ul><li>Bundle the original 20 photographs in extdata/14-days with a combined, pending-review metadata template.</li>
+<li>Add a numbered real-data vignette walkthrough and a companion R script, including explicit QC approval and saved-project recovery.</li>
+<li>Document the two source metadata inconsistencies and the limits of comparing treatments represented in separate sets with one control each.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.1" id="funmel-041">FunMel 0.4.1<a class="anchor" aria-label="anchor" href="#funmel-041"></a></h2>
+<ul><li>Include standard optional metadata columns in every generated template.</li>
+<li>Preserve complete supplied metadata in saved results and metadata_used.csv.</li>
+<li>Protect measurements from same-named metadata columns and retain both values.</li>
+<li>Treat entirely unrecorded optional context columns as unrecorded; partially filled contexts still require completion.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="funmel-040">FunMel 0.4.0<a class="anchor" aria-label="anchor" href="#funmel-040"></a></h2>
+<ul><li>Central fungal growth is represented as dense core plus peripheral hyphae, excluded from Zymoseptoria MI. The default centre is fungus. Output fields and class labels use hyphae terminology.</li>
+<li>Add optional non-overlapping circular spot sampling (n_spots and spot_radius_mm), exported ROI locations and separate spot summaries. Add whole-colony MI_min/MI_max.</li>
+<li>Add prepare_experiment(), run_experiment() and finish_experiment() for folders or ZIPs, editable metadata, saved QC and reviewed outputs.</li>
+<li>Support repeated photograph basenames across batch folders through exact relative-path matching; controls stay within their reviewed set_id.</li>
+<li>Separate different recorded days, strains and media in project finalization. Image processing never silently approves metadata or masks.</li>
+<li>Rewrite the user guide and examples around the current three-stage workflow.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.8" id="funmel-038">FunMel 0.3.8<a class="anchor" aria-label="anchor" href="#funmel-038"></a></h2>
 <ul><li>Metadata templates now include qc_pass = FALSE alongside metadata_confirmed.</li>
 <li>Clarify review flags and migration of existing metadata in the README, vignette and help.</li>
@@ -49,7 +83,7 @@
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.6" id="funmel-036">FunMel 0.3.6<a class="anchor" aria-label="anchor" href="#funmel-036"></a></h2>
-<ul><li><p>Focus primary documentation on four target Zymoseptoria colonies around a central fungal colony and halo candidate; use two fungal treatment labels in the matched statistical teaching example.</p></li>
+<ul><li><p>Focus primary documentation on four target Zymoseptoria colonies around a central fungal colony and hyphae candidate; use two fungal treatment labels in the matched statistical teaching example.</p></li>
 <li><p>Rewrite README and vignette for general users, with the measured dataset presented as a bundled case study and neutral example entry points.</p></li>
 <li><p>Display small vignette p-values with an explicit threshold; qualify stats::setNames to resolve the namespace check note.</p></li>
 <li><p>Distinguish controls with outlined squares and treatment plates with filled circles; use contrasting treatment colours and separate summary diamonds.</p></li>
@@ -95,13 +129,13 @@
 <h2 class="pkg-version" data-toc-text="0.3.1" id="funmel-031">FunMel 0.3.1<a class="anchor" aria-label="anchor" href="#funmel-031"></a></h2>
 <ul><li>Retain all original exported MycoHalo function names and the original compare_melanization() argument names, with lmerTest mixed inference.</li>
 <li>Add a dedicated fungal central-partner path using separate peripheral, central and surrounding-zone image components. Exclude central fungus from MI.</li>
-<li>Return central_fungus, central_object and halo masks; add neutral central measurements and halo_status. Preserve the bacterial and control pathways.</li>
-<li>Draw resolved masks in QC instead of unlinked preliminary halo-class pixels.</li>
+<li>Return central_fungus, central_object and hyphae masks; add neutral central measurements and hyphae_status. Preserve the bacterial and control pathways.</li>
+<li>Draw resolved masks in QC instead of unlinked preliminary hyphae-class pixels.</li>
 <li>Add zymo and central_partner training aliases for fungal confrontations.</li>
 <li>Add per-treatment-plate coefficients and single-control replication labels.</li>
 <li>Match facing-bias corrections to controls from the same set.</li>
 <li>Block coefficients when proposed metadata is unconfirmed.</li>
-<li>Include technical review of all 20 supplied 14-day images and explicit limits from metadata errors, single control plates and unresolved halo boundaries.</li>
+<li>Include technical review of all 20 supplied 14-day images and explicit limits from metadata errors, single control plates and unresolved hyphae boundaries.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="funmel-030">FunMel 0.3.0<a class="anchor" aria-label="anchor" href="#funmel-030"></a></h2>

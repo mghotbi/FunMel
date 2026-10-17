@@ -12,7 +12,8 @@ assess_experiment(
   level = 0.95,
   p_adjust = "holm",
   pool_contexts = FALSE,
-  comparison_scope = c("matched_effects", "common_sets")
+  comparison_scope = c("matched_effects", "common_sets"),
+  require_qc = FALSE
 )
 }
 \arguments{
@@ -41,6 +42,9 @@ days or media. Default FALSE; subset to a context or explicitly justify pooling.
 \item{comparison_scope}{matched_effects compares each treatment's own matched
 effects across its observed sets; common_sets restricts both to shared sets.
 Different set coverage is flagged and needs a comparability justification.}
+
+\item{require_qc}{Require recorded QC approval for every plate. Default FALSE
+warns on unconfirmed QC and retains its status in qc_review.}
 }
 \value{
 List with coefficients, overall_coefficients, plate_means,

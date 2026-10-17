@@ -23,6 +23,7 @@
 <url><loc>https://mghotbi.github.io/FunMel/reference/example_plate.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/extract_training_pixels.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/finalize_analysis.html</loc></url>
+<url><loc>https://mghotbi.github.io/FunMel/reference/finish_experiment.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/index.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/is_funmel_plate.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/is_mycohalo_plate.html</loc></url>
@@ -38,9 +39,12 @@
 <url><loc>https://mghotbi.github.io/FunMel/reference/plot_profiles.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/plot_qc.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/plot_treatment_comparison.html</loc></url>
+<url><loc>https://mghotbi.github.io/FunMel/reference/prepare_experiment.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/prepare_photo_archive.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/print_funmel.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/read_plate.html</loc></url>
+<url><loc>https://mghotbi.github.io/FunMel/reference/run_experiment.html</loc></url>
+<url><loc>https://mghotbi.github.io/FunMel/reference/sample_colony_spots.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/segment_colonies.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/simulate_plate.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/srgb_to_lab.html</loc></url>

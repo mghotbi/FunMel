@@ -15,7 +15,7 @@ biological interpretation and quality-control review."><meta property="og:image"
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,9 +52,9 @@ biological interpretation and quality-control review.</p>
 
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Metadata links each independent plate to its own control set. Use
-<code><a href="validate_metadata.html">validate_metadata()</a></code>, <code><a href="analyze_plates.html">analyze_plates()</a></code>, <code><a href="melanization_coefficient.html">melanization_coefficient()</a></code> and
-<code><a href="assess_experiment.html">assess_experiment()</a></code> in sequence. The mixed model uses lme4 with lmerTest
+    <p>Metadata links each independent plate to its own control set. Start with
+<code><a href="prepare_experiment.html">prepare_experiment()</a></code>, <code><a href="run_experiment.html">run_experiment()</a></code> and <code><a href="finish_experiment.html">finish_experiment()</a></code>.
+<code><a href="sample_colony_spots.html">sample_colony_spots()</a></code> adds optional spatial subsamples. The mixed model uses lme4 with lmerTest
 Satterthwaite contrasts; descriptions remain available when inference is
 unsupported. See vignette('FunMel') and <code><a href="example_experiment.html">example_experiment()</a></code>.</p>
     </div>

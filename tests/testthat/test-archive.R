@@ -24,7 +24,7 @@ test_that('all failed existing images return usable empty schemas', {
   d<-withr::local_tempdir();f<-file.path(d,'invalid.JPG');writeLines('not an image',f)
   out<-analyze_plates(f,verbose=FALSE)
   expect_equal(nrow(out$failed),1L);expect_equal(nrow(out$plates),0L)
-  expect_true(all(c('plate_id','n_colonies_detected','central_detected','halo_status') %in% names(out$plates)))
+  expect_true(all(c('plate_id','n_colonies_detected','central_detected','hyphae_status') %in% names(out$plates)))
   expect_match(out$coefficient_error,'No plates completed')
 })
 test_that('pending batch coefficient exports retain meaningful headers', {

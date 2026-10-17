@@ -1,52 +1,19 @@
-#' Separate individual colonies, the bacterium and its halo
+#' Separate Zymoseptoria targets and the central fungal colony
 #'
-#' Turns the pixel classes into labelled objects: one region per expected
-#' fungal colony, the central bacterial colony and its halo.
-#'
-#' @details
-#' **Fungal mask clean-up.** The fungus class is closed and opened with a
-#' disk of radius `morph_mm` (bridging wrinkle shadows, removing hairline
-#' specks), holes are filled (unclassified craters and highlights inside a
-#' colony belong to the colony) and fragments smaller than
-#' `min_area_mm2` are dropped.
-#'
-#' **Seeded separation of cultures.** For each expected inoculation point
-#' (from the [plate_layout()]), the colony *core* is the fungal pixel with
-#' the largest distance to the colony edge (maximum of the Euclidean
-#' distance transform) within `search_frac` x dish radius of that point.
-#' Cores closer than `min_core_mm` to the colony edge are rejected (the
-#' inoculation failed, or only a satellite is present) and the colony is
-#' reported as not detected. The cores then seed a marker-controlled
-#' watershed on the negated distance transform, restricted to the fungal
-#' mask: each fungal pixel is assigned to the colony from which it can be
-#' reached through fungal tissue with the least "constriction". Colonies
-#' that touch are split along their neck, and a colony can never claim
-#' fungal tissue that is not connected to it.
-#'
-#' **Edge placement.** Colour features are lightly smoothed for robust
-#' classification, which blurs colony outlines outwards by about one pixel.
-#' Outlines are therefore re-placed at the half-contrast position (the
-#' classical 50 % edge criterion for a blurred step edge) using the
-#' unsmoothed colour difference from agar.
-#'
-#' **Satellites.** Fungal fragments not connected to any core (e.g. spread
-#' inoculum, a secondary micro-colony next to the main one) are labelled
-#' separately and excluded from colony statistics, but their number and area
-#' are reported as a QC measure.
-#'
-#' **Bacterium and halo.** The bacterial colony is the bacteria-class
-#' component closest to the dish centre (holes filled). The halo is the set
-#' of halo-class pixels connected to (within `halo_link_mm` of) the
-#' bacterium, excluding bacterial and fungal pixels.
+#' Uses known inoculation positions and seeded watershed segmentation to
+#' separate peripheral target colonies from the central partner. The central
+#' fungus includes a dense core and connected peripheral hyphal growth.
+#' These masks are image-based tissue candidates, not inhibition boundaries.
+#' Morphological clean-up removes small fragments; ambiguous contact between
+#' organisms requires review. Target outlines are not forced into circles.
 #'
 #' @param plate A plate processed by [classify_pixels()].
 #' @param layout The [plate_layout()] used for classification.
 #' @param min_area_mm2 Minimum area of a fungal fragment (mm^2).
 #' @param min_core_mm Minimum distance from core to colony edge (mm).
 #' @param morph_mm Radius of morphological clean-up (mm).
-#' @param halo_link_mm Maximum gap between bacterium and halo (mm).
-#' @param bridge_mm Opening radius (mm) that separates the bacterial colony
-#'   from bacteria-like tissue connected to it by thin bridges.
+#' @param hyphae_link_mm Maximum connected gap between central core and peripheral growth (mm).
+#' @param bridge_mm Opening radius (mm) separating central tissue from narrow connections.
 #' @param edge_criterion Sub-pixel-consistent edge placement: within a
 #'   3-pixel band inside each colony outline, pixels are kept only if their
 #'   colour difference from agar is at least this fraction of the colony's
@@ -55,8 +22,8 @@
 #'
 #' @return The plate with element `objects`: a list containing the colony
 #'   label matrix (`labels`, values = row index of `colony_table`),
-#'   `satellites`, `bacteria`, `central_fungus`, `central_object` and `halo`
-#'   masks, partner_type and colony_table. halo is a connected colour-zone
+#'   `satellites`, `bacteria`, `central_fungus`, `central_object` and `hyphae`
+#'   masks, partner_type and colony_table. hyphae is connected peripheral central growth
 #'   candidate; its biological identity and boundary need QC.
 #' @examples
 #' sim <- simulate_plate(width = 300, height = 400, seed = 6)
@@ -65,7 +32,7 @@
 #' p$objects$colony_table
 #' @export
 segment_colonies <- function(plate, layout = plate_layout(), min_area_mm2 = 0.5,
-                             min_core_mm = 0.4, morph_mm = 0.08, halo_link_mm = 1,
+                             min_core_mm = 0.4, morph_mm = 0.08, hyphae_link_mm = 1,
                              edge_criterion = 0.5, bridge_mm = 0.5) {
   stopifnot(is_funmel_plate(plate), !is.null(plate$classes))
   d <- plate$dish
@@ -75,13 +42,13 @@ segment_colonies <- function(plate, layout = plate_layout(), min_area_mm2 = 0.5,
   rpx <- morph_mm / mmpp
 
   # ---- bacterium first: one compact colony nearest the dish centre.
-  # Bacteria-class pixels elsewhere (e.g. light colony margins, faint halo
+  # Bacteria-class pixels elsewhere (e.g. light colony margins, faint hyphae
   # fringe) are re-assigned to the most probable remaining class.
   bact <- matrix(FALSE, nrow(map), ncol(map))
   if (layout$centre %in% c("bacteria", "fungus") && any(map == 2L)) {
     b <- map == 2L
     if (rpx >= 1) b <- close_disk(b, rpx)
-    # cut thin bridges (e.g. along a halo into a light colony) so that only
+    # cut thin bridges (e.g. along a hyphae into a light colony) so that only
     # the compact central colony is kept
     b <- open_disk(b, max(1, bridge_mm / mmpp))
     b <- remove_small(b, min_area_mm2 / mmpp^2)
@@ -102,7 +69,7 @@ segment_colonies <- function(plate, layout = plate_layout(), min_area_mm2 = 0.5,
   # ---- fungus
   fung <- map == 1L
   if (rpx >= 1) fung <- open_disk(close_disk(fung, rpx), rpx)
-  # fill holes, but never across bacterial or halo tissue
+  # fill holes, but never across bacterial or hyphae tissue
   fung <- fill_holes(fung, forbid = map %in% c(2L, 3L)) & m$agar & !bact
   fung <- remove_small(fung, min_area_mm2 / mmpp^2)
   dist <- edt(fung)
@@ -216,26 +183,27 @@ segment_colonies <- function(plate, layout = plate_layout(), min_area_mm2 = 0.5,
     }
   }
 
-  # ---- halo: halo-class pixels connected to the bacterium
-  halo <- matrix(FALSE, nrow(map), ncol(map))
+  # ---- hyphae: hyphae-class pixels connected to the bacterium
+  hyphae <- matrix(FALSE, nrow(map), ncol(map))
   if (any(bact) && any(map == 3L)) {
     h <- map == 3L & !fung
     if (rpx >= 1) h <- open_disk(close_disk(h, rpx), rpx)
-    near_b <- edt(!bact) * mmpp <= halo_link_mm
+    near_b <- edt(!bact) * mmpp <= hyphae_link_mm
     lh <- label_components(h | bact)
     keep <- unique(lh[bact | (near_b & h)])
     keep <- keep[keep > 0]
-    halo <- (lh %in% keep) & h
-    halo <- fill_holes(halo | bact) & !bact & !fung
+    hyphae <- (lh %in% keep) & h
+    hyphae <- fill_holes(hyphae | bact) & !bact & !fung
   }
   bact <- bact & !(labels > 0)
   plate$classes$map_final <- map
 
-  central_fungus <- if(layout$centre=="fungus") bact else matrix(FALSE,nrow(map),ncol(map))
+  central_fungus <- if(layout$centre=="fungus") (bact | hyphae) else matrix(FALSE,nrow(map),ncol(map))
   bacterial_mask <- if(layout$centre=="bacteria") bact else matrix(FALSE,nrow(map),ncol(map))
   plate$objects <- list(labels=labels,satellites=satellites,bacteria=bacterial_mask,
-                        central_fungus=central_fungus,central_object=bact,
-                        partner_type=layout$centre,halo=halo,fungus=fung,colony_table=core)
+                        central_fungus=central_fungus,central_core=bact,
+                        central_object=if(layout$centre=="fungus") central_fungus else bact,
+                        partner_type=layout$centre,hyphae=hyphae,fungus=fung,colony_table=core)
   plate
 }
 
@@ -252,7 +220,7 @@ reassign_pixels <- function(plate, map, which_px, exclude) {
   pos <- match(which(which_px), cl$obj_idx)
   ok <- !is.na(pos)
   P <- cl$post[pos[ok], keep_k, drop = FALSE]
-  code <- c(fungus = 1L, bacteria = 2L, halo = 3L)[cl$post_names[keep_k]]
+  code <- c(fungus = 1L, bacteria = 2L, hyphae = 3L)[cl$post_names[keep_k]]
   newlab <- code[max.col(P, ties.method = "first")]
   idx <- which(which_px)
   map[idx[ok]] <- newlab
@@ -265,7 +233,7 @@ reassign_pixels <- function(plate, map, which_px, exclude) {
 #' Local version of the 50 % edge criterion: each pixel in a thin band inside
 #' the outline is compared with the *local* colony colour (inside the band)
 #' and the *local* surrounding colour (just outside the outline, which may
-#' be agar, halo or a neighbouring culture), and is kept only if it is
+#' be agar, hyphae or a neighbouring culture), and is kept only if it is
 #' closer to the colony. `frac` shifts the threshold (0.5 = half way).
 #' @keywords internal
 #' @noRd
@@ -322,7 +290,7 @@ reassign_pixels <- function(plate, map, which_px, exclude) {
   pos <- match(which(which_px), cl$obj_idx)
   ok <- !is.na(pos)
   P <- cl$post[pos[ok], keep_k, drop = FALSE]
-  code <- c(fungus = 1L, bacteria = 2L, halo = 3L)[cl$post_names[keep_k]]
+  code <- c(fungus = 1L, bacteria = 2L, hyphae = 3L)[cl$post_names[keep_k]]
   newlab <- code[max.col(P, ties.method = "first")]
   idx <- which(which_px)
   map[idx[ok]] <- newlab

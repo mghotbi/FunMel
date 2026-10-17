@@ -12,7 +12,8 @@ compare_melanization(
   reference = NULL,
   method = c("auto", "mixed", "plate_means"),
   by = NULL,
-  control = NULL
+  control = NULL,
+  require_qc = FALSE
 )
 }
 \arguments{
@@ -32,6 +33,9 @@ three plates per group, otherwise an explicit plate-mean model.}
 \item{by}{Extra control-matching columns for matched MI assessment.}
 
 \item{control}{Optional control label, alias of reference for matched MI.}
+
+\item{require_qc}{Require explicit image QC approval for matched MI analysis.
+Default FALSE warns on unconfirmed recorded QC.}
 }
 \value{
 A list with model, coefficients, descriptives and status; matched

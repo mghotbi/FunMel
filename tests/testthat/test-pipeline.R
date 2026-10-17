@@ -16,8 +16,8 @@ test_that("confrontation plate: colonies, area and melanization are accurate", {
   expect_true(all(m$detected))
   expect_true(all(abs(m$area_mm2 / m$area_mm2_true - 1) < 0.04))
   expect_true(all(abs(m$MI_mean - m$MI_mean_true) < 1))
-  expect_gt(res$plate_summary$bacteria_area_mm2, 0)
-  expect_gt(res$plate_summary$halo_area_mm2, 0)
+  expect_gt(res$plate_summary$central_fungus_area_mm2, 0)
+  expect_gt(res$plate_summary$hyphae_area_mm2, 0)
   expect_equal(res$plate_summary$n_satellites, 1L)
   # melanization ranking of the four colonies is recovered exactly
   expect_equal(order(m$MI_mean), order(m$MI_mean_true))
@@ -75,7 +75,7 @@ test_that("supervised classifier path runs", {
   sim <- small(seed = 8)
   p <- read_plate(sim$image) |> detect_plate() |> model_background()
   tr <- sim$truth
-  reg <- data.frame(class = c("fungus", "fungus", "bacteria", "halo"),
+  reg <- data.frame(class = c("fungus", "fungus", "bacteria", "hyphae"),
                     x = c(tr$colonies$x[1:2], p$dish$x, p$dish$x + 150),
                     y = c(tr$colonies$y[1:2], p$dish$y, p$dish$y), r = 10)
   clf <- train_classifier(extract_training_pixels(p, reg))

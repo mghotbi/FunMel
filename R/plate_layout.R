@@ -2,15 +2,14 @@
 #'
 #' FunMel uses the *known* inoculation geometry as a spatial prior. This
 #' is what makes it possible to separate several cultures that share one
-#' dish, including colonies that touch each other or grow into the halo of
-#' the central bacterium.
+#' dish, including colonies that touch each other or contact the central fungal mycelium.
 #'
 #' @details
 #' Positions are given relative to the dish centre in units of the dish
 #' outer radius, with x increasing to the right and **y increasing
 #' downwards** (image convention). The default reproduces the standard
 #' four-quadrant design: four fungal colonies on the diagonals at 45 % of the
-#' radius (TL = top-left, TR, BR, BL) and, for confrontations, a bacterium
+#' radius (TL = top-left, TR, BR, BL) and, for confrontations, another fungus
 #' in the centre.
 #'
 #' Always photograph plates in the same orientation (e.g. a mark on the dish
@@ -29,7 +28,7 @@
 #' @param centre What is inoculated at the centre: `"bacteria"`, `"none"`
 #'   or `"fungus"`. The fungal path fits separate peripheral-target, central-
 #'   partner and surrounding-zone components; it never adds the central
-#'   partner to the four target colonies. Halo masks are image candidates.
+#'   partner to the four target colonies. Hyphal masks are image-based tissue candidates, not inhibition zones.
 #' @param ids Colony identifiers.
 #' @param positions Optional data frame with columns `id`, `x_rel`, `y_rel`
 #'   for arbitrary designs.
@@ -42,13 +41,13 @@
 #' @return An object of class `funmel_layout`.
 #'
 #' @examples
-#' plate_layout()                      # 4 Zymoseptoria + central bacterium
+#' plate_layout()                      # 4 Zymoseptoria + central fungus
 #' plate_layout(centre = "none")       # control plate
 #' plate_layout(n_colonies = 3, ids = c("A", "B", "C"))
 #' @export
 plate_layout <- function(n_colonies = 4L, radius_frac = 0.45, radius_mm = NULL,
                          start_deg = -135, rotation_deg = 0,
-                         centre = c("bacteria", "none", "fungus"),
+                         centre = c("fungus", "none", "bacteria"),
                          ids = NULL, positions = NULL, search_frac = 0.4) {
   centre <- match.arg(centre)
   scalar <- function(x) is.numeric(x) && length(x)==1L && is.finite(x)

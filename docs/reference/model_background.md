@@ -85,7 +85,7 @@ The plate with corrected `rgb`/`lab` and an element `bg`.
 **1. Agar colour by mode seeking.** The agar is the most frequent colour
 inside the dish even on crowded confrontation plates, because agar
 pixels are concentrated in colour space while colonies, bacteria and
-halos are spread along gradients. The mode of the (smoothed)
+hyphaes are spread along gradients. The mode of the (smoothed)
 \\L^\*a^\*b^\*\\ distribution of low-texture pixels is found with a
 coarse 3-D histogram followed by mean-shift refinement (Comaniciu & Meer
 2002). It works on dark and on light agar.

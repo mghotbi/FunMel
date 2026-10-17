@@ -6,13 +6,18 @@
 #' must represent the same intervention. See [validate_metadata()].
 #' Review flags metadata_confirmed and qc_pass start at FALSE. Set them to TRUE
 #' only after verifying experimental assignments and inspecting plate QC plots.
+#' Metadata confirmation is required for finalization. Image QC warns by default;
+#' require_qc=TRUE can enforce explicit QC approval.
+#' Standard optional fields (fungus, zymo_strain, medium, day, replicate,
+#' photo_date and notes) are included even when unrecorded. Custom columns
+#' supplied through extra are retained.
 #' @param dir Folder with photographs.
 #' @param file Output CSV path.
 #' @param treatment Optional default treatment label.
 #' @param set_id Optional default set ID; leave missing for multiple sets.
 #' @param patterns Optional named regular expressions for treatment labels.
 #' @param extra Named list of additional metadata columns.
-#' @param recursive Search nested image folders. Duplicate basenames require renaming.
+#' @param recursive Search nested image folders. Relative paths distinguish repeated basenames.
 #' @param overwrite Whether to replace an existing template.
 #' @return Metadata invisibly, also written as CSV. Missing fields must be filled.
 #' @export
@@ -21,17 +26,18 @@ make_metadata <- function(dir,file=file.path(dir,"plate_metadata.csv"),
                           extra=list(),overwrite=FALSE,recursive=FALSE) {
   if(!dir.exists(dir)) stop("Image directory does not exist.")
   files<-list.files(dir,pattern="\\.(jpe?g|png|tiff?|heic)$",ignore.case=TRUE,recursive=recursive)
-  if(anyDuplicated(basename(files))) stop("Image basenames must be unique across folders; rename duplicates before analysis.")
+
   if(!length(files)) stop("No supported images found.")
   trt<-rep(treatment,length(files))
   if(!is.null(patterns)) for(k in names(patterns)) trt[grepl(patterns[[k]],files,ignore.case=TRUE)]<-k
-  meta<-data.frame(file=basename(files),plate_id=tools::file_path_sans_ext(basename(files)),
+  meta<-data.frame(file=basename(files),plate_id=make.unique(gsub("[^A-Za-z0-9._-]","_",tools::file_path_sans_ext(files)),sep="_"),
                    set_id=rep(set_id,length(files)),treatment=trt,
                    centre_model=ifelse(!is.na(trt) & trt=="control","none",NA_character_),
                    partner_type=ifelse(!is.na(trt) & trt=="control","none",NA_character_),
                    metadata_confirmed=FALSE,qc_pass=FALSE,relative_file=files,
                    stringsAsFactors=FALSE)
   for(nm in names(extra)) meta[[nm]]<-extra[[nm]]
+  meta <- complete_metadata_columns(meta)
   if(file.exists(file) && !overwrite) stop("Metadata file exists; use overwrite=TRUE only if intended.")
   utils::write.csv(meta,file,row.names=FALSE,na="")
   message("Metadata template saved. Fill set_id, treatment and centre_model; record biological partner_type separately. Review flags metadata_confirmed and qc_pass start FALSE; confirm each plate after metadata and QC review.")
@@ -55,7 +61,7 @@ layout_by_treatment <- function(row,...) {
   if(is.null(row) || nrow(row)!=1L || !"treatment" %in% names(row) || is.na(row$treatment))
     stop("Provide one metadata row with a treatment label.")
   ctrl<-as.character(row$treatment)=="control"
-  model<-if("centre_model" %in% names(row)) as.character(row$centre_model) else if("partner_type" %in% names(row)) as.character(row$partner_type) else if(ctrl) "none" else "bacteria"
+  model<-if("centre_model" %in% names(row)) as.character(row$centre_model) else if("partner_type" %in% names(row)) as.character(row$partner_type) else if(ctrl) "none" else "fungus"
   if(is.na(model) || !model %in% c("none","bacteria","fungus")) stop("Fill centre_model with none, bacteria or fungus.")
   if(ctrl && model!="none") stop("Control plates require centre_model='none'.")
   args<-list(centre=model,...)

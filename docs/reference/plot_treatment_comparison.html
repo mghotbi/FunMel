@@ -17,7 +17,7 @@ Controls shown on multiple rows within a set are shared, not new replicates."><m
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,7 +63,8 @@ Controls shown on multiple rows within a set are shared, not new replicates.</p>
 <span>  file <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  width <span class="op">=</span> <span class="fl">7.2</span>,</span>
 <span>  height <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  palette <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  require_qc <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -86,7 +87,7 @@ Controls shown on multiple rows within a set are shared, not new replicates.</p>
 <dt id="arg-preview">preview<a class="anchor" aria-label="anchor" href="#arg-preview"></a></dt>
 <dd><p>Explicit TRUE allows an unconfirmed metadata mapping only for
 a clearly labelled provisional preview. Does not change or confirm metadata.
-qc_pass=FALSE still blocks plotting; resolve failed quality review first.</p></dd>
+Unconfirmed image QC warns by default and is labelled in the caption.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -104,6 +105,11 @@ qc_pass=FALSE still blocks plotting; resolve failed quality review first.</p></d
 <dt id="arg-palette">palette<a class="anchor" aria-label="anchor" href="#arg-palette"></a></dt>
 <dd><p>Optional named vector of treatment colours. Controls always
 use dark outlined squares; treatments use filled circles.</p></dd>
+
+
+<dt id="arg-require-qc">require_qc<a class="anchor" aria-label="anchor" href="#arg-require-qc"></a></dt>
+<dd><p>Default FALSE warns on unconfirmed recorded QC. TRUE requires
+every included plate to have qc_pass=TRUE.</p></dd>
 
 </dl></div>
     <div class="section level2">

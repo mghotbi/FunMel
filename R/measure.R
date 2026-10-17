@@ -13,6 +13,8 @@
 #'   \item{`MI_mean`, `MI_median`}{Melanization index \eqn{MI = 100 - L^*}.
 #'     Higher = darker; attribution to melanin requires validation. Linear in \eqn{L^*}, so MI
 #'     differences are comparable across the whole range.}
+#'   \item{`MI_min`, `MI_max`}{Observed minimum and maximum eligible-pixel MI;
+#'     these are noise-sensitive extrema, not confidence limits.}
 #'   \item{`MI_lo`, `MI_hi`}{Nominal 95 % spatial block-bootstrap interval
 #'     of `MI_mean`, conditional on image and segmentation; this does not
 #'     represent variation between biological replicate plates.}
@@ -32,21 +34,21 @@
 #'
 #' ## Interaction readouts
 #' The *interaction direction* of a colony is the vector from its centroid
-#' to the centroid of the bacterial colony (confrontations), or to the dish
+#' to the centroid of the central partner (confrontations), or to the dish
 #' centre (controls, so that the same metrics give the null expectation).
 #' \describe{
 #'   \item{`MI_facing`, `MI_away`, `delta_MI_facing`}{MI of the colony half
-#'     facing the bacterium (angle < 90 deg to the interaction direction)
+#'     facing the central partner (angle < 90 deg to the interaction direction)
 #'     and of the opposite half, and their difference. A localized
-#'     melanization response to the bacterium gives `delta_MI_facing > 0`.}
+#'     melanization response towards the central partner gives `delta_MI_facing > 0`.}
 #'   \item{`R_toward_mm`, `R_away_mm`, `growth_inhibition_pct`}{Colony radius
-#'     from the centroid towards / away from the bacterium (maximum radius
+#'     from the centroid towards / away from the central partner (maximum radius
 #'     in a +/- 20 deg sector), and the percent inhibition of radial growth
 #'     100 (R_away - R_toward) / R_away, a within-colony radial asymmetry
 #'     index. Despite the legacy column name, this is not control-referenced
 #'     percent inhibition of radial growth.}
-#'   \item{`gap_bacteria_mm`, `gap_halo_mm`}{Shortest edge-to-edge distance
-#'     from the colony to the bacterial colony and to the halo (0 = contact).}
+#'   \item{`gap_bacteria_mm`, `gap_hyphae_mm`}{Shortest edge-to-edge distance
+#'     from the colony to the central partner and its peripheral hyphal extent (0 = contact).}
 #' }
 #'
 #' @param plate A plate processed by [segment_colonies()].
@@ -85,7 +87,7 @@ measure_colonies <- function(plate, edge_exclude_mm = 0.1, dark_L = NULL,
     bw <- which(partner)
     tx <- mean(m$x[bw]); ty <- mean(m$y[bw])
     dist_b <- edt(!partner) * mmpp
-    bh <- partner | ob$halo
+    bh <- partner | ob$hyphae
     dist_h <- edt(!bh) * mmpp
   } else {
     tx <- d$x; ty <- d$y
@@ -109,7 +111,6 @@ measure_colonies <- function(plate, edge_exclude_mm = 0.1, dark_L = NULL,
     depth <- edt_local(cm)
     interior <- cm & depth * mmpp > edge_exclude_mm & !spec
     wi <- which(interior)
-    if (length(wi) < 30) wi <- which(cm & !spec)
     if (!length(wi)) {
       base$MI_mean <- NA_real_; base$n_pixels <- 0L; base$measurement_status <- "no_usable_pixels"
       return(base)
@@ -134,7 +135,7 @@ measure_colonies <- function(plate, edge_exclude_mm = 0.1, dark_L = NULL,
     r_aw <- if (any(abs(angb) > pi - cone)) max(rad[abs(angb) > pi - cone]) else NA_real_
 
     out <- data.frame(
-      base, measurement_status = "ok",
+      base, measurement_status = if(length(wi)<30) "few_usable_pixels" else "ok",
       segmentation_trim_fraction = if("segmentation_trim_fraction" %in% names(ct)) ct$segmentation_trim_fraction[i] else 0,
       centroid_x_px = cx, centroid_y_px = cy,
       centroid_x_mm = (cx - d$x) * mmpp, centroid_y_mm = (cy - d$y) * mmpp,
@@ -149,6 +150,7 @@ measure_colonies <- function(plate, edge_exclude_mm = 0.1, dark_L = NULL,
       L_mean = mean(Lv), L_median = stats::median(Lv), L_sd = stats::sd(Lv),
       L_q05 = q[1], L_q25 = q[2], L_q75 = q[3], L_q95 = q[4],
       MI_mean = 100 - mean(Lv), MI_median = 100 - stats::median(Lv),
+      MI_min = 100 - max(Lv), MI_max = 100 - min(Lv),
       MI_lo = ci[1], MI_hi = ci[2],
       gray_imagej = mean(gray[wi]),
       a_mean = am, b_mean = bm, chroma_mean = mean(sqrt(A[wi]^2 + B[wi]^2)),
@@ -168,7 +170,7 @@ measure_colonies <- function(plate, edge_exclude_mm = 0.1, dark_L = NULL,
     out$gap_bacteria_mm <- if (has_bact) max(0, min(dist_b[w]) - mmpp) else NA_real_
     out$gap_partner_mm <- out$gap_bacteria_mm
     if(identical(ob$partner_type,"fungus")) out$gap_bacteria_mm <- NA_real_
-    out$gap_halo_mm <- if (has_bact) max(0, min(dist_h[w]) - mmpp) else NA_real_
+    out$gap_hyphae_mm <- if (has_bact) max(0, min(dist_h[w]) - mmpp) else NA_real_
     out
   })
   bind_rows_fill(rows)
@@ -269,7 +271,7 @@ block_boot_mean <- function(v, block, n_boot = 200L, seed = 1L, level = 0.95) {
   stats::quantile(bm, c(a, 1 - a), names = FALSE)
 }
 
-#' Plate-level measurements: dish, background, bacterium, halo, QC
+#' Plate-level measurements: dish, background, central fungal growth and QC
 #' @keywords internal
 #' @noRd
 measure_plate <- function(plate) {
@@ -281,20 +283,20 @@ measure_plate <- function(plate) {
   mu <- plate$bg$agar_lab
   partner <- if(!is.null(ob$central_object)) ob$central_object else ob$bacteria
   ba <- sum(partner) * mmpp^2
-  ha <- sum(ob$halo) * mmpp^2
-  halo_r <- NA_real_; halo_r95 <- NA_real_; bact_r <- NA_real_
-  halo_db <- NA_real_; halo_dL <- NA_real_; bact_L <- NA_real_
+  ha <- sum(ob$hyphae) * mmpp^2
+  hyphae_r <- NA_real_; hyphae_r95 <- NA_real_; bact_r <- NA_real_
+  hyphae_db <- NA_real_; hyphae_dL <- NA_real_; bact_L <- NA_real_
   if (ba > 0) {
     bw <- which(partner)
     bx <- mean(m$x[bw]); by <- mean(m$y[bw])
     bact_r <- sqrt(ba / pi)
     bact_L <- mean(L[bw])
     if (ha > 0) {
-      hw <- which(ob$halo)
-      halo_r <- sqrt((ba + ha) / pi)
-      halo_r95 <- stats::quantile(sqrt((m$x[hw] - bx)^2 + (m$y[hw] - by)^2), 0.95, names = FALSE) * mmpp
-      halo_db <- mean(B[hw]) - mu[["b"]]
-      halo_dL <- mean(L[hw]) - mu[["L"]]
+      hw <- which(ob$hyphae)
+      hyphae_r <- sqrt(sum(partner | ob$hyphae) * mmpp^2 / pi)
+      hyphae_r95 <- stats::quantile(sqrt((m$x[hw] - bx)^2 + (m$y[hw] - by)^2), 0.95, names = FALSE) * mmpp
+      hyphae_db <- mean(B[hw]) - mu[["b"]]
+      hyphae_dL <- mean(L[hw]) - mu[["L"]]
     }
   }
   data.frame(
@@ -313,10 +315,10 @@ measure_plate <- function(plate) {
     central_area_mm2 = ba, central_radius_mm = bact_r, central_L = bact_L,
     central_detected = ba>0,
     central_fungus_area_mm2 = if(is.null(ob$central_fungus)) 0 else sum(ob$central_fungus)*mmpp^2,
-    halo_status = if(ha>0) "candidate_detected" else "not_resolved",
+    hyphae_status = if(!identical(ob$partner_type,"fungus")) "not_applicable" else if(ha>0) "growth_detected" else if(!identical(ob$partner_type,"fungus")) "not_applicable" else "not_resolved",
     bacteria_area_mm2 = sum(ob$bacteria)*mmpp^2, bacteria_radius_mm = if(any(ob$bacteria)) bact_r else NA_real_, bacteria_L = if(any(ob$bacteria)) bact_L else NA_real_,
-    halo_area_mm2 = if(identical(ob$partner_type,"fungus") && ha==0) NA_real_ else ha, halo_outer_radius_mm = halo_r, halo_r95_mm = halo_r95,
-    halo_delta_b = halo_db, halo_delta_L = halo_dL,
+    hyphae_area_mm2 = if(identical(ob$partner_type,"none")) NA_real_ else ha, hyphae_outer_radius_mm = hyphae_r, hyphae_r95_mm = hyphae_r95,
+    hyphae_delta_b = hyphae_db, hyphae_delta_L = hyphae_dL,
     other_area_mm2 = sum((if (is.null(plate$classes$map_final)) plate$classes$map else plate$classes$map_final) == 4L) * mmpp^2,
     overexposed_fraction = plate$clipped_fraction,
     classifier = plate$classes$source,
@@ -333,7 +335,7 @@ bind_rows_fill <- function(rows) {
   cols <- unique(unlist(lapply(rows, names)))
   rows <- lapply(rows, function(r) {
     miss <- setdiff(cols, names(r))
-    for (mm in miss) r[[mm]] <- NA
+    for (mm in miss) r[[mm]] <- rep(NA,nrow(r))
     r[cols]
   })
   do.call(rbind, rows)

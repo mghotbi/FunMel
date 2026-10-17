@@ -24,6 +24,10 @@
 #' @param na_action Either error (default) for undetected/nonfinite target
 #'   colonies or omit, which warns and reports excluded counts. A plate with
 #'   no eligible target measurements remains unavailable, not silently dropped.
+#' @param require_qc Require every included plate to have logical qc_pass=TRUE.
+#'   Default FALSE warns for unconfirmed recorded QC and continues without
+#'   approving or excluding plates. Plain tables without review flags are
+#'   reported as not_recorded. Finalization warns if review is unrecorded.
 #' @return List with coefficients (one row per contrast and matching stratum),
 #'   plate_means, and settings. Undefined ratios have NA and an explicit status.
 #'   Counts distinguish measured target colonies, excluded target rows and plates.
@@ -40,12 +44,12 @@ melanization_coefficient <- function(colonies, control="control",
                                     group="treatment", plate="plate_id",
                                     response="MI_mean", by=NULL,
                                     exclude_ids=c("centre", "center"),
-                                    na_action=c("error", "omit"), set="set_id") {
+                                    na_action=c("error", "omit"), set="set_id", require_qc=FALSE) {
   na_action <- match.arg(na_action)
   if(length(set)!=1L || is.na(set) || !nzchar(set)) stop("Specify a matching-set column.")
   by <- unique(c(set,by))
-  if (is.list(colonies) && !is.data.frame(colonies) && !is.null(colonies$colonies))
-    colonies <- colonies$colonies
+  is_batch <- is.list(colonies) && !is.data.frame(colonies) && !is.null(colonies$colonies)
+  if (is_batch) colonies <- colonies$colonies
   needed <- unique(c(group,plate,response,"colony_id",by))
   if (!is.data.frame(colonies) || !all(needed %in% names(colonies)))
     stop("colonies must contain: ",paste(needed,collapse=", "))
@@ -59,14 +63,13 @@ melanization_coefficient <- function(colonies, control="control",
   df <- colonies[keep,,drop=FALSE]
   if("metadata_confirmed" %in% names(df) && (!is.logical(df$metadata_confirmed) || anyNA(df$metadata_confirmed) || any(!df$metadata_confirmed)))
     stop("Confirm the proposed plate-to-treatment/control metadata before calculating coefficients (metadata_confirmed=TRUE).")
-  if ("qc_pass" %in% names(df) && (!is.logical(df$qc_pass) || anyNA(df$qc_pass) || any(!df$qc_pass)))
-    stop("All included plates need qc_pass=TRUE after mask review; do not silently discard failed plates.")
   if (!nrow(df)) stop("No target colonies remain after excluding partner IDs.")
+  qc_review <- check_qc_review(df,require_qc,plate,warn_missing=FALSE)
   for (nm in c(group,plate,"colony_id",by)) {
     if (anyNA(df[[nm]]) || any(!nzchar(trimws(as.character(df[[nm]])))))
       stop("Missing or empty values in ",nm,"; complete metadata before comparing plates.")
   }
-  for(id in unique(df[[set]])) for(nm in intersect(c("zymo_strain","medium","day"),names(df))) {
+  for(id in unique(df[[set]])) for(nm in recorded_context_columns(df)) {
     v <- df[[nm]][df[[set]]==id]
     if(anyNA(v) || any(!nzchar(trimws(as.character(v)))) || length(unique(v))!=1L)
       stop("Within each matched set, ",nm," must be complete and constant.")
@@ -89,7 +92,7 @@ melanization_coefficient <- function(colonies, control="control",
     data.frame(df[idx[1],c(plate,group,by),drop=FALSE],
                MI_plate=if(length(z)) mean(z) else NA_real_,
                n_target_colonies=length(idx),n_colonies_used=length(z),
-               n_colonies_excluded=sum(!valid[idx]),row.names=NULL)
+               n_colonies_excluded=sum(!valid[idx]),qc_review_status=qc_review_summary(df[idx,,drop=FALSE],plate)$status,row.names=NULL)
   })
   pm <- do.call(rbind,rows); rownames(pm) <- NULL
   strata <- if(length(by)) unique(pm[by]) else data.frame(.all=1L)
@@ -109,12 +112,13 @@ melanization_coefficient <- function(colonies, control="control",
       for(j in seq_len(nrow(tx))) {
         pr<-data.frame(tx[j,c(plate,group,by),drop=FALSE],MI_treatment_plate=tx$MI_plate[j],
                        MI_matching_control=cmean,melanization_coefficient=if(status=="ok") tx$MI_plate[j]/cmean else NA_real_,
-                       n_control_plates=nrow(ctr),status=status,row.names=NULL)
+                       n_control_plates=nrow(ctr),qc_review_status=if(all(c(tx$qc_review_status[j],ctr$qc_review_status)=="confirmed")) "confirmed" else "unconfirmed",status=status,row.names=NULL)
         per_plate[[length(per_plate)+1L]]<-pr
       }
       row <- data.frame(treatment=trt,control=control,MI_treatment_mean=tmean,MI_control_mean=cmean,
                         melanization_coefficient=mc,delta_MI=tmean-cmean,
                         n_treatment_plates=nrow(tx),n_control_plates=nrow(ctr),
+                        qc_review_status=if(all(c(tx$qc_review_status,ctr$qc_review_status)=="confirmed")) "confirmed" else "unconfirmed",
                         control_replication=if(nrow(ctr)==1L) "single_control_plate" else "replicated_controls",
                         n_treatment_colonies=sum(tx$n_colonies_used),n_control_colonies=sum(ctr$n_colonies_used),
                         n_excluded_target_colonies=sum(tx$n_colonies_excluded)+sum(ctr$n_colonies_excluded),
@@ -129,9 +133,9 @@ melanization_coefficient <- function(colonies, control="control",
   if(!length(contrasts)) stop("No non-control treatment available for comparison.")
   out <- do.call(rbind,contrasts); rownames(out) <- NULL
   if(any(out$status!="ok")) warning("Some coefficients are unavailable; inspect the status column.")
-  list(coefficients=out,per_plate_coefficients=if(length(per_plate)) do.call(rbind,per_plate) else data.frame(),plate_means=pm,target_data=df[valid,,drop=FALSE],
+  list(qc_review=qc_review,coefficients=out,per_plate_coefficients=if(length(per_plate)) do.call(rbind,per_plate) else data.frame(),plate_means=pm,target_data=df[valid,,drop=FALSE],
        settings=list(control=control,group=group,plate=plate,response=response,by=by,set=set,
-                     exclude_ids=exclude_ids,na_action=na_action,
+                     exclude_ids=exclude_ids,na_action=na_action,require_qc=require_qc,
                      weighting="equal colonies within plate; equal plates within group",
                      inference="descriptive ratio; no biological confidence interval or p-value"))
 }

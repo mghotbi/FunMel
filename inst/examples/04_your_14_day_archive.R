@@ -1,10 +1,9 @@
-# Mitra's supplied 20-photo archive: five sets, 1 control + 3 treatment plates/set.
+# Mitra's supplied eight-photo subset: two sets, 1 control + 3 treatment plates/set.
 # This uses bundled measured data; original photographs need not be downloaded.
 # Folder-derived treatment labels remain provisional, not confirmed biology.
 library(FunMel)
-metadata <- read.csv(system.file('extdata','14_day_example','metadata.csv',package='FunMel'),stringsAsFactors=FALSE)
-colonies <- read.csv(system.file('extdata','14_day_example','colonies.csv',package='FunMel'),stringsAsFactors=FALSE)
-plates <- read.csv(system.file('extdata','14_day_example','plates.csv',package='FunMel'),stringsAsFactors=FALSE)
+metadata <- read.csv(system.file('extdata','14_day_example','metadata.csv',package='FunMel'),stringsAsFactors=FALSE,check.names=FALSE)
+colonies <- read.csv(system.file('extdata','14_day_example','colonies.csv',package='FunMel'),stringsAsFactors=FALSE,check.names=FALSE)
 validate_metadata(metadata)
 print(with(metadata,table(set_id,treatment)))
 plate_means <- aggregate(MI_mean ~ plate_id + set_id + treatment,data=colonies,FUN=mean)
@@ -15,8 +14,8 @@ write.csv(metadata,file.path(example_output,'metadata_for_review.csv'),row.names
 write.csv(plate_means,file.path(example_output,'plate_means.csv'),row.names=FALSE)
 plot_treatment_comparison(list(colonies=colonies,failed=data.frame()),preview=TRUE,
                          file=file.path(example_output,'your_treatment_comparison_PREVIEW'))
-# Automatic final coefficients deliberately remain blocked while assignments
-# and imaging quality are unconfirmed. Never change flags just to obtain output.
+# Experimental metadata must be confirmed before final coefficients.
+# Image QC warns by default; require_qc=TRUE enforces reviewed QC approval.
 message('Design: 1 control + 3 treatment plates per set; 4 target colonies per plate.')
 message('Metadata identities and calibration/masks need review before finalization.')
 message('Original-image analysis: scripts/analyse_14_day_archive.R.')

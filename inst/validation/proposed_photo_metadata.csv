@@ -1,21 +1,9 @@
-file,plate_id,set_id,treatment,centre_model,partner_type,day,replicate,metadata_confirmed,relative_file
-2026_10_02_99_28.JPG,2026_10_02_99_28,A33_1_14_days,control,none,none,14,1,FALSE,A33_1_14_days/2026_10_02_99_28.JPG
-2026_10_02_99_29.JPG,2026_10_02_99_29,A33_1_14_days,A33_1,fungus,fungus,14,1,FALSE,A33_1_14_days/2026_10_02_99_29.JPG
-2026_10_02_99_31.JPG,2026_10_02_99_31,A33_1_14_days,A33_1,fungus,fungus,14,2,FALSE,A33_1_14_days/2026_10_02_99_31.JPG
-2026_10_02_99_32.JPG,2026_10_02_99_32,A33_1_14_days,A33_1,fungus,fungus,14,3,FALSE,A33_1_14_days/2026_10_02_99_32.JPG
-2026_10_02_99_38.JPG,2026_10_02_99_38,A60_2_14_days,A60_2,fungus,fungus,14,1,FALSE,A60_2_14_days/2026_10_02_99_38.JPG
-2026_10_02_99_39.JPG,2026_10_02_99_39,A60_2_14_days,A60_2,fungus,fungus,14,2,FALSE,A60_2_14_days/2026_10_02_99_39.JPG
-2026_10_02_99_40.JPG,2026_10_02_99_40,A60_2_14_days,A60_2,fungus,fungus,14,3,FALSE,A60_2_14_days/2026_10_02_99_40.JPG
-2026_10_02_99_41.JPG,2026_10_02_99_41,A60_2_14_days,control,none,none,14,1,FALSE,A60_2_14_days/2026_10_02_99_41.JPG
-2026_10_02_99_42.JPG,2026_10_02_99_42,B20_2_14_days,B20_2,fungus,fungus,14,1,FALSE,B20_2_14_days/2026_10_02_99_42.JPG
-2026_10_02_99_43.JPG,2026_10_02_99_43,B20_2_14_days,B20_2,fungus,fungus,14,2,FALSE,B20_2_14_days/2026_10_02_99_43.JPG
-2026_10_02_99_44.JPG,2026_10_02_99_44,B20_2_14_days,B20_2,fungus,fungus,14,3,FALSE,B20_2_14_days/2026_10_02_99_44.JPG
-2026_10_02_99_45.JPG,2026_10_02_99_45,B20_2_14_days,control,none,none,14,1,FALSE,B20_2_14_days/2026_10_02_99_45.JPG
-2026_10_02_99_47.JPG,2026_10_02_99_47,B22_2_14_days,control,none,none,14,1,FALSE,B22_2_14_days/2026_10_02_99_47.JPG
-2026_10_02_99_48.JPG,2026_10_02_99_48,B22_2_14_days,B22_2,fungus,fungus,14,1,FALSE,B22_2_14_days/2026_10_02_99_48.JPG
-2026_10_02_99_49.JPG,2026_10_02_99_49,B22_2_14_days,B22_2,fungus,fungus,14,2,FALSE,B22_2_14_days/2026_10_02_99_49.JPG
-2026_10_02_99_50.JPG,2026_10_02_99_50,B22_2_14_days,B22_2,fungus,fungus,14,3,FALSE,B22_2_14_days/2026_10_02_99_50.JPG
-2026_10_02_99_33.JPG,2026_10_02_99_33,B37_1_14_days,control,none,none,14,1,FALSE,B37_1_14_days/2026_10_02_99_33.JPG
-2026_10_02_99_34.JPG,2026_10_02_99_34,B37_1_14_days,B37_1,fungus,fungus,14,1,FALSE,B37_1_14_days/2026_10_02_99_34.JPG
-2026_10_02_99_36.JPG,2026_10_02_99_36,B37_1_14_days,B37_1,fungus,fungus,14,2,FALSE,B37_1_14_days/2026_10_02_99_36.JPG
-2026_10_02_99_37.JPG,2026_10_02_99_37,B37_1_14_days,B37_1,fungus,fungus,14,3,FALSE,B37_1_14_days/2026_10_02_99_37.JPG
+file,relative_file,plate_id,set_id,treatment,centre_model,partner_type,fungus,zymo_strain,medium,day,replicate,photo_date,notes,metadata_confirmed,qc_pass,source_metadata_issue
+2026_10_02_99_38.JPG,A60_2_14_days/2026_10_02_99_38.JPG,2026_10_02_99_38,A60_2_14_days,A60_2,fungus,fungus,hm83,,,14,1,,Folder label used as treatment/set label; confirm biological meaning and source fungus field hm83.,FALSE,FALSE,
+2026_10_02_99_39.JPG,A60_2_14_days/2026_10_02_99_39.JPG,2026_10_02_99_39,A60_2_14_days,A60_2,fungus,fungus,hm83,,,14,2,,Folder label used as treatment/set label; confirm biological meaning and source fungus field hm83.,FALSE,FALSE,
+2026_10_02_99_40.JPG,A60_2_14_days/2026_10_02_99_40.JPG,2026_10_02_99_40,A60_2_14_days,A60_2,fungus,fungus,hm83,,,14,3,,Folder label used as treatment/set label; confirm biological meaning and source fungus field hm83.,FALSE,FALSE,
+2026_10_02_99_41.JPG,A60_2_14_days/2026_10_02_99_41.JPG,2026_10_02_99_41,A60_2_14_days,control,none,none,hm83,,,14,1,,Folder label used as treatment/set label; confirm biological meaning and source fungus field hm83.,FALSE,FALSE,
+2026_10_02_99_42.JPG,B20_2_14_days/2026_10_02_99_42.JPG,2026_10_02_99_42,B20_2_14_days,B20_2,fungus,fungus,hm83,,,14,1,,Folder label used as treatment/set label; confirm biological meaning and source fungus field hm83.,FALSE,FALSE,
+2026_10_02_99_43.JPG,B20_2_14_days/2026_10_02_99_43.JPG,2026_10_02_99_43,B20_2_14_days,B20_2,fungus,fungus,hm83,,,14,2,,Folder label used as treatment/set label; confirm biological meaning and source fungus field hm83.,FALSE,FALSE,
+2026_10_02_99_44.JPG,B20_2_14_days/2026_10_02_99_44.JPG,2026_10_02_99_44,B20_2_14_days,B20_2,fungus,fungus,hm83,,,14,3,,Folder label used as treatment/set label; confirm biological meaning and source fungus field hm83.,FALSE,FALSE,
+2026_10_02_99_45.JPG,B20_2_14_days/2026_10_02_99_45.JPG,2026_10_02_99_45,B20_2_14_days,control,none,none,hm83,,,14,1,,Folder label used as treatment/set label; confirm biological meaning and source fungus field hm83.,FALSE,FALSE,

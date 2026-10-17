@@ -21,7 +21,8 @@ compare_melanization(
   reference = NULL,
   method = c("auto", "mixed", "plate_means"),
   by = NULL,
-  control = NULL
+  control = NULL,
+  require_qc = FALSE
 )
 ```
 
@@ -59,6 +60,11 @@ compare_melanization(
 - control:
 
   Optional control label, alias of reference for matched MI.
+
+- require_qc:
+
+  Require explicit image QC approval for matched MI analysis. Default
+  FALSE warns on unconfirmed recorded QC.
 
 ## Value
 

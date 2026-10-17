@@ -1,13 +1,9 @@
 #' Simulate a plate photograph with known ground truth
 #'
-#' Generates a synthetic confrontation (or control) plate that reproduces
-#' the difficulties of real photographs: grey, wrinkled fungal colonies with
-#' irregular lobed outlines, a whitish central bacterium with a diffuse
-#' yellow halo that overlaps the colonies in brightness, satellite
-#' micro-colonies, a bright dish wall, vignetting, exposure errors and
-#' sensor noise. Because every pixel's true class and colour are known, the
-#' simulator is used to validate FunMel's accuracy (see the unit tests and
-#' the vignette) and to test new settings before applying them to real data.
+#' Generates schematic target colonies and central fungal growth with known
+#' image masks, colour and geometry. Tests include illumination gradients,
+#' texture, noise and irregular outlines. The synthetic central growth is not
+#' a mechanistic model of fungal development or interspecies interaction.
 #'
 #' @param width,height Image size (px).
 #' @param dish_r_frac Dish outer radius as a fraction of the image height.
@@ -25,8 +21,8 @@
 #' @param bacteria Legacy argument: include a central partner (default: from
 #'   layout, including fungus). The simulated body and zone are schematic,
 #'   not a mechanistic fungal-growth or inhibition model.
-#' @param bacteria_radius_mm,halo_radius_mm Radii of bacterium and halo.
-#' @param bacteria_lab,halo_lab CIELAB of bacterium and of the halo core.
+#' @param bacteria_radius_mm,hyphae_radius_mm Radii of the dense central core and peripheral growth extent.
+#' @param bacteria_lab,hyphae_lab CIELAB of the dense central core and peripheral hyphal growth.
 #' @param agar_lab,background_lab CIELAB of agar and photographic background.
 #' @param satellite Add a small satellite colony next to the first colony.
 #' @param vignetting Relative light fall-off at the dish edge (0 = none).
@@ -38,7 +34,7 @@
 #'
 #' @return A list with `image` (H x W x 3 sRGB array) and `truth` (dish
 #'   circle, `mm_per_px`, per-colony true area and mean \eqn{L^*} before
-#'   illumination effects, label matrix, bacteria and halo masks, grey-card
+#'   illumination effects, label matrix, bacteria and hyphae masks, grey-card
 #'   region).
 #' @examples
 #' sim <- simulate_plate(width = 300, height = 400, seed = 1)
@@ -51,15 +47,15 @@ simulate_plate <- function(width = 900, height = 1200, dish_r_frac = 0.47,
                            colony_radius_mm = 7, colony_L = c(52, 46, 40, 58),
                            colony_ab = c(0.5, -1), edge_lightening = 4,
                            facing_darkening = 0, texture_sd = 5,
-                           bacteria = NULL, bacteria_radius_mm = 6, halo_radius_mm = 17,
-                           bacteria_lab = c(86, 0, 9), halo_lab = c(42, -2, 22),
+                           bacteria = NULL, bacteria_radius_mm = 6, hyphae_radius_mm = 17,
+                           bacteria_lab = c(86, 0, 9), hyphae_lab = c(42, -2, 22),
                            agar_lab = c(22, -1, -4), background_lab = c(8, 0, 1),
                            satellite = TRUE, vignetting = 0.25, exposure = 1,
                            noise_sd = 0.012, grey_card = FALSE, seed = 1) {
   with_seed(seed, simulate_plate_impl(
     width, height, dish_r_frac, dish_diameter_mm, layout, colony_radius_mm,
     colony_L, colony_ab, edge_lightening, facing_darkening, texture_sd, bacteria,
-    bacteria_radius_mm, halo_radius_mm, bacteria_lab, halo_lab, agar_lab,
+    bacteria_radius_mm, hyphae_radius_mm, bacteria_lab, hyphae_lab, agar_lab,
     background_lab, satellite, vignetting, exposure, noise_sd, grey_card))
 }
 
@@ -68,7 +64,7 @@ simulate_plate <- function(width = 900, height = 1200, dish_r_frac = 0.47,
 simulate_plate_impl <- function(width, height, dish_r_frac, dish_diameter_mm, layout,
                                 colony_radius_mm, colony_L, colony_ab, edge_lightening,
                                 facing_darkening, texture_sd, bacteria, bacteria_radius_mm,
-                                halo_radius_mm, bacteria_lab, halo_lab, agar_lab,
+                                hyphae_radius_mm, bacteria_lab, hyphae_lab, agar_lab,
                                 background_lab, satellite, vignetting, exposure,
                                 noise_sd, grey_card) {
   if (is.null(bacteria)) bacteria <- layout$centre %in% c("bacteria","fungus")
@@ -96,25 +92,25 @@ simulate_plate_impl <- function(width, height, dish_r_frac, dish_diameter_mm, la
     (z - mean(z)) / stats::sd(as.vector(z))
   }
 
-  # halo (smooth radial blend towards halo colour) + bacterium
-  bact <- matrix(FALSE, H, W); halo_true <- bact
+  # hyphae (smooth radial blend towards hyphae colour) + bacterium
+  bact <- matrix(FALSE, H, W); hyphae_true <- bact
   if (bacteria) {
     rb <- bacteria_radius_mm / mmpp
-    rh <- halo_radius_mm / mmpp
+    rh <- hyphae_radius_mm / mmpp
     th <- atan2(yy - cy, xx - cx)
     wobble <- 1 + 0.06 * cos(4 * th + 0.3) + 0.04 * cos(7 * th + 1)
     w <- 1 / (1 + exp((rr / wobble - rh) / (0.04 * rh)))
     inside <- rr <= 0.965 * R
-    Lm[inside] <- (1 - w[inside]) * Lm[inside] + w[inside] * halo_lab[1]
-    Am[inside] <- (1 - w[inside]) * Am[inside] + w[inside] * halo_lab[2]
-    Bm[inside] <- (1 - w[inside]) * Bm[inside] + w[inside] * halo_lab[3]
-    halo_true <- w > 0.5 & inside
+    Lm[inside] <- (1 - w[inside]) * Lm[inside] + w[inside] * hyphae_lab[1]
+    Am[inside] <- (1 - w[inside]) * Am[inside] + w[inside] * hyphae_lab[2]
+    Bm[inside] <- (1 - w[inside]) * Bm[inside] + w[inside] * hyphae_lab[3]
+    hyphae_true <- w > 0.5 & inside
     rbe <- rb * (1 + 0.08 * cos(5 * th + 2) + 0.05 * cos(9 * th))
     bact <- rr <= rbe
     tb <- smooth_noise(2) * 3
     Lm[bact] <- bacteria_lab[1] + tb[bact] - 6 * (rr[bact] / rb)^2
     Am[bact] <- bacteria_lab[2]; Bm[bact] <- bacteria_lab[3] + 4 * (rr[bact] / rb)
-    halo_true <- halo_true & !bact
+    hyphae_true <- hyphae_true & !bact
   }
 
   # fungal colonies
@@ -154,7 +150,7 @@ simulate_plate_impl <- function(width, height, dish_r_frac, dish_diameter_mm, la
     Lm[sat_mask] <- cL[1] + tex[sat_mask]; Am[sat_mask] <- colony_ab[1]; Bm[sat_mask] <- colony_ab[2]
   }
   if (bacteria) {
-    halo_true <- halo_true & labels == 0L & !sat_mask
+    hyphae_true <- hyphae_true & labels == 0L & !sat_mask
     bact <- bact & labels == 0L
   }
   card <- NULL
@@ -178,9 +174,9 @@ simulate_plate_impl <- function(width, height, dish_r_frac, dish_diameter_mm, la
          dish = c(x = cx, y = cy, r = R), mm_per_px = mmpp,
          colonies = data.frame(colony_id = pos$id, x = pos$x, y = pos$y,
                                area_mm2 = area, L_mean = trueL, MI_mean = 100 - trueL),
-         labels = labels, central_object = bact, central_partner_type = layout$centre,
-         central_fungus = if(layout$centre=="fungus") bact else matrix(FALSE,H,W),
+         labels = labels, central_object = if(layout$centre=="fungus") (bact | hyphae_true) else bact, central_partner_type = layout$centre,
+         central_fungus = if(layout$centre=="fungus") (bact | hyphae_true) else matrix(FALSE,H,W),
          bacteria = if(layout$centre=="fungus") matrix(FALSE,H,W) else bact,
-         halo = halo_true, satellite = sat_mask,
+         hyphae = hyphae_true, satellite = sat_mask,
          grey_card = card, vignetting = vignetting, exposure = exposure))
 }

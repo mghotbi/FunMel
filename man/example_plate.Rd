@@ -13,13 +13,13 @@ example_plate(type = c("confrontation", "control", "all"))
 File path(s).
 }
 \description{
-Two real photographs of \emph{Zymoseptoria tritici} (four colonies per dish),
-reduced to 1000 px for size:
+Two representative original photographs from the bundled eight-image
+14-day dataset (four target colonies per dish):
 \describe{
 \item{\code{"confrontation"}}{four colonies around a central interacting fungus with
-spreading growth (original: 2026_05_26_20.JPG).}
+spreading hyphal growth (2026_10_02_99_38.JPG).}
 \item{\code{"control"}}{four colonies without an interacting partner
-(original: 2026_05_26_37.JPG).}
+(2026_10_02_99_41.JPG).}
 }
 }
 \examples{

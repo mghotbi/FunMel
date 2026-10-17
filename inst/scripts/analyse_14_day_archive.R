@@ -1,8 +1,8 @@
-# FunMel 0.3.3: choose the original ZIP containing the plate photographs.
+# FunMel 0.4.3: choose the original ZIP containing the plate photographs.
 
 library(FunMel)
-if(package_version(as.character(getNamespaceVersion('FunMel'))) < '0.3.3')
-  stop('Restart R and load FunMel 0.3.3 before running this repair script.')
+if(package_version(as.character(getNamespaceVersion('FunMel'))) < '0.4.3')
+  stop('Restart R and load FunMel 0.4.3 before running this script.')
 output_dir <- 'FunMel_14_day_review'
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 meta_file <- file.path(output_dir,'proposed_metadata.csv')
@@ -11,7 +11,7 @@ if(!file.exists(meta_file)) {
   if(!nzchar(template) || !file.copy(template,meta_file)) stop('Could not obtain the metadata template.')
 }
 meta <- read.csv(meta_file,stringsAsFactors=FALSE,check.names=FALSE)
-message('Choose the ORIGINAL photos_14_days ZIP containing all 20 JPG photographs.')
+message('Choose the original photograph ZIP containing the eight A60_2/B20_2 example photographs. Other images are not analysed by this script.')
 photo_zip <- file.choose()
 files <- FunMel::prepare_photo_archive(photo_zip,meta,file.path(output_dir,'photos'))
 FunMel::validate_metadata(meta,files)
@@ -26,7 +26,7 @@ if(!nrow(out$plates)) {
   print(out$failed)
   stop('No plates completed. Failures were saved in failed.csv; no assessment attempted.')
 }
-show <- intersect(c('plate_id','n_colonies_detected','central_detected','halo_status'),names(out$plates))
+show <- intersect(c('plate_id','n_colonies_detected','central_detected','hyphae_status'),names(out$plates))
 print(out$plates[,show,drop=FALSE])
 if(nrow(out$failed)) {
   print(out$failed)

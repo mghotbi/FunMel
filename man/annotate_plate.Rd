@@ -4,7 +4,11 @@
 \alias{annotate_plate}
 \title{Interactively annotate training regions}
 \usage{
-annotate_plate(plate, classes = c("fungus", "bacteria", "halo"), r_mm = 0.5)
+annotate_plate(
+  plate,
+  classes = c("zymo", "central_partner", "hyphae"),
+  r_mm = 0.5
+)
 }
 \arguments{
 \item{plate}{A plate processed by \code{\link[=model_background]{model_background()}}.}

@@ -1,5 +1,5 @@
-B22 metadata filenames copied from B37; mapping below uses B22 actual images and apparent control 47.
-B37 treatment labels blank; proposed control 33 and confrontations 34,36,37 are based on image appearance.
-All folder names used as provisional treatment/set labels; meaning of A33/A60/B20/B22/B37 and _1/_2 must be confirmed.
-One control photo and three treatment photos per folder: do not treat four control colonies as four control plates.
-Strain and medium fields in supplied CSVs are empty. No biological identities were invented.
+The bundled example contains only A60_2 and B20_2: eight original photos,
+one source-labelled control and three treatment plates per set. Labels and
+the role of the supplied fungus field hm83 require experimental verification.
+No metadata or image-review flags are preapproved. Each treatment appears in
+one set and each set has one control, limiting biological inference.

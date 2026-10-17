@@ -13,9 +13,9 @@ identify organisms from photographs. Central-model class labels require
 biological interpretation and quality-control review.
 }
 \details{
-Metadata links each independent plate to its own control set. Use
-\code{\link[=validate_metadata]{validate_metadata()}}, \code{\link[=analyze_plates]{analyze_plates()}}, \code{\link[=melanization_coefficient]{melanization_coefficient()}} and
-\code{\link[=assess_experiment]{assess_experiment()}} in sequence. The mixed model uses lme4 with lmerTest
+Metadata links each independent plate to its own control set. Start with
+\code{\link[=prepare_experiment]{prepare_experiment()}}, \code{\link[=run_experiment]{run_experiment()}} and \code{\link[=finish_experiment]{finish_experiment()}}.
+\code{\link[=sample_colony_spots]{sample_colony_spots()}} adds optional spatial subsamples. The mixed model uses lme4 with lmerTest
 Satterthwaite contrasts; descriptions remain available when inference is
 unsupported. See vignette('FunMel') and \code{\link[=example_experiment]{example_experiment()}}.
 }

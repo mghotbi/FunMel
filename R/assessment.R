@@ -32,6 +32,8 @@
 #' @param level Confidence level for unadjusted, contrast-wise intervals.
 #' @param p_adjust Multiplicity method passed to p.adjust; default Holm.
 #'   Applied separately to within_sets, overall_effects and treatment_comparisons.
+#' @param require_qc Require recorded QC approval for every plate. Default FALSE
+#'   warns on unconfirmed QC and retains its status in qc_review.
 #' @return List with coefficients, overall_coefficients, plate_means,
 #'   within_sets, overall_effects, treatment_comparisons, model, diagnostics,
 #'   and status. Mixed-model contrasts use Satterthwaite degrees of freedom.
@@ -48,18 +50,18 @@
 assess_experiment <- function(colonies, control="control", by=NULL,
                               method=c("mixed","plate_means"),level=.95,
                               p_adjust="holm",pool_contexts=FALSE,
-                              comparison_scope=c("matched_effects","common_sets")) {
+                              comparison_scope=c("matched_effects","common_sets"),require_qc=FALSE) {
   method <- match.arg(method)
   comparison_scope <- match.arg(comparison_scope)
   if(length(level)!=1L || !is.finite(level) || level<=0 || level>=1) stop("level must be between 0 and 1.")
   if(!p_adjust %in% stats::p.adjust.methods) stop("Unknown p_adjust method.")
   if(is.list(colonies) && !is.data.frame(colonies) && !is.null(colonies$failed) && nrow(colonies$failed))
     stop("Some plates failed. Resolve failures before final assessment.")
-  mc <- melanization_coefficient(colonies,control=control,by=by)
+  mc <- melanization_coefficient(colonies,control=control,by=by,require_qc=require_qc)
   if(any(mc$coefficients$status!="ok")) stop("Resolve unavailable within-set coefficients before final assessment.")
   df <- mc$target_data; pm <- mc$plate_means
   if(!is.logical(pool_contexts) || length(pool_contexts)!=1L || is.na(pool_contexts)) stop("pool_contexts must be TRUE or FALSE.")
-  if(!pool_contexts) for(nm in intersect(c("zymo_strain","medium","day"),names(df)))
+  if(!pool_contexts) for(nm in recorded_context_columns(df))
     if(length(unique(df[[nm]]))>1L) stop("Multiple ",nm," contexts: assess separately or explicitly set pool_contexts=TRUE.")
   for(id in unique(pm$set_id)) for(nm in by)
     if(length(unique(pm[[nm]][pm$set_id==id]))!=1L) stop("Each set_id must have one ",nm," value.")
@@ -69,7 +71,7 @@ assess_experiment <- function(colonies, control="control", by=NULL,
                sd_across_sets=stats::sd(z$melanization_coefficient),
                sets=paste(as.character(z$set_id),collapse=";"),stringsAsFactors=FALSE)))
   rownames(overall)<-NULL
-  ans <- list(coefficients=mc$coefficients,overall_coefficients=overall,plate_means=pm,per_plate_coefficients=mc$per_plate_coefficients,
+  ans <- list(qc_review=mc$qc_review,coefficients=mc$coefficients,overall_coefficients=overall,plate_means=pm,per_plate_coefficients=mc$per_plate_coefficients,
               within_sets=data.frame(),overall_effects=data.frame(),treatment_comparisons=data.frame(),
               model=NULL,diagnostics=list(method=method,level=level,p_adjust=p_adjust),status="descriptive_only")
   cells <- unique(pm[c("set_id","treatment")]);cells$cell<-sprintf("C%04d",seq_len(nrow(cells)))

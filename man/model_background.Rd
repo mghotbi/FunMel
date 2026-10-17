@@ -60,7 +60,7 @@ every dish pixel that differs significantly from agar.
 \details{
 \strong{1. Agar colour by mode seeking.} The agar is the most frequent colour
 inside the dish even on crowded confrontation plates, because agar pixels
-are concentrated in colour space while colonies, bacteria and halos are
+are concentrated in colour space while colonies, bacteria and hyphaes are
 spread along gradients. The mode of the (smoothed) \eqn{L^*a^*b^*}
 distribution of low-texture pixels is found with a coarse 3-D histogram
 followed by mean-shift refinement (Comaniciu & Meer 2002). It works on

@@ -20,7 +20,8 @@ plot_treatment_comparison(
   file = NULL,
   width = 7.2,
   height = NULL,
-  palette = NULL
+  palette = NULL,
+  require_qc = FALSE
 )
 ```
 
@@ -42,8 +43,8 @@ plot_treatment_comparison(
 
   Explicit TRUE allows an unconfirmed metadata mapping only for a
   clearly labelled provisional preview. Does not change or confirm
-  metadata. qc_pass=FALSE still blocks plotting; resolve failed quality
-  review first.
+  metadata. Unconfirmed image QC warns by default and is labelled in the
+  caption.
 
 - labels:
 
@@ -61,6 +62,11 @@ plot_treatment_comparison(
 
   Optional named vector of treatment colours. Controls always use dark
   outlined squares; treatments use filled circles.
+
+- require_qc:
+
+  Default FALSE warns on unconfirmed recorded QC. TRUE requires every
+  included plate to have qc_pass=TRUE.
 
 ## Value
 

@@ -13,7 +13,8 @@ plot_treatment_comparison(
   file = NULL,
   width = 7.2,
   height = NULL,
-  palette = NULL
+  palette = NULL,
+  require_qc = FALSE
 )
 }
 \arguments{
@@ -25,7 +26,7 @@ plot_treatment_comparison(
 
 \item{preview}{Explicit TRUE allows an unconfirmed metadata mapping only for
 a clearly labelled provisional preview. Does not change or confirm metadata.
-qc_pass=FALSE still blocks plotting; resolve failed quality review first.}
+Unconfirmed image QC warns by default and is labelled in the caption.}
 
 \item{labels}{Optional named character vector of treatment display names.}
 
@@ -35,6 +36,9 @@ qc_pass=FALSE still blocks plotting; resolve failed quality review first.}
 
 \item{palette}{Optional named vector of treatment colours. Controls always
 use dark outlined squares; treatments use filled circles.}
+
+\item{require_qc}{Default FALSE warns on unconfirmed recorded QC. TRUE requires
+every included plate to have qc_pass=TRUE.}
 }
 \value{
 A ggplot object, invisibly when exported. Colours and typography can

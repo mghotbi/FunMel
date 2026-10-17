@@ -13,7 +13,7 @@
 #' used by FunMel as the primary melanization readout; \eqn{a^*}
 #' (green-red) and \eqn{b^*} (blue-yellow) carry the chromatic information
 #' that separates achromatic melanized hyphae from warm-coloured bacteria,
-#' pigments and halos.
+#' other fungal tissue.
 #'
 #' @param rgb Numeric matrix with three columns (R, G, B) in \[0, 1\], or a
 #'   H x W x 3 array.

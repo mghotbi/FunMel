@@ -1,62 +1,16 @@
-#' Classify pixels into peripheral targets, central partner and surrounding zone
+#' Classify target colonies and central fungal growth
 #'
-#' This step solves the core problem of confrontation plates: grey fungal
-#' colonies, the whitish bacterial colony and the yellowish halo overlap in
-#' brightness but not in *colour and texture*.
+#' Fits a layout-initialized mixture to colour and texture features relative to
+#' agar. Expected target positions seed one component; the centre seeds the
+#' dense partner core and an adjacent region seeds peripheral central growth.
+#' For a fungal partner this peripheral growth represents candidate hyphal
+#' tissue, not inhibition or a diffusible pigment boundary. All image classes
+#' require visual review; the photograph does not identify species or resolve
+#' individual microscopic hyphae. Similar colours or overlapping cultures may
+#' remain ambiguous. Seeded segmentation separates the target colonies later.
 #'
-#' @details
-#' **Features** (per object pixel, after flat-field correction and light
-#' Gaussian smoothing). The colour difference to the agar of the *same*
-#' plate, \eqn{(\Delta L^*, \Delta a^*, \Delta b^*)}, is split into its
-#' magnitude \eqn{\log \Delta E} and its direction (unit vector). A
-#' diffusible pigment at decreasing concentration moves the colour along a
-#' fixed direction from the agar towards the pigment colour, so the faint
-#' fringe of a halo shares the direction of its core, while grey fungal
-#' tissue points along the achromatic \eqn{L^*} axis at every
-#' melanization level. The fifth feature is texture, the log local standard
-#' deviation of \eqn{L^*} in a 0.4 mm window (wrinkled hyphal colonies vs.
-#' smooth bacterial growth). Referencing colour to the agar of the same
-#' plate also cancels most white-balance differences between photographs.
-#'
-#' **Class model.** Each class has a bivariate Gaussian for
-#' (\eqn{\log \Delta E}, texture) and a mean colour *direction* with an
-#' isotropic spread. The direction likelihood of every pixel is widened by
-#' its own noise-induced uncertainty \eqn{(\sigma_{noise} / \Delta E)^2}, so
-#' faint pixels (colony margins, halo fringe) are not forced into a class by
-#' noise (a heteroscedastic, measurement-error-aware mixture).
-#'
-#' The halo is a *diffusion zone*: pigment concentration, and hence colour
-#' magnitude, decays continuously with distance from the bacterium. Its
-#' magnitude likelihood is therefore uniform in \eqn{\log \Delta E} up to
-#' its core level (with a Gaussian fall-off above), so the faint outer fringe
-#' is as plausible a halo pixel as the saturated core.
-#'
-#' **Unsupervised model (default).** A mixture with one component
-#' per class is fitted by EM (Dempster, Laird & Rubin 1977). The EM is
-#' *initialised from the plate layout*: pixels near the expected fungal
-#' inoculation points seed the fungus class, pixels at the centre seed the
-#' bacterium, and pixels in the annulus between them seed the halo. The
-#' components therefore keep their biological meaning, and the halo class
-#' is dropped automatically when the bacterium produces no halo (its colour
-#' direction must differ from that of the fungus by > 12 degrees).
-#'
-#' **Supervised model (optional).** Pass a classifier from
-#' [train_classifier()] (Gaussian / quadratic discriminant model built from
-#' pixels you annotated), which is recommended when a new
-#' bacterium-fungus pair has unusual colours.
-#'
-#' **Spatial regularisation.** Class posteriors are smoothed before the
-#' maximum-a-posteriori decision (a fast approximation of a Markov random
-#' field prior). Each pixel gets a confidence
-#' \eqn{c = 1 / (1 + d^2 / 0.01)} from its direction uncertainty
-#' \eqn{d^2}; its final posterior is \eqn{c} x (posterior smoothed at
-#' `posterior_smooth_mm`) + \eqn{(1 - c)} x (confidence-weighted posterior
-#' of its neighbourhood at `context_mm`). Faint pixels such as the fading
-#' fringe of a halo thus take the class of the confident tissue they belong
-#' to, instead of being mistaken for pale fungal margin.
-#' Pixels far from every class (Mahalanobis distance above the
-#' \eqn{1 - 10^{-6}} quantile of \eqn{\chi^2_4}) are labelled `"other"`
-#' (dust, bubbles, contaminants) and never measured.
+#' The internal labels fungus and bacteria denote target-like and central-core
+#' components; the biological partner identity comes from the layout.
 #'
 #' @param plate A plate processed by [model_background()].
 #' @param layout A [plate_layout()].
@@ -68,7 +22,7 @@
 #' @param max_em_pixels Maximum number of pixels used to fit the mixture.
 #'
 #' @return The plate with element `classes`: an integer matrix
-#'   (0 agar/outside, 1 fungus, 2 bacteria, 3 halo, 4 other) and the fitted
+#'   (0 agar/outside, 1 target-like tissue, 2 central core, 3 peripheral central growth, 4 other) and the fitted
 #'   model.
 #' @examples
 #' sim <- simulate_plate(width = 300, height = 400, seed = 4)
@@ -92,7 +46,7 @@ classify_pixels <- function(plate, layout = plate_layout(), classifier = NULL,
 
   if (!is.null(classifier)) {
     model <- classifier$model
-    model <- model[intersect(names(model), c("fungus", "bacteria", "halo"))]
+    model <- model[intersect(names(model), c("fungus", "bacteria", "hyphae"))]
     if (!"fungus" %in% names(model)) cli::cli_abort("Classifier must contain a {.val fungus} class.")
   } else {
     model <- fit_layout_mixture(plate, layout, F, obj_idx, max_em_pixels)
@@ -110,7 +64,7 @@ classify_pixels <- function(plate, layout = plate_layout(), classifier = NULL,
 
   # confidence-weighted, two-scale spatial smoothing of posteriors.
   # conf is high where the colour direction is well determined (strong
-  # contrast) and low for faint pixels (halo fringe, pale margins); faint
+  # contrast) and low for faint pixels (hyphae fringe, pale margins); faint
   # pixels therefore borrow their class from confident neighbours within
   # context_mm, confident pixels are only lightly smoothed.
   mmpp <- plate$dish$mm_per_px
@@ -131,7 +85,7 @@ classify_pixels <- function(plate, layout = plate_layout(), classifier = NULL,
   }
   P[is.na(P)] <- 0
   cls <- max.col(P, ties.method = "first")
-  code <- c(fungus = 1L, bacteria = 2L, halo = 3L)[names(model)]
+  code <- c(fungus = 1L, bacteria = 2L, hyphae = 3L)[names(model)]
   lab <- code[cls]
   lab[outlier] <- 4L
   map[obj_idx] <- lab
@@ -145,18 +99,9 @@ classify_pixels <- function(plate, layout = plate_layout(), classifier = NULL,
 
 #' Per-pixel classification features (n_pixels x 5 matrix, all pixels)
 #'
-#' Colour is described relative to the agar as a difference vector
-#' (dL, da, db) and decomposed into its magnitude (log Delta E) and its
-#' direction (unit vector uL, ua, ub). A diffusible pigment (halo) at
-#' varying concentration moves the colour along one direction from agar
-#' towards the pigment colour, so its *direction* is concentration-
-#' invariant: the faint outer fringe of a halo points the same way as its
-#' saturated core, whereas grey fungal tissue points along the achromatic
-#' L axis at any melanization level. Texture (log local SD of L*) is the
-#' fifth feature. `d2` is the per-pixel variance of the direction caused by
-#' sensor noise, (sigma_noise / Delta E)^2: faint pixels have uncertain
-#' direction, and the classifier widens their direction likelihood
-#' accordingly (heteroscedastic model), instead of trusting noise.
+#' Colour relative to agar is represented by magnitude and direction of the
+#' CIELAB difference vector, together with local texture. These are image
+#' features; they do not measure pigment diffusion, biomass or species identity.
 #' @keywords internal
 #' @noRd
 pixel_features <- function(plate) {
@@ -188,7 +133,7 @@ gauss_logdens <- function(X, g, parts = FALSE) {
   v <- g$s2 + X[, "d2"]
   qd <- rowSums(sweep(U, 2, g$dir)^2) / v
   if (isTRUE(g$gradient)) {
-    # diffusion zone: any intensity up to the core level is equally likely
+    # Optional peripheral-material feature model: allow varying intensity
     # (uniform in log dE), Gaussian fall-off above it; texture Gaussian.
     sdE <- sqrt(g$S[1, 1]); sdT <- sqrt(g$S[2, 2])
     zE <- pmax(M[, 1] - g$mu[1], 0) / sdE
@@ -240,7 +185,7 @@ dir_angle <- function(g1, g2) acos(min(1, max(-1, sum(g1$dir * g2$dir)))) * 180 
 #' Layout-initialised Gaussian mixture (EM)
 #' @keywords internal
 #' @noRd
-fit_layout_mixture <- function(plate, layout, F, obj_idx, max_em_pixels, min_halo_angle = 12) {
+fit_layout_mixture <- function(plate, layout, F, obj_idx, max_em_pixels, min_periphery_angle = 12) {
   d <- plate$dish
   m <- dish_masks(plate)
   R <- d$r_outer
@@ -254,7 +199,7 @@ fit_layout_mixture <- function(plate, layout, F, obj_idx, max_em_pixels, min_hal
   X <- F[obj_idx, , drop = FALSE]
   tz <- plate$bg$texture_z[obj_idx]
   # Initial sets combine the layout (where) with texture (what): fungal
-  # colonies are rough, a diffusion halo is smooth. This keeps the
+  # target colonies may be textured; central hyphae are seeded spatially. This keeps the
   # initialisation right even when inoculation points are a few mm off.
   near_f <- dnear < layout$search_frac & rc > 0.15
   if (layout$centre == "fungus") near_f <- near_f & rc > 0.28 & dnear < 0.18
@@ -264,7 +209,7 @@ fit_layout_mixture <- function(plate, layout, F, obj_idx, max_em_pixels, min_hal
     tz_h <- if (any(ann)) stats::quantile(tz[ann], 0.5) else -Inf
     init <- list(fungus = which(near_f & tz >= tz_f & dnear < 0.25),
                  bacteria = which(rc < 0.07),
-                 halo = which(ann & tz <= tz_h & !(near_f & tz >= tz_f)))
+                 hyphae = which(ann & (layout$centre == "fungus" | tz <= tz_h) & !(near_f & tz >= tz_f)))
   } else {
     init <- list(fungus = which(dnear < 0.2))
 
@@ -281,11 +226,11 @@ fit_layout_mixture <- function(plate, layout, F, obj_idx, max_em_pixels, min_hal
   }
   model <- lapply(names(init), function(k) fit_gauss(X[init[[k]], , drop = FALSE],
                                                      prior = 1 / length(init),
-                                                     gradient = k == "halo"))
+                                                     gradient = k == "hyphae" && layout$centre == "bacteria"))
   names(model) <- names(init)
   # Semi-supervised EM: a subsample of all object pixels plus the seed
   # pixels, whose class is clamped. Clamping keeps each component tied to
-  # its biological meaning (a free EM can let e.g. the halo component drift
+  # its biological meaning (a free EM can let e.g. the hyphae component drift
   # onto pale colony margins on real plates).
   s <- sample_idx(nrow(X), max_em_pixels)
   seeds <- lapply(init, function(ix) ix[sample_idx(length(ix), 15000L)])
@@ -296,11 +241,10 @@ fit_layout_mixture <- function(plate, layout, F, obj_idx, max_em_pixels, min_hal
   # drop classes that collapsed to (almost) nothing
   keep <- vapply(model, function(g) g$prior > 0.002, TRUE)
   keep["fungus"] <- TRUE
-  # a halo is a chromatic zone: it must differ in colour *direction* from
-  # the fungus; otherwise the "halo" component only modelled colony margins
-  if ("halo" %in% names(model) && dir_angle(model$fungus, model$halo) < min_halo_angle) {
-    keep["halo"] <- FALSE
-  }
+  # For an optional bacterial centre, this is an unassigned peripheral
+  # colour component rather than fungal hyphae; no biological zone is inferred.
+  if(layout$centre == "bacteria" && "hyphae" %in% names(model) &&
+     dir_angle(model$fungus,model$hyphae)<min_periphery_angle) keep["hyphae"] <- FALSE
   if (!all(keep)) {
     model <- model[keep]
     pr <- vapply(model, `[[`, 1, "prior")
@@ -357,7 +301,7 @@ sample_idx <- function(n, k) {
 #'
 #' @param plate A plate processed by [model_background()].
 #' @param regions Data frame with columns `class` (`"fungus"`,
-#'   `"bacteria"`, `"halo"` or aliases `"zymo"`, `"central_partner"`), `x`, `y`, `r` in working-image pixels.
+#'   `"bacteria"`, `"hyphae"` or aliases `"zymo"`, `"central_partner"`), `x`, `y`, `r` in working-image pixels.
 #' @return Data frame of features with a `class` column.
 #' @examples
 #' sim <- simulate_plate(width = 300, height = 400, seed = 5)
@@ -403,13 +347,13 @@ train_classifier <- function(training, equal_priors = TRUE) {
   training$class<-as.character(training$class)
   training$class[training$class=="zymo"]<-"fungus"
   training$class[training$class=="central_partner"]<-"bacteria"
-  if(anyNA(training$class) || any(!training$class %in% c("fungus","bacteria","halo"))) stop("Training classes must be zymo/fungus, central_partner/bacteria or halo.")
+  if(anyNA(training$class) || any(!training$class %in% c("fungus","bacteria","hyphae"))) stop("Training classes must be zymo/fungus, central_partner/bacteria or hyphae.")
   feats <- c("logE", "uL", "ua", "ub", "tex", "d2")
   cl <- unique(training$class)
   model <- lapply(cl, function(k) {
     X <- as.matrix(training[training$class == k, feats])
     fit_gauss(X, prior = if (equal_priors) 1 / length(cl) else nrow(X) / nrow(training),
-              gradient = k == "halo")
+              gradient = FALSE)
   })
   names(model) <- cl
   structure(list(model = model, n = table(training$class)), class = "funmel_classifier")
@@ -444,7 +388,7 @@ print.funmel_classifier <- function(x, ...) {
 #' clf <- train_classifier(extract_training_pixels(p, reg))
 #' }
 #' @export
-annotate_plate <- function(plate, classes = c("fungus", "bacteria", "halo"), r_mm = 0.5) {
+annotate_plate <- function(plate, classes = c("zymo", "central_partner", "hyphae"), r_mm = 0.5) {
   if (!interactive()) cli::cli_abort("{.fn annotate_plate} needs an interactive session.")
   H <- dim(plate$rgb)[1]; W <- dim(plate$rgb)[2]
   r <- r_mm / plate$dish$mm_per_px

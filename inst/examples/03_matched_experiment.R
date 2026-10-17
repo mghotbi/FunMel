@@ -13,7 +13,7 @@ print(assessment$status)
 example_output <- tempfile('FunMel_experiment_')
 dir.create(example_output)
 plot_treatment_comparison(demo,
-  labels=c(fungus_A='Fungal partner A',bacterium_B='Bacterial partner B'),
+  labels=c(fungus_A='Fungal partner A',fungus_B='Bacterial partner B'),
   file=file.path(example_output,'matched_comparison'))
 write.csv(mc$coefficients,file.path(example_output,'coefficients.csv'),row.names=FALSE)
 saveRDS(assessment,file.path(example_output,'assessment.rds'))

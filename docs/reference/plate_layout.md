@@ -2,8 +2,8 @@
 
 FunMel uses the *known* inoculation geometry as a spatial prior. This is
 what makes it possible to separate several cultures that share one dish,
-including colonies that touch each other or grow into the halo of the
-central bacterium.
+including colonies that touch each other or contact the central fungal
+mycelium.
 
 ## Usage
 
@@ -14,7 +14,7 @@ plate_layout(
   radius_mm = NULL,
   start_deg = -135,
   rotation_deg = 0,
-  centre = c("bacteria", "none", "fungus"),
+  centre = c("fungus", "none", "bacteria"),
   ids = NULL,
   positions = NULL,
   search_frac = 0.4
@@ -52,7 +52,8 @@ plate_layout(
   What is inoculated at the centre: `"bacteria"`, `"none"` or
   `"fungus"`. The fungal path fits separate peripheral-target, central-
   partner and surrounding-zone components; it never adds the central
-  partner to the four target colonies. Halo masks are image candidates.
+  partner to the four target colonies. Hyphal masks are image-based
+  tissue candidates, not inhibition zones.
 
 - ids:
 
@@ -81,8 +82,8 @@ Positions are given relative to the dish centre in units of the dish
 outer radius, with x increasing to the right and **y increasing
 downwards** (image convention). The default reproduces the standard
 four-quadrant design: four fungal colonies on the diagonals at 45 % of
-the radius (TL = top-left, TR, BR, BL) and, for confrontations, a
-bacterium in the centre.
+the radius (TL = top-left, TR, BR, BL) and, for confrontations, another
+fungus in the centre.
 
 Always photograph plates in the same orientation (e.g. a mark on the
 dish rim at 12 o'clock) so that colony IDs are reproducible; otherwise
@@ -91,8 +92,8 @@ use `rotation_deg`.
 ## Examples
 
 ``` r
-plate_layout()                      # 4 Zymoseptoria + central bacterium
-#> <funmel_layout> 4 fungal colonies; centre: bacteria
+plate_layout()                      # 4 Zymoseptoria + central fungus
+#> <funmel_layout> 4 fungal colonies; centre: fungus
 #>  id  x_rel  y_rel
 #>  TL -0.318 -0.318
 #>  TR  0.318 -0.318
@@ -106,7 +107,7 @@ plate_layout(centre = "none")       # control plate
 #>  BR  0.318  0.318
 #>  BL -0.318  0.318
 plate_layout(n_colonies = 3, ids = c("A", "B", "C"))
-#> <funmel_layout> 3 fungal colonies; centre: bacteria
+#> <funmel_layout> 3 fungal colonies; centre: fungus
 #>  id  x_rel  y_rel
 #>   A -0.318 -0.318
 #>   B  0.435 -0.116

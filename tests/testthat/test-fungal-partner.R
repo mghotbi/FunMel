@@ -12,7 +12,7 @@ test_that("fungal centre is separate from targets and bacterial measurements", {
   expect_true(any(r$plate$objects$central_fungus))
   expect_false(any(r$plate$objects$bacteria))
   expect_false(any(r$plate$objects$central_fungus & r$plate$objects$labels>0))
-  expect_false(any(r$plate$objects$halo & r$plate$objects$labels>0))
+  expect_false(any(r$plate$objects$hyphae & r$plate$objects$labels>0))
   expect_equal(r$plate_summary$central_partner_type,'fungus')
   expect_true(r$plate_summary$central_fungus_area_mm2>0)
   expect_true(all(r$colonies$interaction_target=='fungus'))

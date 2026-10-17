@@ -34,7 +34,9 @@ analyze_plate(
   n_rings = 10L,
   qc_file = NULL,
   keep_images = TRUE,
-  verbose = TRUE
+  verbose = TRUE,
+  n_spots = NULL,
+  spot_radius_mm = 0.5
 )
 ```
 
@@ -48,8 +50,8 @@ analyze_plate(
 
   A
   [`plate_layout()`](https://mghotbi.github.io/FunMel/reference/plate_layout.md).
-  Use `plate_layout(centre = "none")` for control plates without
-  bacteria.
+  Use `plate_layout(centre = "none")` for control plates without a
+  central partner.
 
 - id:
 
@@ -128,6 +130,16 @@ analyze_plate(
 
   Print progress.
 
+- n_spots:
+
+  Optional spots per target colony; NULL keeps only whole-colony
+  measurements.
+
+- spot_radius_mm:
+
+  Circular spot radius (mm); see
+  [`sample_colony_spots()`](https://mghotbi.github.io/FunMel/reference/sample_colony_spots.md).
+
 ## Value
 
 An object of class `funmel_result`, a list with
@@ -136,6 +148,11 @@ An object of class `funmel_result`, a list with
 
   One row per expected colony
   ([`measure_colonies()`](https://mghotbi.github.io/FunMel/reference/measure_colonies.md)).
+
+- spots:
+
+  Optional circular ROI measurements and locations; whole-colony MI
+  stays unchanged.
 
 - profiles:
 
@@ -163,23 +180,23 @@ res
 #> <funmel_result> plate "sim10"
 #> • Scale: 0.2393 mm/px; agar L* = 22.2
 #> • Colonies detected: 4 / 4; satellites: 1
-#> • Central object r = 6.36 mm; surrounding zone outer r = 17.01 mm
+#> • Central fungal/partner extent: equivalent r = 17.11 mm
 #>  colony_id area_mm2 L_mean MI_mean MI_lo MI_hi delta_MI_facing
-#>         TL      155   51.2    48.8  48.4  49.1            2.29
-#>         TR      156   46.9    53.1  52.7  53.4            2.51
-#>         BR      155   40.0    60.0  59.6  60.4            2.73
-#>         BL      156   57.7    42.3  42.0  42.6           -2.54
+#>         TL      155   51.2    48.8  48.4  49.1            2.30
+#>         TR      155   47.0    53.0  52.7  53.3            2.49
+#>         BR      153   40.0    60.0  59.5  60.4            2.55
+#>         BL      156   57.7    42.3  42.0  42.6           -2.57
 #>  growth_inhibition_pct
-#>                  2.450
-#>                  0.270
-#>                 -0.152
-#>                 -7.634
+#>                 3.5672
+#>                 0.0496
+#>                -0.3681
+#>                -7.7772
 res$colonies[, c("colony_id", "MI_mean", "delta_MI_facing")]
 #>    colony_id  MI_mean delta_MI_facing
-#> x         TL 48.75743        2.293812
-#> x1        TR 53.05115        2.514062
-#> x2        BR 59.99747        2.729403
-#> x3        BL 42.27137       -2.539792
+#> x         TL 48.75959        2.299796
+#> x1        TR 53.03797        2.491872
+#> x2        BR 59.95116        2.551580
+#> x3        BL 42.25989       -2.565176
 if (FALSE) { # \dontrun{
 res <- analyze_plate("plates/2026_05_26_20.JPG", layout = plate_layout())
 plot_qc(res)
