@@ -1,0 +1,46 @@
+/* Standalone vignette layout; the shared FunMel theme follows this file. */
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body { max-width: 960px; margin: 0 auto; padding: 3rem 2rem 4rem;
+  background: #FFFCF7; color: #2B2520;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-size: 1rem; line-height: 1.7; overflow-wrap: break-word; }
+a { color: #745523; text-decoration-thickness: 1px; text-underline-offset: .17em; }
+a:hover, a:focus { color: #4c3716; }
+a:focus-visible, summary:focus-visible { outline: 3px solid #c9971c; outline-offset: 3px; }
+h1, h2, h3, h4 { color: #2B2520; line-height: 1.25; }
+h1.title { font-size: clamp(2rem,4vw,2.8rem); letter-spacing: -.035em;
+  line-height: 1.16; font-weight: 750; border-bottom: 3px solid #c9971c;
+  padding-bottom: 1.1rem; margin: 0 0 1.5rem; }
+h2 { border-top: 1px solid #e9dfcf; margin-top: 2.7rem; padding-top: 1.25rem;
+  letter-spacing: -.015em; font-size: 1.65rem; }
+h3 { margin-top: 1.8rem; font-weight: 650; font-size: 1.2rem; }
+p { margin: 0 0 1.1rem; }
+li { margin-bottom: .35rem; }
+#TOC { border: 1px solid #e9dfcf; background: #fffaf0;
+  border-radius: .8rem; padding: .8rem 1.25rem; margin: 1.4rem 0 1.8rem; font-size: .92rem; }
+#TOC ul { margin: .35rem 0; padding-left: 1.3rem; }
+pre { border: 1px solid #e9dfcf; border-radius: .65rem; padding: 1rem;
+  font-size: .9rem; line-height: 1.6; background: #f7f3eb;
+  overflow-x: auto; overflow-wrap: normal; }
+code { font-size: .92em; background: #f3ecde; border-radius: .2rem; padding: .1em .2em; }
+pre code { font-size: inherit; background: transparent; padding: 0; }
+div.sourceCode { overflow-x: auto; margin: 1rem 0; }
+table { display: block; width: max-content; max-width: 100%; overflow-x: auto;
+  border-collapse: collapse; font-size: .91rem; margin: 1.5rem 0; }
+th { background: #f3ecde; font-weight: 650; text-align: left; }
+td, th { padding: .65rem .8rem; vertical-align: top; border-bottom: 1px solid #e9dfcf; }
+img, svg { max-width: 100%; height: auto; }
+blockquote { border-left: 4px solid #c9971c; border-radius: 0 .7rem .7rem 0;
+  padding: 1.1rem 1.4rem; background: #f7f0df; margin: 1.6rem 0; }
+blockquote p:last-child { margin-bottom: 0; }
+@media (max-width: 767px) {
+  body { padding: 1.5rem 1rem 2.5rem; }
+  h2 { margin-top: 2rem; } pre { font-size: .82rem; }
+}
+@media print {
+  body { max-width: none; padding: 0; background: white; color: black; }
+  #TOC { break-inside: avoid; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  table { display: table; width: 100%; font-size: .8rem; }
+  .funmel-cards { display: block; } .funmel-card { margin-bottom: .5rem; }
+}

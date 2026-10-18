@@ -48,9 +48,8 @@ vignette("Real-14-day",package="FunMel")
 | Revisit saved work | Load the existing project; do not prepare it again |
 | Explore specialist tools | Use the complete function catalog |
 
-**No approval columns need editing.** Review assignments before measurement and
-inspect QC before interpretation. Reminders inform users; valid default runs
-continue automatically. Missing labels, unmatched controls, invalid settings
+Review assignments before measurement and inspect QC before interpretation.
+Valid runs proceed automatically. Missing labels, unmatched controls, invalid settings
 and failed photographs still require correction.
 
 ## New photographs: prepare, run, finish
@@ -90,7 +89,7 @@ validate_metadata(metadata)
 ```
 
 Check the metadata against laboratory records and correct missing or inaccurate
-assignments before measuring. No confirmation switch is required.
+assignments before measuring.
 
 | Field | Meaning |
 |---|---|
@@ -120,8 +119,6 @@ project$qc_dir
 Successful processing reports `"complete"` and zero failed images. Inspect every
 QC PNG: target masks, central fungus/hyphae, spot positions, scale, illumination,
 shadows and warnings. Genuine failures must be corrected before finalization.
-Default computation does not require FALSE-to-TRUE review edits and does not
-automatically approve masks or biological assignments.
 
 Omit spot settings for whole-colony measurements alone. Spots are additional,
 non-overlapping regions placed by a deterministic spatial-spread algorithm.
@@ -188,19 +185,16 @@ adequate lighting, and ratios do not guarantee cancellation of exposure bias.
 
 Custom metadata names and values remain in the full metadata and
 `metadata_used.csv`; measurement-name conflicts receive a `metadata_` prefix
-only in measurement tables. Recorded `qc_pass` resets on a new run but never
-needs editing for default calculations. Strict `require_qc=TRUE` is opt-in.
-Changed segmentation layouts require reanalysis.
+only in measurement tables. Changed segmentation layouts require reanalysis.
 
 ## Real data and every exported function
 
-The separate real-data vignette recomputes eight unchanged photographs from
+The real-data tutorial uses eight photographs from
 two sets, each with one control and three treatment plates. It includes the full
 file mapping, metadata, five spots per colony, QC examples, table definitions,
-verified coefficient arithmetic, final plots, exports and reopening instructions.
+coefficient calculations, final plots, exports and reopening instructions.
 The illustrative 90-mm scale requires physical verification for scientific use.
-Precomputed tables have separate provenance; neither they nor the tutorial are
-ground truth or proof of universal segmentation accuracy.
+Review image masks and calibration before using measurements in a study.
 
 ```r
 # Complete, noninteractive practice script in a new temporary project folder:
@@ -209,15 +203,11 @@ source(system.file("examples","walkthrough_14_days.R",package="FunMel"))
 source(system.file("examples","06_all_functions.R",package="FunMel"))
 ```
 
-Interactive annotation is clearly marked and needs user clicks. The catalog's
-synthetic classifier is a teaching example, not a biologically validated model.
+Interactive annotation is clearly marked and needs user clicks. The synthetic classifier example demonstrates the API; validate a classifier
+against annotated photographs before using it for a study.
 The [algorithm overview](https://github.com/mghotbi/FunMel/blob/HEAD/inst/guides/FunMel_overview.md)
-explains properties, algorithms and use alongside ImageJ/Fiji; no universal
-accuracy or speed advantage is claimed.
+explains the algorithms and how FunMel can complement ImageJ/Fiji.
 
-The comparison figure has **no text paragraph underneath by default**. Full
-interpretation is saved separately as `treatment_comparison_caption.txt` during
-export and is retained in the plot's `FunMel_caption` attribute. Use
-`plot_treatment_comparison(project,caption="brief")` for a short embedded note,
-or `caption="full"` for the full caption. Removing figure text does not remove
-QC warnings, matching checks or replication safeguards.
+Comparison captions are exported separately as `treatment_comparison_caption.txt`.
+Use `caption="brief"` or `caption="full"` in `plot_treatment_comparison()` to include
+a caption beneath the figure.

@@ -1,7 +1,7 @@
 Package: FunMel
 Title: Colour-Calibrated Quantification of Fungal Melanization in
         Confrontation Assays
-Version: 0.4.9
+Version: 0.4.16
 Authors@R: 
     person("Mitra", "Ghotbi", email = "mitra.ghotbi@gmail.com",
            role = c("aut", "cre"),
@@ -23,13 +23,14 @@ Depends: R (>= 4.1.0)
 Imports: cli, graphics, grDevices, magick, Rcpp, stats, tools, utils,
         lme4, lmerTest, ggplot2, grid, rlang
 LinkingTo: Rcpp
-Suggests: knitr, rmarkdown, png, testthat (>= 3.0.0), withr
+Suggests: knitr, rmarkdown, png, ragg, testthat (>= 3.0.0), withr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 NeedsCompilation: yes
 Author: Mitra Ghotbi [aut, cre] (<https://orcid.org/0000-0001-9185-9993>)
 Maintainer: Mitra Ghotbi <mitra.ghotbi@gmail.com>
-URL: https://github.com/mghotbi/FunMel
+URL: https://mghotbi.github.io/FunMel,
+        https://github.com/mghotbi/FunMel
 BugReports: https://github.com/mghotbi/FunMel/issues
 Config/roxygen2/version: 8.1.0
-Packaged: 2026-10-18 07:38:24 UTC; root
+Packaged: 2026-10-18 11:49:39 UTC; root

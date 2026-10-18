@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.16</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,7 @@
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mghotbi/FunMel"</span><span class="op">)</span></span></code></pre></div>
 <p>Restart R before loading an updated package, then run:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mghotbi/FunMel" class="external-link">FunMel</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mghotbi.github.io/FunMel">FunMel</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"FunMel"</span><span class="op">)</span></span></code></pre></div>
 <p>R &gt;= 4.1 and source-compilation tools are required: Xcode Command Line Tools on macOS, matching Rtools on Windows, or R development tools and ImageMagick development libraries on Linux. To install local tutorials:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -113,7 +113,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>No approval columns need editing.</strong> Review assignments before measurement and inspect QC before interpretation. Reminders inform users; valid default runs continue automatically. Missing labels, unmatched controls, invalid settings and failed photographs still require correction.</p>
+<p>Review assignments before measurement and inspect QC before interpretation. Valid runs proceed automatically. Missing labels, unmatched controls, invalid settings and failed photographs still require correction.</p>
 </div>
 <div class="section level2">
 <h2 id="new-photographs-prepare-run-finish">New photographs: prepare, run, finish<a class="anchor" aria-label="anchor" href="#new-photographs-prepare-run-finish"></a>
@@ -135,7 +135,7 @@
 <span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">project</span><span class="op">$</span><span class="va">metadata_file</span>,check.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">metadata</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_id"</span>,<span class="st">"set_id"</span>,<span class="st">"treatment"</span>,<span class="st">"centre_model"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="reference/validate_metadata.html">validate_metadata</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span></code></pre></div>
-<p>Check the metadata against laboratory records and correct missing or inaccurate assignments before measuring. No confirmation switch is required.</p>
+<p>Check the metadata against laboratory records and correct missing or inaccurate assignments before measuring.</p>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -190,7 +190,7 @@
 <span><span class="va">result</span><span class="op">$</span><span class="va">analysis_status</span></span>
 <span><span class="va">result</span><span class="op">$</span><span class="va">failed</span></span>
 <span><span class="va">project</span><span class="op">$</span><span class="va">qc_dir</span></span></code></pre></div>
-<p>Successful processing reports <code>"complete"</code> and zero failed images. Inspect every QC PNG: target masks, central fungus/hyphae, spot positions, scale, illumination, shadows and warnings. Genuine failures must be corrected before finalization. Default computation does not require FALSE-to-TRUE review edits and does not automatically approve masks or biological assignments.</p>
+<p>Successful processing reports <code>"complete"</code> and zero failed images. Inspect every QC PNG: target masks, central fungus/hyphae, spot positions, scale, illumination, shadows and warnings. Genuine failures must be corrected before finalization.</p>
 <p>Omit spot settings for whole-colony measurements alone. Spots are additional, non-overlapping regions placed by a deterministic spatial-spread algorithm. Inspect <code>n_spots_measured</code> and <code>spot_status</code>; incomplete summaries are unavailable. Keep scale and sampling settings consistent across compared plates.</p>
 </div>
 <div class="section level3">
@@ -224,19 +224,19 @@
 <p><code>MI_min/mean/max</code> describe eligible whole-colony pixels. <code>spots.csv</code> stores each ROI’s pixel summaries; <code>MI_spot_mean/min/max</code> summarize <strong>individual spot means</strong>. These are different responses, not confidence limits. Default coefficients use whole-colony MI; a prespecified spot-based descriptive response can use <code>melanization_coefficient(reviewed,response="MI_spot_mean")</code>.</p>
 <p>Independent plates are biological units. One control per set permits descriptive ratios but yields <code>assessment$status="insufficient_plate_replication"</code>; that is an expected design limitation, not a software failure. With adequate replication, assessment uses <code>lme4</code>/<code>lmerTest</code>, matched contrasts and Holm adjustment. Review design, assumptions, model diagnostics and confounding before interpreting inference. The comparison plot itself is descriptive: bars show between-plate SD, not confidence intervals; ratio SD omits shared-control uncertainty.</p>
 <p>Illumination correction may be withheld when fitted gains saturate. Inspect <code>flat_field_status</code> and warnings in <code>plates.csv</code>. Withholding does not establish adequate lighting, and ratios do not guarantee cancellation of exposure bias.</p>
-<p>Custom metadata names and values remain in the full metadata and <code>metadata_used.csv</code>; measurement-name conflicts receive a <code>metadata_</code> prefix only in measurement tables. Recorded <code>qc_pass</code> resets on a new run but never needs editing for default calculations. Strict <code>require_qc=TRUE</code> is opt-in. Changed segmentation layouts require reanalysis.</p>
+<p>Custom metadata names and values remain in the full metadata and <code>metadata_used.csv</code>; measurement-name conflicts receive a <code>metadata_</code> prefix only in measurement tables. Changed segmentation layouts require reanalysis.</p>
 </div>
 <div class="section level2">
 <h2 id="real-data-and-every-exported-function">Real data and every exported function<a class="anchor" aria-label="anchor" href="#real-data-and-every-exported-function"></a>
 </h2>
-<p>The separate real-data vignette recomputes eight unchanged photographs from two sets, each with one control and three treatment plates. It includes the full file mapping, metadata, five spots per colony, QC examples, table definitions, verified coefficient arithmetic, final plots, exports and reopening instructions. The illustrative 90-mm scale requires physical verification for scientific use. Precomputed tables have separate provenance; neither they nor the tutorial are ground truth or proof of universal segmentation accuracy.</p>
+<p>The real-data tutorial uses eight photographs from two sets, each with one control and three treatment plates. It includes the full file mapping, metadata, five spots per colony, QC examples, table definitions, coefficient calculations, final plots, exports and reopening instructions. The illustrative 90-mm scale requires physical verification for scientific use. Review image masks and calibration before using measurements in a study.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Complete, noninteractive practice script in a new temporary project folder:</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"examples"</span>,<span class="st">"walkthrough_14_days.R"</span>,package<span class="op">=</span><span class="st">"FunMel"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># All 42 exported functions, including specialist utilities:</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"examples"</span>,<span class="st">"06_all_functions.R"</span>,package<span class="op">=</span><span class="st">"FunMel"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Interactive annotation is clearly marked and needs user clicks. The catalog’s synthetic classifier is a teaching example, not a biologically validated model. The <a href="https://github.com/mghotbi/FunMel/blob/HEAD/inst/guides/FunMel_overview.md" class="external-link">algorithm overview</a> explains properties, algorithms and use alongside ImageJ/Fiji; no universal accuracy or speed advantage is claimed.</p>
-<p>The comparison figure has <strong>no text paragraph underneath by default</strong>. Full interpretation is saved separately as <code>treatment_comparison_caption.txt</code> during export and is retained in the plot’s <code>FunMel_caption</code> attribute. Use <code>plot_treatment_comparison(project,caption="brief")</code> for a short embedded note, or <code>caption="full"</code> for the full caption. Removing figure text does not remove QC warnings, matching checks or replication safeguards.</p>
+<p>Interactive annotation is clearly marked and needs user clicks. The synthetic classifier example demonstrates the API; validate a classifier against annotated photographs before using it for a study. The <a href="https://github.com/mghotbi/FunMel/blob/HEAD/inst/guides/FunMel_overview.md" class="external-link">algorithm overview</a> explains the algorithms and how FunMel can complement ImageJ/Fiji.</p>
+<p>Comparison captions are exported separately as <code>treatment_comparison_caption.txt</code>. Use <code>caption="brief"</code> or <code>caption="full"</code> in <code><a href="reference/plot_treatment_comparison.html">plot_treatment_comparison()</a></code> to include a caption beneath the figure.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

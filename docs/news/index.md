@@ -1,5 +1,59 @@
 # Changelog
 
+## FunMel 0.4.16
+
+- Function examples are embedded directly in the vignette. Rendering the
+  catalog no longer looks up a script inside an installed FunMel package
+  or loads FunMel.
+
+## FunMel 0.4.15
+
+- The real-data tutorial checks the functions and automatic finalization
+  it needs instead of requiring identical source and installed patch
+  versions.
+- Tutorials use consistent file graphics, formatting and canonical
+  filenames.
+- All three tutorials and their original shared styling are included.
+- Exclude the local `tc` backup folder from Git and source builds.
+
+## FunMel 0.4.14
+
+- Website builds install an isolated runtime copy without vignette
+  sources or stale vignette indices, so a fresh GitHub checkout does not
+  require generated `inst/doc` files. Articles are rendered from the
+  original vignette sources.
+
+## FunMel 0.4.13
+
+- Ensure documentation builds use the current local package and verify
+  automatic finalization before rendering.
+- Preserve coloured console progress and isolate rendering from the
+  active R session.
+- Make the landscape colour bar adapt to the graphics device so
+  two-panel maps can be resized and replayed.
+
+## FunMel 0.4.12
+
+- Streamline the user guides for installation, metadata preparation,
+  image analysis and interpretation.
+- Retain the styled standalone vignettes and complete real-data
+  tutorial.
+
+## FunMel 0.4.11
+
+- Style all three standalone vignettes with embedded cream-and-gold
+  presentation, readable code, responsive tables and tutorial panels.
+- Add a styled introduction and contents navigation to the function
+  catalog. Measurement and statistical algorithms are unchanged.
+
+## FunMel 0.4.10
+
+- The real-data tutorial reports absent optional table fields as not
+  reported, identifies the missing fields and loaded package version,
+  and still rejects missing essential measurements. It never invents QC
+  values or treats unavailable illumination status as success.
+- Update documentation links and icons.
+
 ## FunMel 0.4.9
 
 - Comparison figures omit the embedded caption by default; export full

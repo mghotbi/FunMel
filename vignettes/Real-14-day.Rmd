@@ -3,6 +3,8 @@ title: "Real photographs: the complete 14-day workflow"
 output:
   rmarkdown::html_vignette:
     toc: true
+    self_contained: true
+    css: [funmel-vignette.css, funmel-theme.css]
 vignette: >
   %\VignetteIndexEntry{Real photographs: the complete 14-day workflow}
   %\VignetteEngine{knitr::rmarkdown}
@@ -10,9 +12,35 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse=TRUE,comment="#>",message=FALSE,warning=FALSE,
+options(cli.hyperlink=FALSE,cli.num_colors=1)
+knitr::opts_chunk$set(cache=FALSE,collapse=TRUE,comment="#>",message=FALSE,warning=FALSE,
                       fig.width=7.2,fig.height=5.5)
 library(FunMel)
+# File graphics avoid dependence on a saved interactive display list.
+knitr::opts_chunk$set(dev=if(requireNamespace("ragg",quietly=TRUE)) "ragg_png" else "png")
+# BEGIN tutorial_table14
+# Display helper: fill only optional presentation fields, never measured values.
+tutorial_table14 <- function(data,columns,required=character(),label="table") {
+  if(!is.data.frame(data)) stop(label, " is not a data frame; rerun the analysis with the current FunMel package.",call.=FALSE)
+  essential <- setdiff(required,names(data))
+  if(length(essential)) stop(label," lacks required fields: ",paste(essential,collapse=", "),
+    ". Loaded FunMel ",as.character(getNamespaceVersion("FunMel")),
+    "; available fields: ",paste(names(data),collapse=", "),
+    ". Rerun the image analysis before continuing.",call.=FALSE)
+  missing <- setdiff(columns,names(data))
+  out <- data[intersect(columns,names(data))]
+  for(nm in missing) out[[nm]] <- rep(NA,nrow(data))
+  out <- out[columns]
+  attr(out,"missing_fields") <- missing
+  out
+}
+report_missing14 <- function(data,label) {
+  missing <- attr(data,"missing_fields")
+  if(length(missing)) cat("\n**Not reported in ",label,":** `",paste(missing,collapse="`, `"),
+    "`. These cells are shown as NA; no values were inferred. Loaded FunMel: ",
+    as.character(getNamespaceVersion("FunMel")),". Inspect the QC images and rerun the image analysis if QC details are missing.\n\n",sep="")
+}
+# END tutorial_table14
 ```
 
 <div class="funmel-hero">
@@ -24,7 +52,7 @@ image QC, matched coefficients, saved tables and publication-format exports.</p>
 
 Start here after [installing FunMel](FunMel.html). Run numbered steps in order;
 all objects used below are created in this article. The figures and tables shown
-here are generated from the bundled photographs during rendering. The
+here use the bundled photographs. The
 [function catalog](Function-examples.html) covers specialist tools separately.
 
 ## What this experiment contains
@@ -93,8 +121,9 @@ The combined metadata is discovered automatically. Inspect it before measuring:
 
 ```{r metadata14}
 metadata14 <- read.csv(project14$metadata_file,check.names=FALSE)
-knitr::kable(metadata14[,c("plate_id","set_id","treatment","centre_model","replicate")],
-             row.names=FALSE)
+knitr::kable(tutorial_table14(metadata14,
+  c("plate_id","set_id","treatment","centre_model","replicate"),
+  required=c("plate_id","set_id","treatment","centre_model"),label="metadata"),row.names=FALSE)
 validate_metadata(metadata14)
 ```
 
@@ -107,15 +136,15 @@ control. With one control in a set, its mean is the shared denominator for the
 three treatment plates.
 
 Verify treatment identities, controls, sets, day and any recorded strain/medium.
-Only correct information that is missing or inaccurate; **no FALSE-to-TRUE
-approval edits are required**. Your own additional columns remain preserved.
+Correct missing or inaccurate information. Additional user-defined columns are
+preserved.
 Do not infer biological identities from a filename alone. If corrections are
 needed, edit the project CSV and save it before the next step. Do not change
 image identity or layout after analysis without remeasuring.
 
 ## 3. Set calibration and measure all eight plates
 
-For this rendered teaching run, `90` is an **illustrative outer dish diameter**,
+In this example, `90` is an **illustrative outer dish diameter**,
 not a verified physical measurement of these photographs. Replace it with the
 actual outer diameter for scientific use. Do not paste subsequent R commands
 into a `readline()` prompt; this workflow sets the number directly.
@@ -173,30 +202,35 @@ dish edge, shadows, glare and warning text. The approximately round targets need
 not have perfectly circular outlines. Correct unsuitable images or measurements
 before interpreting the final comparisons.
 
-```{r illumination14}
-knitr::kable(result14$plates[,c("plate_id","n_colonies_detected",
-  "central_detected","flat_field_status")],row.names=FALSE)
+```{r illumination14, results='asis'}
+qc_table14 <- tutorial_table14(result14$plates,
+  c("plate_id","n_colonies_detected","central_detected","flat_field_status"),
+  required="plate_id",label="plate QC table")
+report_missing14(qc_table14,"plate QC")
+print(knitr::kable(qc_table14,row.names=FALSE))
 ```
 
-These photographs produce `flat_field_status="withheld_degenerate_fit"`:
-the fitted illumination correction did not pass the saturation safeguard and
-was withheld. This is an informative status, **not evidence of adequate
-illumination**. Treatment/control ratios do not guarantee cancellation of
+Read the status recorded in your table. `withheld_degenerate_fit` means the
+fitted illumination correction did not pass the saturation safeguard and was
+withheld. `NA` or an absent field means **not reported**, not that correction was
+applied or passed. The table explicitly identifies fields not supplied by the
+analysis. Inspect the QC images and repeat measurement if QC information is missing. A withheld correction is
+**not evidence of adequate illumination**. Treatment/control ratios do not guarantee cancellation of
 exposure or lighting differences. Use consistent imaging and a suitable reference;
 rephotograph when needed. The figures here illustrate software output, not a
 validated melanin-concentration assay.
 
-FunMel prints reminders and warns about unconfirmed image QC. Default computation
-continues without editing review flags. Expected reminder warnings are omitted
-from this rendered article for readability; they are explained here and remain
-visible in a normal console run.
+Console reminders identify image-QC checks. Inspect the QC images before
+interpreting or reporting results.
 
 ## 5. Inspect whole-colony, spot and profile tables
 
-```{r colony-table14}
-knitr::kable(head(result14$colonies[,c("plate_id","colony_id","MI_min",
-  "MI_mean","MI_max","MI_spot_mean","n_spots_measured","spot_status")]),digits=2,
-  row.names=FALSE)
+```{r colony-table14, results='asis'}
+colony_table14 <- tutorial_table14(result14$colonies,
+  c("plate_id","colony_id","MI_min","MI_mean","MI_max","MI_spot_mean","n_spots_measured","spot_status"),
+  required=c("plate_id","colony_id","MI_mean"),label="colony measurements")
+report_missing14(colony_table14,"colony table")
+knitr::kable(head(colony_table14),digits=2,row.names=FALSE)
 ```
 
 `MI = 100 - CIELAB L*`; larger values indicate darker tissue. `MI_min` and
@@ -204,10 +238,12 @@ knitr::kable(head(result14$colonies[,c("plate_id","colony_id","MI_min",
 `MI_spot_mean` is the mean of the individual spot means. The corresponding
 `MI_spot_min/max` are extrema of **spot means**, not pixel extrema.
 
-```{r spot-table14}
-knitr::kable(head(result14$spots[,c("plate_id","colony_id","spot_id",
-  "spot_radius_mm","n_pixels","MI_mean","MI_min","MI_max")]),digits=2,
-  row.names=FALSE)
+```{r spot-table14, results='asis'}
+spot_table14 <- tutorial_table14(result14$spots,
+  c("plate_id","colony_id","spot_id","spot_radius_mm","n_pixels","MI_mean","MI_min","MI_max"),
+  required=c("plate_id","colony_id","spot_id","MI_mean"),label="spot measurements")
+report_missing14(spot_table14,"spot table")
+knitr::kable(head(spot_table14),digits=2,row.names=FALSE)
 ```
 
 Each spot has a location in working-image pixels (`x_px`, `y_px`), a physical
@@ -216,9 +252,12 @@ radius and an achieved pixel count. `L_mean` is mean CIELAB lightness; spot
 Check `spot_status` and `n_spots_measured`; if all requested spots cannot fit
 without overlap, the incomplete summary is unavailable instead of invented.
 
-```{r profiles14}
-knitr::kable(head(result14$profiles[,intersect(c("plate_id","colony_id","mid_mm",
-  "MI_mean","MI_lo","MI_hi"),names(result14$profiles))]),digits=2,row.names=FALSE)
+```{r profiles14, results='asis'}
+profile_table14 <- tutorial_table14(result14$profiles,
+  c("plate_id","colony_id","mid_mm","MI_mean","MI_lo","MI_hi"),
+  required=c("plate_id","colony_id","MI_mean"),label="profiles")
+report_missing14(profile_table14,"profiles")
+knitr::kable(head(profile_table14),digits=2,row.names=FALSE)
 ```
 
 Profiles describe darkness from the colony edge inward. Their spatial bootstrap
@@ -232,11 +271,15 @@ a **filename**, whereas `result14$spots` is a **data frame**.
 
 ## 6. Finalize and verify the own-control arithmetic
 
-```{r finish14}
-reviewed14 <- finish_experiment(project14)
-knitr::kable(reviewed14$melanization_coefficient[,c("set_id","treatment",
-  "MI_treatment_mean","MI_control_mean","melanization_coefficient",
-  "n_treatment_plates","n_control_plates")],digits=3,row.names=FALSE)
+```{r finish14, results='asis'}
+reviewed14 <- FunMel::finish_experiment(project14)
+coefficient_table14 <- tutorial_table14(reviewed14$melanization_coefficient,
+  c("set_id","treatment","MI_treatment_mean","MI_control_mean","melanization_coefficient",
+    "n_treatment_plates","n_control_plates"),
+  required=c("set_id","treatment","MI_treatment_mean","MI_control_mean","melanization_coefficient"),
+  label="matched coefficients")
+report_missing14(coefficient_table14,"coefficient table")
+print(knitr::kable(coefficient_table14,digits=3,row.names=FALSE))
 reviewed14$assessment$status
 ```
 
@@ -277,7 +320,7 @@ replicates. The default figure and assessment use whole-colony MI.
 ## 7. Display, export and explain the final figure
 
 ```{r comparison14, fig.height=5.5, fig.cap="Descriptive real-data comparison. Each row uses that treatment's own set control; these are image-darkness ratios under the illustrative calibration."}
-print(plot_treatment_comparison(project14))
+print(plot_treatment_comparison(reviewed14))
 ```
 
 You can also plot the finalized object already in memory:
@@ -294,7 +337,7 @@ print(plot_treatment_comparison(reviewed14))
   Control SD is unavailable for a single control. Ratio SD conditions on the
   shared control mean and does not include its uncertainty.
 - **QC reminders:** remain visible in the console and separate caption file; they
-  are not processing failures or automatic approval. Inspect the images before reporting results.
+  identify checks to complete before reporting results.
 
 Finalization already exported `treatment_comparison.pdf`, `.svg`, `.png` and
 `_statistics.csv` into the project folder. To create a named alternative:
@@ -311,21 +354,36 @@ labels does not change metadata or statistical matching.
 
 ## 8. Close R, reopen the project and read saved tables
 
-For a project saved in a durable folder, start a fresh session and run:
+For a project saved in a durable folder, start a fresh session and select its
+`image_analysis.rds` file. Read saved results directly from that same folder:
 
 ```{r resume14, eval=FALSE}
 library(FunMel)
+saved_file14 <- file.choose() # Select image_analysis.rds in the project folder.
+saved_dir14 <- dirname(normalizePath(saved_file14,mustWork=TRUE))
+result14 <- readRDS(file.path(saved_dir14,"image_analysis.rds"))
+reviewed14 <- readRDS(file.path(saved_dir14,"reviewed_analysis.rds"))
+head(result14$spots)
+print(plot_treatment_comparison(reviewed14))
+```
+
+This reads existing measurements; it does not repeat image analysis. Keep the
+complete project folder so the original and finalized results remain together.
+
+For project-aware recovery, the optional `load_experiment()` and
+`read_experiment()` helpers reconnect moved project paths:
+
+```{r project-recovery14, eval=FALSE}
 project14 <- load_experiment() # Select project.rds in its current folder.
 result14 <- read_experiment(project14)
 reviewed14 <- read_experiment(project14,finalized=TRUE)
-head(result14$spots)
-print(plot_treatment_comparison(project14))
 ```
 
-To update final outputs after correcting valid experimental annotations:
+After opening the project with `load_experiment()`, update final outputs after
+correcting valid experimental annotations:
 
 ```{r refinish14, eval=FALSE}
-reviewed14 <- finish_experiment(project14)
+reviewed14 <- FunMel::finish_experiment(project14)
 ```
 
 `Final outputs saved` means this succeeded. It is unnecessary to prepare the
@@ -362,7 +420,7 @@ synthetic teaching labels is not validated for these photographs.
 
 | File | Contents |
 |---|---|
-| project.rds | Project paths; reopen with load_experiment() |
+| project.rds | Saved project paths for project-aware recovery |
 | plate_metadata.csv | Editable experimental assignments, one row per plate |
 | image_analysis.rds | Original measured tables and analysis status |
 | colonies.csv, spots.csv, profiles.csv, plates.csv | Measurement tables |
@@ -376,7 +434,7 @@ synthetic teaching labels is not validated for these photographs.
 | treatment_comparison.pdf/.svg/.png | Comparison exports |
 | treatment_comparison_statistics.csv | Exact descriptive values plotted |
 | treatment_comparison_caption.txt | Full interpretation, SD definitions, limitations and QC status |
-| qc_review_status.csv | Recorded QC status, with no default approval requirement |
+| qc_review_status.csv | Recorded QC status |
 | qc/ | One QC PNG per image |
 | sessionInfo.txt | R, platform and package versions |
 
@@ -387,13 +445,9 @@ metadata, retaining the own-control design. Do not reuse these eight-file labels
 for another experiment.
 
 The installed script `examples/walkthrough_14_days.R` follows the same numbered
-procedure. Precomputed tables in `extdata/14_day_example` have their own
-`PROVENANCE.md`; they are illustrative measurements, not ground truth. This
-rendered tutorial recomputes the photographs and does not substitute those tables.
+procedure. Precomputed tables in `extdata/14_day_example` are documented in their
+`PROVENANCE.md`. The steps above analyze the original photographs.
 
-The comparison figure has **no text paragraph underneath by default**. Full
-interpretation is saved separately as `treatment_comparison_caption.txt` during
-export and is retained in the plot's `FunMel_caption` attribute. Use
-`plot_treatment_comparison(project14,caption="brief")` for a short embedded note,
-or `caption="full"` for the full caption. Removing figure text does not remove
-QC warnings, matching checks or replication safeguards.
+Comparison captions are exported separately as `treatment_comparison_caption.txt`.
+Use `caption="brief"` or `caption="full"` in `plot_treatment_comparison()` to include
+a caption beneath the figure.

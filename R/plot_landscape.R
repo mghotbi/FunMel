@@ -74,7 +74,7 @@ plot_melanization_map <- function(x, type = c("both", "3d", "2d"), mi_range = NU
   op <- graphics::par(no.readonly = TRUE)
   on.exit(graphics::par(op), add = TRUE)
   if (type == "both") {
-    graphics::layout(matrix(c(1, 2, 3, 3), 2, byrow = TRUE), heights = c(1, 0.09))
+    graphics::layout(matrix(c(1, 2, 3, 3), 2, byrow = TRUE), heights = c(1, 0.18))
   }
   # crop to the analysed dish for both views
   r <- d$r_agar
@@ -168,15 +168,21 @@ plot_melanization_map <- function(x, type = c("both", "3d", "2d"), mi_range = NU
   }
 
   if (type == "both") {
-    graphics::par(mar = c(1.6, 18, 0.9, 18))
+    # Use physical fractions of the legend strip: fixed line margins fail on
+    # the small devices used by pkgdown and when RStudio replays a resized plot.
+    available <- graphics::par("din") - c(sum(graphics::par("omi")[c(2,4)]),
+                                         sum(graphics::par("omi")[c(1,3)]))
+    strip_height <- available[2] * 0.18 / 1.18
+    graphics::par(mai = c(0.34 * strip_height, 0.18 * available[1],
+                          0.30 * strip_height, 0.18 * available[1]))
     graphics::plot.new()
     graphics::plot.window(xlim = c(0, 1), ylim = c(0, 1), xaxs = "i", yaxs = "i")
-    graphics::rasterImage(grDevices::as.raster(matrix(ramp, nrow = 1)), 0, 0, 1, 1,
-                          interpolate = TRUE)
+    edges <- seq(0,1,length.out=length(ramp)+1L)
+    graphics::rect(edges[-length(edges)],0,edges[-1L],1,col=ramp,border=NA)
     at <- pretty(mi_range, 5); at <- at[at >= mi_range[1] & at <= mi_range[2]]
     graphics::axis(1, at = (at - mi_range[1]) / diff(mi_range), labels = at,
                    tick = FALSE, line = -0.8, cex.axis = 0.8, col.axis = "#3A3530")
-    graphics::mtext(expression("Melanization index (100 - " * L^"*" * ");   3D floor: surrounding zone = gold, central object = cream, agar = grey"),
+    graphics::mtext(expression("Melanization index (100 - " * L^"*" * ");   3D floor: hyphal growth = gold, central tissue = cream, agar = grey"),
                     side = 3, line = 0.1, cex = 0.7, col = "#3A3530")
   }
   invisible(list(MI = MIs, mi_range = mi_range, ramp = ramp))

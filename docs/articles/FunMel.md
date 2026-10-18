@@ -41,7 +41,7 @@ remotes::install_github("mghotbi/FunMel")
 
 library(FunMel)
 packageVersion("FunMel")
-#> [1] '0.4.9'
+#> [1] '0.4.16'
 ```
 
 R \>= 4.1 and a source-compilation toolchain are required: Xcode Command
@@ -118,11 +118,11 @@ the measurement.
 | Saved measurements from an earlier session | Use [`load_experiment()`](https://mghotbi.github.io/FunMel/reference/load_experiment.md); do not prepare the project again |
 
 A file chooser selects **files**, not folders. Selecting one original
-photograph now uses its containing folder and subfolders; the package
-prints the exact folder it will scan. It includes all supported
-photographs there, not just the selected image. For multiple batches,
-select their ZIP or supply the common root folder path. Do not select a
-QC figure or metadata CSV as an original photograph.
+photograph uses its containing folder and subfolders; the package prints
+the exact folder it will scan. It includes all supported photographs
+there, not just the selected image. For multiple batches, select their
+ZIP or supply the common root folder path. Do not select a QC figure or
+metadata CSV as an original photograph.
 
 ### New photographs: prepare once
 
@@ -173,8 +173,7 @@ A unique `plate_metadata.csv` in the input is read automatically.
 Otherwise the package creates a template, proposing labels only for
 explicit structures such as `batch1/control/` and `batch1/fungus_A/`.
 Folder names cannot prove biological assignments. **Correct missing or
-inaccurate information using laboratory records before analysis. There
-are no approval switches to edit.**
+inaccurate information using laboratory records before analysis.**
 
 | Field | Required interpretation |
 |----|----|
@@ -278,7 +277,7 @@ that response separate from whole-colony MI.
 | Message or situation | Next step |
 |----|----|
 | Final outputs saved | Finalization succeeded; read the exported tables and figure |
-| Image QC unconfirmed | Inspect masks, calibration and warnings; computation continues without flag edits |
+| Image QC unconfirmed | Inspect masks, calibration and warnings; review before interpreting results |
 | Insufficient plate replication | Use descriptive results; do not interpret absent p-values as a software failure |
 | Missing treatment or matching control | Complete actual assignments; another batch’s control is not a substitute |
 | Selected metadata CSV, PDF or SVG | Reopen project.rds, or choose the original photo ZIP/photo |
@@ -289,10 +288,8 @@ that response separate from whole-colony MI.
 
 Custom metadata is retained; measurement-name conflicts receive a
 `metadata_` prefix only in measurement tables. The full metadata keeps
-original names. A new image run resets recorded `qc_pass` values but
-never needs FALSE-to-TRUE edits in the standard workflow. The advanced
-`require_qc=TRUE` policy is opt-in. Changed segmentation layouts require
-reanalysis because the saved masks differ.
+original names. Changed segmentation layouts require reanalysis because
+the saved masks differ.
 
 **Next:** [work through the real
 photographs](https://mghotbi.github.io/FunMel/articles/Real-14-day.md),
@@ -301,11 +298,8 @@ function](https://mghotbi.github.io/FunMel/articles/Function-examples.md),
 or read the installed `guides/FunMel_overview.md` for algorithms and use
 alongside ImageJ/Fiji.
 
-The comparison figure has **no text paragraph underneath by default**.
-Full interpretation is saved separately as
-`treatment_comparison_caption.txt` during export and is retained in the
-plot’s `FunMel_caption` attribute. Use
-`plot_treatment_comparison(project,caption="brief")` for a short
-embedded note, or `caption="full"` for the full caption. Removing figure
-text does not remove QC warnings, matching checks or replication
-safeguards.
+Comparison captions are exported separately as
+`treatment_comparison_caption.txt`. Use `caption="brief"` or
+`caption="full"` in
+[`plot_treatment_comparison()`](https://mghotbi.github.io/FunMel/reference/plot_treatment_comparison.md)
+to include a caption beneath the figure.

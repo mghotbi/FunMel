@@ -25,3 +25,4 @@ docs/
 !inst/validation/*.zip
 !tests/testthat/fixtures/*.zip
 inst/doc/
+tc/

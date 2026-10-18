@@ -22,6 +22,7 @@ unsupported. See vignette('FunMel') and \code{\link[=example_experiment]{example
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://mghotbi.github.io/FunMel}
   \item \url{https://github.com/mghotbi/FunMel}
   \item Report bugs at \url{https://github.com/mghotbi/FunMel/issues}
 }

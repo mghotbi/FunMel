@@ -23,6 +23,8 @@ inference is unsupported. See vignette('FunMel') and
 
 Useful links:
 
+- <https://mghotbi.github.io/FunMel>
+
 - <https://github.com/mghotbi/FunMel>
 
 - Report bugs at <https://github.com/mghotbi/FunMel/issues>
@@ -31,3 +33,8 @@ Useful links:
 
 **Maintainer**: Mitra Ghotbi <mitra.ghotbi@gmail.com>
 ([ORCID](https://orcid.org/0000-0001-9185-9993))
+
+Authors:
+
+- Mitra Ghotbi <mitra.ghotbi@gmail.com>
+  ([ORCID](https://orcid.org/0000-0001-9185-9993))

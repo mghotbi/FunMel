@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.16</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -113,9 +113,9 @@ be replaced in the same session.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mghotbi/FunMel"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mghotbi/FunMel" class="external-link">FunMel</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mghotbi.github.io/FunMel">FunMel</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"FunMel"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] '0.4.9'</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] '0.4.16'</span></span></code></pre></div>
 <p>R &gt;= 4.1 and a source-compilation toolchain are required: Xcode
 Command Line Tools on macOS, matching Rtools on Windows, or R
 development tools and ImageMagick development libraries on Linux. To
@@ -207,11 +207,11 @@ again</td>
 </tbody>
 </table>
 <p>A file chooser selects <strong>files</strong>, not folders. Selecting
-one original photograph now uses its containing folder and subfolders;
-the package prints the exact folder it will scan. It includes all
-supported photographs there, not just the selected image. For multiple
-batches, select their ZIP or supply the common root folder path. Do not
-select a QC figure or metadata CSV as an original photograph.</p>
+one original photograph uses its containing folder and subfolders; the
+package prints the exact folder it will scan. It includes all supported
+photographs there, not just the selected image. For multiple batches,
+select their ZIP or supply the common root folder path. Do not select a
+QC figure or metadata CSV as an original photograph.</p>
 <div class="section level3">
 <h3 id="new-photographs-prepare-once">New photographs: prepare once<a class="anchor" aria-label="anchor" href="#new-photographs-prepare-once"></a>
 </h3>
@@ -253,8 +253,7 @@ automatically. Otherwise the package creates a template, proposing
 labels only for explicit structures such as <code>batch1/control/</code>
 and <code>batch1/fungus_A/</code>. Folder names cannot prove biological
 assignments. <strong>Correct missing or inaccurate information using
-laboratory records before analysis. There are no approval switches to
-edit.</strong></p>
+laboratory records before analysis.</strong></p>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -444,8 +443,8 @@ Keep that response separate from whole-colony MI.</p>
 </tr>
 <tr class="even">
 <td>Image QC unconfirmed</td>
-<td>Inspect masks, calibration and warnings; computation continues
-without flag edits</td>
+<td>Inspect masks, calibration and warnings; review before interpreting
+results</td>
 </tr>
 <tr class="odd">
 <td>Insufficient plate replication</td>
@@ -484,24 +483,18 @@ compared plates</td>
 </table>
 <p>Custom metadata is retained; measurement-name conflicts receive a
 <code>metadata_</code> prefix only in measurement tables. The full
-metadata keeps original names. A new image run resets recorded
-<code>qc_pass</code> values but never needs FALSE-to-TRUE edits in the
-standard workflow. The advanced <code>require_qc=TRUE</code> policy is
-opt-in. Changed segmentation layouts require reanalysis because the
-saved masks differ.</p>
+metadata keeps original names. Changed segmentation layouts require
+reanalysis because the saved masks differ.</p>
 <p><strong>Next:</strong> <a href="Real-14-day.html">work through the
 real photographs</a>, explore <a href="Function-examples.html">every
 exported function</a>, or read the installed
 <code>guides/FunMel_overview.md</code> for algorithms and use alongside
 ImageJ/Fiji.</p>
-<p>The comparison figure has <strong>no text paragraph underneath by
-default</strong>. Full interpretation is saved separately as
-<code>treatment_comparison_caption.txt</code> during export and is
-retained in the plot’s <code>FunMel_caption</code> attribute. Use
-<code>plot_treatment_comparison(project,caption="brief")</code> for a
-short embedded note, or <code>caption="full"</code> for the full
-caption. Removing figure text does not remove QC warnings, matching
-checks or replication safeguards.</p>
+<p>Comparison captions are exported separately as
+<code>treatment_comparison_caption.txt</code>. Use
+<code>caption="brief"</code> or <code>caption="full"</code> in
+<code><a href="../reference/plot_treatment_comparison.html">plot_treatment_comparison()</a></code> to include a caption beneath
+the figure.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
