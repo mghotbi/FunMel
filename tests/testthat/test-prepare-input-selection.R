@@ -1,0 +1,28 @@
+test_that("a selected photo prepares all images in its containing folder", {
+  root <- withr::local_tempdir();dest <- tempfile()
+  on.exit(unlink(dest,recursive=TRUE),add=TRUE)
+  dir.create(file.path(root,"extra"));dir.create(file.path(root,"fungus_A"))
+  for(f in c("one.JPG","two.JPG")) writeLines("fixture",file.path(root,f))
+  writeLines("fixture",file.path(root,"extra","three.JPG"))
+  expect_message(p <- prepare_experiment(file.path(root,"one.JPG"),dest),"containing folder")
+  m <- read.csv(p$metadata_file)
+  expect_equal(nrow(m),3L)
+  expect_equal(p$image_root,normalizePath(root))
+  expect_true(all(is.na(m$treatment))) # Image appearance is never used to invent assignments.
+})
+test_that("a project selected during preparation reopens without creating another", {
+  root <- withr::local_tempdir();dest <- tempfile();unused <- tempfile()
+  on.exit(unlink(c(dest,unused),recursive=TRUE),add=TRUE)
+  writeLines("fixture",file.path(root,"photo.JPG"))
+  p <- prepare_experiment(root,dest)
+  expect_message(q <- prepare_experiment(file.path(dest,"project.rds"),unused),"Opened existing project")
+  expect_identical(q,p)
+  expect_false(dir.exists(unused))
+  expect_error(prepare_experiment(file.path(dest,"project.rds"),unused,metadata=data.frame()),"load it and edit")
+})
+test_that("non-image selections give useful guidance without creating output", {
+  root <- withr::local_tempdir();dest <- tempfile()
+  f <- file.path(root,"metadata.csv");writeLines("file,treatment",f)
+  expect_error(prepare_experiment(f,dest),"metadata CSV")
+  expect_false(dir.exists(dest))
+})

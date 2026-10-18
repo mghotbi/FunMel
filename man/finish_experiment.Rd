@@ -7,7 +7,8 @@
 finish_experiment(project, ..., require_qc = FALSE)
 }
 \arguments{
-\item{project}{A funmel_project or path to its project.rds.}
+\item{project}{A funmel_project, its current folder, project.rds, or a saved
+analysis beside project.rds. Use load_experiment() after moving a project.}
 
 \item{...}{Additional assess_experiment() settings.}
 

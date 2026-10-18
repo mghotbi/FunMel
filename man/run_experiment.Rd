@@ -7,7 +7,8 @@
 run_experiment(project, n_spots = NULL, spot_radius_mm = 0.5, ...)
 }
 \arguments{
-\item{project}{A funmel_project or path to its project.rds.}
+\item{project}{A funmel_project, its current folder, project.rds, or a saved
+analysis beside project.rds. Use load_experiment() after moving a project.}
 
 \item{n_spots}{Optional number of circular spots per target colony; NULL uses
 whole-colony pixels only. Spot and whole-colony results are kept separate.}

@@ -16,5 +16,5 @@ test_that('the real example has one control and three treatments in each of two 
   expect_equal(nrow(mc$coefficients),2L)
   expect_warning(p <- plot_treatment_comparison(d,preview=TRUE),'Image QC')
   expect_s3_class(p,'ggplot')
-  expect_match(p$labels$caption,'QC UNCONFIRMED')
+  expect_match(attr(p,'FunMel_caption'),'QC UNCONFIRMED')
 })

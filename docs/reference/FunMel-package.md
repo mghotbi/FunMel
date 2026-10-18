@@ -31,8 +31,3 @@ Useful links:
 
 **Maintainer**: Mitra Ghotbi <mitra.ghotbi@gmail.com>
 ([ORCID](https://orcid.org/0000-0001-9185-9993))
-
-Authors:
-
-- Mitra Ghotbi <mitra.ghotbi@gmail.com>
-  ([ORCID](https://orcid.org/0000-0001-9185-9993))

@@ -1,5 +1,31 @@
 # Changelog
 
+## FunMel 0.4.9
+
+- Comparison figures omit the embedded caption by default; export full
+  interpretation to a separate caption text file, with optional
+  brief/full caption modes.
+
+- Preparation now accepts a photograph selected in a file chooser and
+  clearly identifies its containing image folder. Existing project RDS
+  selections reopen saved work.
+
+- Separate Get started, detailed real 14-day walkthrough and complete
+  function catalog into three navigable articles.
+
+- Synchronize README, examples, input guidance and website navigation;
+  retain independent-plate and matched-control safeguards.
+
+## FunMel 0.4.8
+
+- Open complete moved projects with load_experiment(), and read saved
+  tables with read_experiment().
+- Plot treatment comparisons directly from projects, folders or saved
+  analyses.
+- Extend the eight-photo walkthrough with table inspection, figure
+  export and reopening saved results.
+- Add an indexed example catalog for every exported function.
+
 ## FunMel 0.4.7
 
 - Remove mandatory metadata approval throughout coefficient calculation,

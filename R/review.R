@@ -19,6 +19,19 @@ finalize_analysis <- function(result, metadata, ..., require_qc=FALSE) {
   validate_metadata(metadata)
   message("Review reminder: verify treatment/control assignments, matching sets, image masks and calibration before interpreting results. No metadata approval-flag edits are required.")
   if(!"qc_pass" %in% names(metadata)) metadata$qc_pass <- FALSE
+  check_saved_metadata(result,metadata)
+  result <- attach_result_metadata(result,metadata)
+  result$assessment <- assess_experiment(result,...,require_qc=require_qc)
+  result$melanization_coefficient <- result$assessment$coefficients
+  result$coefficient_plate_means <- result$assessment$plate_means
+  result$per_plate_coefficients <- result$assessment$per_plate_coefficients
+  result$qc_review <- result$assessment$qc_review
+  result$coefficient_error <- NULL
+  result
+}
+
+check_saved_metadata <- function(result,metadata) {
+  validate_metadata(metadata)
   ids <- unique(as.character(result$colonies$plate_id))
   if(!setequal(ids,as.character(metadata$plate_id))) stop("Metadata must match the analyzed plate IDs exactly.")
   layout_fields <- c("rotation_deg","radius_frac","radius_mm","search_frac","start_deg","n_colonies")
@@ -31,12 +44,5 @@ finalize_analysis <- function(result, metadata, ..., require_qc=FALSE) {
     if(nm=="file") {a<-basename(a);b<-basename(b)}
     if(!identical(a,b)) stop("Changing ",nm," requires image reanalysis, because it affects file identity or segmentation.")
   }
-  result <- attach_result_metadata(result,metadata)
-  result$assessment <- assess_experiment(result,...,require_qc=require_qc)
-  result$melanization_coefficient <- result$assessment$coefficients
-  result$coefficient_plate_means <- result$assessment$plate_means
-  result$per_plate_coefficients <- result$assessment$per_plate_coefficients
-  result$qc_review <- result$assessment$qc_review
-  result$coefficient_error <- NULL
-  result
+  invisible(NULL)
 }

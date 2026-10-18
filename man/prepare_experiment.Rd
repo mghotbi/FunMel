@@ -2,7 +2,7 @@
 % Please edit documentation in R/workflow.R
 \name{prepare_experiment}
 \alias{prepare_experiment}
-\title{Prepare a folder or ZIP as a reviewable experiment project}
+\title{Prepare photographs as an experiment project}
 \usage{
 prepare_experiment(
   input = NULL,
@@ -13,7 +13,11 @@ prepare_experiment(
 )
 }
 \arguments{
-\item{input}{Photograph directory or ZIP path. NULL opens a file chooser for a ZIP.}
+\item{input}{Photograph folder, ZIP, or a photograph inside the intended
+folder. Selecting a photograph includes all supported images in its containing
+folder and subfolders, not only that image. For multiple batches, supply the
+root folder or ZIP. NULL opens a file chooser. Selecting an existing project
+or analysis RDS beside project.rds reopens it with load_experiment().}
 
 \item{project_dir}{New output folder; must be empty or not yet exist.}
 
@@ -38,7 +42,7 @@ time points of a plate are not independent replicates.
 }
 \examples{
 \dontrun{
-project <- prepare_experiment(file.choose(), "FunMel_project")
+project <- prepare_experiment() # Choose a photo ZIP or one photo in its folder.
 # Edit project$metadata_file: verify set_id, treatment and centre_model.
 result <- run_experiment(project, n_spots = 5, spot_radius_mm = 0.4)
 # Inspect project$qc_dir; review reminders do not require approval-flag edits.

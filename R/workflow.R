@@ -1,4 +1,4 @@
-#' Prepare a folder or ZIP as a reviewable experiment project
+#' Prepare photographs as an experiment project
 #'
 #' Finds photographs recursively, preserving their relative paths. With a
 #' batch/control and batch/treatment folder structure, each batch path proposes
@@ -8,7 +8,11 @@
 #' identity or QC. One photograph must represent one independent plate; repeated
 #' time points of a plate are not independent replicates.
 #'
-#' @param input Photograph directory or ZIP path. NULL opens a file chooser for a ZIP.
+#' @param input Photograph folder, ZIP, or a photograph inside the intended
+#'   folder. Selecting a photograph includes all supported images in its containing
+#'   folder and subfolders, not only that image. For multiple batches, supply the
+#'   root folder or ZIP. NULL opens a file chooser. Selecting an existing project
+#'   or analysis RDS beside project.rds reopens it with load_experiment().
 #' @param project_dir New output folder; must be empty or not yet exist.
 #' @param metadata Optional metadata data frame or CSV path. Otherwise a unique
 #'   plate_metadata.csv in the input is used, or a template is proposed.
@@ -17,7 +21,7 @@
 #' @return A funmel_project with paths to metadata, images, QC and result files.
 #' @examples
 #' \dontrun{
-#' project <- prepare_experiment(file.choose(), "FunMel_project")
+#' project <- prepare_experiment() # Choose a photo ZIP or one photo in its folder.
 #' # Edit project$metadata_file: verify set_id, treatment and centre_model.
 #' result <- run_experiment(project, n_spots = 5, spot_radius_mm = 0.4)
 #' # Inspect project$qc_dir; review reminders do not require approval-flag edits.
@@ -27,19 +31,35 @@
 prepare_experiment <- function(input = NULL, project_dir = "FunMel_project",
                                metadata = NULL, control_folders = c("control", "controls"),
                                max_uncompressed_mb = 2048) {
-  if(is.null(input)) input <- file.choose()
+  if(is.null(input)) {
+    message("Select a photograph ZIP, one photograph inside its folder, or project.rds to reopen saved work.")
+    input <- tryCatch(file.choose(),error=function(e)
+      stop("No input selected. Nothing was prepared. Run prepare_experiment() again, or supply a photograph-folder path.",call.=FALSE))
+  }
   if(!is.character(input) || length(input)!=1L || is.na(input) || !file.exists(input))
-    stop("Choose an existing photograph folder or ZIP.")
+    stop("Choose an existing photograph folder, ZIP or photograph. To reopen saved work, use load_experiment().",call.=FALSE)
+  image_pattern <- "\\.(jpe?g|png|tiff?|heic)$"
+  if(!dir.exists(input) && grepl("\\.rds$",input,ignore.case=TRUE)) {
+    if(!is.null(metadata)) stop("To change an existing project, load it and edit its metadata CSV; metadata= is for new projects.",call.=FALSE)
+    project <- load_experiment(input)
+    message("Opened existing project in ",project$project_dir,". No new project was created; read saved tables with read_experiment(project), or finalize with finish_experiment(project).")
+    return(project)
+  }
+  if(!dir.exists(input) && grepl(image_pattern,input,ignore.case=TRUE)) {
+    input <- dirname(normalizePath(input,mustWork=TRUE))
+    message("Using selected photograph's containing folder: ",input,
+      ". All supported photographs there and in subfolders will be included. For multiple batches, supply their common root folder or ZIP. Verify the metadata before analysis.")
+  }
+  if(!dir.exists(input) && !grepl("\\.zip$",input,ignore.case=TRUE))
+    stop("Selected file is not a photograph or photo ZIP. Select a JPG/PNG/TIFF/HEIC, a ZIP, or project.rds; a metadata CSV, QC PDF or SVG is not a photograph input.",call.=FALSE)
   if(!is.numeric(max_uncompressed_mb) || length(max_uncompressed_mb)!=1L ||
      !is.finite(max_uncompressed_mb) || max_uncompressed_mb<=0) stop("max_uncompressed_mb must be positive.")
   if(!is.character(control_folders) || !length(control_folders) || anyNA(control_folders) ||
      any(!nzchar(control_folders))) stop("control_folders must be explicit nonempty labels.")
   if(dir.exists(project_dir) && length(list.files(project_dir,all.files=TRUE,no..=TRUE)))
     stop("project_dir must be new or empty; existing metadata and results will not be overwritten.")
-  image_pattern <- "\\.(jpe?g|png|tiff?|heic)$"
   if(!dir.exists(input)) {
-    if(!grepl("\\.zip$",input,ignore.case=TRUE)) stop("input must be a directory or ZIP.")
-    listing <- utils::unzip(input,list=TRUE)
+    listing <- tryCatch(utils::unzip(input,list=TRUE),error=function(e) stop("Cannot read the selected photo ZIP: ",conditionMessage(e),call.=FALSE))
     entries <- gsub("\\\\","/",listing$Name)
     unsafe <- grepl("(^|/)\\.\\.(/|$)|^/|^[A-Za-z]:",entries)
     if(any(unsafe)) stop("ZIP contains unsafe extraction paths.")
@@ -101,7 +121,8 @@ prepare_experiment <- function(input = NULL, project_dir = "FunMel_project",
 #' Reads the editable project metadata, applies the fungal or control layout
 #' per row, writes QC images and saves measurements. Review flags are reset
 #' for this new analysis; coefficients are withheld until finish_experiment().
-#' @param project A funmel_project or path to its project.rds.
+#' @param project A funmel_project, its current folder, project.rds, or a saved
+#'   analysis beside project.rds. Use load_experiment() after moving a project.
 #' @param n_spots Optional number of circular spots per target colony; NULL uses
 #'   whole-colony pixels only. Spot and whole-colony results are kept separate.
 #' @param spot_radius_mm Radius of each optional circular ROI (mm).
@@ -166,7 +187,8 @@ run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5, ...) {
 #' exports the comparison figure and tables. Spot summaries stay separate;
 #' use melanization_coefficient(..., response="MI_spot_mean") explicitly for
 #' a prespecified, consistently applied spot-based analysis.
-#' @param project A funmel_project or path to its project.rds.
+#' @param project A funmel_project, its current folder, project.rds, or a saved
+#'   analysis beside project.rds. Use load_experiment() after moving a project.
 #' @param ... Additional assess_experiment() settings.
 #' @param require_qc Default FALSE warns and continues if image QC is unconfirmed.
 #'   Set TRUE to require qc_pass=TRUE before finalization and plotting.
@@ -174,8 +196,7 @@ run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5, ...) {
 #' @export
 finish_experiment <- function(project, ..., require_qc=FALSE) {
   project <- as_funmel_project(project)
-  if(!file.exists(project$result_file)) stop("Run run_experiment(project) before finalization.")
-  result <- readRDS(project$result_file)
+  result <- read_experiment(project)
   meta <- read_project_metadata(project)
   if(nrow(result$failed)) stop("Resolve all failed photographs before finalization.")
   context <- recorded_context_columns(meta)
@@ -222,8 +243,27 @@ finish_experiment <- function(project, ..., require_qc=FALSE) {
 #' @keywords internal
 #' @noRd
 as_funmel_project <- function(project) {
-  if(is.character(project) && length(project)==1L) project <- readRDS(project)
-  if(!inherits(project,"funmel_project")) stop("Use the project returned by prepare_experiment(), or its project.rds path.")
+  if(is.character(project)) return(load_experiment(project))
+  if(!inherits(project,"funmel_project")) stop("Supply a FunMel project or use load_experiment().",call.=FALSE)
+  home <- project$project_dir
+  if(is.character(home) && length(home)==1L && !is.na(home) &&
+     (!dir.exists(home) || (!any(file.exists(project$metadata_file)) && !any(file.exists(project$result_file))))) {
+    anchors <- c(project$result_file,project$reviewed_file,project$metadata_file)
+    anchors <- anchors[!is.na(anchors) & nzchar(anchors) & file.exists(anchors)]
+    candidates <- character()
+    for(d in unique(c(dirname(anchors),getwd()))) {
+      f <- file.path(d,"project.rds")
+      p <- if(file.exists(f)) tryCatch(readRDS(f),error=function(e) NULL) else NULL
+      if(inherits(p,"funmel_project") && identical(p$project_dir,home)) candidates <- c(candidates,d)
+    }
+    if(length(candidates)==1L) {
+      message("Reconnected moved project in ",candidates)
+      return(load_experiment(candidates))
+    }
+  }
+  if(is.character(home) && length(home)==1L && !is.na(home) &&
+     identical(basename(project$result_file),"reviewed_analysis.rds") && file.exists(file.path(home,"image_analysis.rds")))
+    project$result_file <- file.path(home,"image_analysis.rds")
   project
 }
 
@@ -269,7 +309,7 @@ read_project_metadata <- function(project) {
   p <- project$metadata_file
   if(!is.character(p) || length(p)!=1L || is.na(p) || !file.exists(p) || dir.exists(p))
     stop("Project metadata CSV is missing: ",paste(p,collapse="; "),
-      ". Restore your edited plate_metadata.csv or set project$metadata_file to its existing location. ",
+      ". Restore your edited plate_metadata.csv, or use load_experiment() to open its current complete project folder. ",
       "Do not recreate the project or guess treatment-control assignments.",call.=FALSE)
   tryCatch(utils::read.csv(p,stringsAsFactors=FALSE,check.names=FALSE),
     error=function(e) stop("Cannot read project metadata CSV at ",p,": ",conditionMessage(e),

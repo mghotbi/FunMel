@@ -35,3 +35,14 @@ img[alt^="FunMel hex logo"], .page-header img.logo {
   max-width: 145px;
   object-fit: contain;
 }
+
+/* Tutorial hierarchy: clear entry points, quiet surfaces and readable steps. */
+.funmel-hero { padding: 1.6rem 1.8rem; margin: 1.4rem 0 1.6rem; background: linear-gradient(125deg,#f5ead3,#fffaf0); border: 1px solid #e6d6b6; border-radius: 1rem; }
+.funmel-eyebrow { color: #745523; font-size: .76rem; font-weight: 700; letter-spacing: .12em; }
+.funmel-lead { font-size: clamp(1.4rem,3vw,2rem); line-height: 1.25; letter-spacing: -.025em; font-weight: 700; color: #2b2520; }
+.funmel-cards { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .85rem; margin: 1.5rem 0 2rem; }
+.funmel-card { border: 1px solid #e9dfcf; border-top: 3px solid #c9971c; border-radius: .65rem; padding: 1rem; background: #fff; font-size: .92rem; }
+.funmel-card strong { color: #745523; }
+.funmel-card p { margin: .6rem 0 0; }
+.funmel-note { padding: 1rem 1.3rem; border-left: 3px solid #745523; background: #faf5e9; margin: 1.3rem 0; border-radius: 0 .6rem .6rem 0; }
+@media (max-width: 900px) { .funmel-cards { grid-template-columns: 1fr; } .funmel-hero { padding: 1.2rem; } }

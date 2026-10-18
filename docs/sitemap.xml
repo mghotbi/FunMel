@@ -3,6 +3,8 @@
 <url><loc>https://mghotbi.github.io/FunMel/CONTRIBUTING.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/LICENSE-text.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/articles/FunMel.html</loc></url>
+<url><loc>https://mghotbi.github.io/FunMel/articles/Function-examples.html</loc></url>
+<url><loc>https://mghotbi.github.io/FunMel/articles/Real-14-day.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/articles/index.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/authors.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/index.html</loc></url>
@@ -30,6 +32,7 @@
 <url><loc>https://mghotbi.github.io/FunMel/reference/lab_chroma_hue.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/lab_to_srgb.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/layout_by_treatment.html</loc></url>
+<url><loc>https://mghotbi.github.io/FunMel/reference/load_experiment.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/make_metadata.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/measure_colonies.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/melanization_coefficient.html</loc></url>
@@ -42,6 +45,7 @@
 <url><loc>https://mghotbi.github.io/FunMel/reference/prepare_experiment.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/prepare_photo_archive.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/print_funmel.html</loc></url>
+<url><loc>https://mghotbi.github.io/FunMel/reference/read_experiment.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/read_plate.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/run_experiment.html</loc></url>
 <url><loc>https://mghotbi.github.io/FunMel/reference/sample_colony_spots.html</loc></url>

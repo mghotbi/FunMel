@@ -14,15 +14,24 @@ template:
 
 navbar:
   structure:
-    left: [intro, reference, news]
+    left: [intro, realdata, functions, reference, news]
     right: [search, github]
   components:
     intro:
       text: Get started
       href: articles/FunMel.html
 
+    realdata:
+      text: Real data
+      href: articles/Real-14-day.html
+    functions:
+      text: Function examples
+      href: articles/Function-examples.html
+
 articles:
   - title: Learn the workflow
     navbar: ~
     contents:
       - FunMel
+      - Real-14-day
+      - Function-examples

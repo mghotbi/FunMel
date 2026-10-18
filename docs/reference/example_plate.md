@@ -33,7 +33,7 @@ File path(s).
 ``` r
 example_plate("control")
 #>                                                                                                                                                  control 
-#> "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpIk8twa/temp_libpath13c21f9d7262/FunMel/extdata/14-days/A60_2_14_days/2026_10_02_99_41.JPG" 
+#> "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpIk8twa/temp_libpath13c25a193e5e/FunMel/extdata/14-days/A60_2_14_days/2026_10_02_99_41.JPG" 
 # \donttest{
 res <- analyze_plate(example_plate("control"), layout = plate_layout(centre = "none"))
 #> ℹ Reading image

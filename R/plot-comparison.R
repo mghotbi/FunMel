@@ -6,7 +6,9 @@
 #' never confidence intervals. Single-plate SD is unavailable. Ratio SD conditions
 #' on the shared control mean and does not quantify its uncertainty.
 #' Controls shown on multiple rows within a set are shared, not new replicates.
-#' @param colonies Colony table or an analyze_plates() batch result.
+#' @param colonies Colony table, batch result, project object, current project
+#'   folder, project.rds or saved analysis RDS. Projects use current metadata;
+#'   directly selected analysis files use their stored metadata snapshot.
 #' @param control Control treatment label.
 #' @param by Additional matching columns passed to melanization_coefficient().
 #' @param preview TRUE labels the figure as a provisional preview. No metadata
@@ -19,6 +21,9 @@
 #' @param require_qc Default FALSE warns on unconfirmed recorded QC. TRUE requires
 #'   every included plate to have qc_pass=TRUE.
 #' @param width,height Export dimensions in inches. Height defaults to row count.
+#' @param caption Text beneath the figure: none (default), brief, or full. The
+#'   full explanation remains in the FunMel_caption attribute and is exported
+#'   separately as _caption.txt. QC warnings and statistical safeguards remain.
 #' @return A ggplot object, invisibly when exported. Colours and typography can
 #'   be edited using standard ggplot2 methods. Match the target journal's size
 #'   and caption requirements before submission. The attribute
@@ -28,7 +33,22 @@
 #' @export
 plot_treatment_comparison <- function(colonies, control="control", by=NULL,
                                      preview=FALSE, labels=NULL, file=NULL,
-                                     width=7.2, height=NULL, palette=NULL,require_qc=FALSE) {
+                                     width=7.2, height=NULL, palette=NULL,require_qc=FALSE,
+                                     caption=c("none","brief","full")) {
+  caption <- match.arg(caption)
+  if(inherits(colonies,"funmel_project") || is.character(colonies)) {
+    input <- colonies
+    colonies <- read_experiment(input)
+    if(!is.null(colonies$failed) && nrow(colonies$failed)) stop("Resolve failed images before plotting.")
+    project_input <- inherits(input,"funmel_project") ||
+      (is.character(input) && (dir.exists(input) || identical(basename(input),"project.rds")))
+    if(project_input) {
+      p <- as_funmel_project(input)
+      meta <- read_project_metadata(p)
+      check_saved_metadata(colonies,meta)
+      colonies <- attach_result_metadata(colonies,meta)
+    }
+  }
   if(!is.logical(preview) || length(preview)!=1L || is.na(preview)) stop("preview must be TRUE or FALSE.")
   if(is.list(colonies) && !is.data.frame(colonies)) {
     if(!is.null(colonies$failed) && nrow(colonies$failed)) stop("Resolve failed images before plotting.")
@@ -104,12 +124,13 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
   refs<-data.frame(panel=panel_b,x=1)
   note<-if(preview) "PROVISIONAL: verify metadata, masks and calibration." else "Descriptive matched plate comparison."
   if(mc$qc_review$status!="confirmed") note<-paste0(note," QC UNCONFIRMED: inspect masks and calibration before interpretation.")
-  caption<-paste0(note,"\nSquares: control plates; circles: treatment plates; lower diamonds: treatment means.",
+  full_caption<-paste0(note,"\nSquares: control plates; circles: treatment plates; lower diamonds: treatment means.",
     "\nBars and \u00b1 values: one between-plate SD, not a confidence interval. C = control; T = treatment; MC = T/C.",
     "\nMC SD describes treatment spread conditional on its own set's control mean; shared-control uncertainty is not included.",
     if(any(cf$n_control_plates<2)) "\nSingle-control SD is unavailable. No p-values or significance tests are shown." else
       "\nDescriptive summaries only; no p-values or significance tests are shown.")
-  caption<-paste(vapply(strsplit(caption,"\n",fixed=TRUE)[[1]],function(z) paste(strwrap(z,width=112),collapse="\n"),character(1)),collapse="\n")
+  full_caption<-paste(vapply(strsplit(full_caption,"\n",fixed=TRUE)[[1]],function(z) paste(strwrap(z,width=112),collapse="\n"),character(1)),collapse="\n")
+  figure_caption <- switch(caption,none=NULL,brief="Points: independent plates; bars and +/- values: one between-plate SD. Descriptive comparison.",full=full_caption)
   countlabels<-paste0(rowlabel,"\n",cf$n_treatment_plates," treatment / ",cf$n_control_plates," control plates")
   plt<-ggplot2::ggplot(d,ggplot2::aes(x=.data$x,y=.data$y,colour=.data$key,shape=.data$series,fill=.data$key))+
     ggplot2::geom_vline(data=refs,ggplot2::aes(xintercept=.data$x),colour="#8B9399",linewidth=0.4,linetype="dashed")+
@@ -125,7 +146,8 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
     ggplot2::scale_fill_manual(values=colours,guide="none")+
     ggplot2::scale_shape_manual(values=c("Control plates"=0,"Treatment plates"=21))+
     ggplot2::guides(shape=ggplot2::guide_legend(override.aes=list(colour=c("#303840","#0072B2"),fill=c("white","#0072B2"))))+
-    ggplot2::labs(x=NULL,y=NULL,colour=NULL,shape=NULL,caption=caption)+
+    ggplot2::labs(x=NULL,y=NULL,colour=NULL,shape=NULL,caption=figure_caption,
+      subtitle=if(preview) "PROVISIONAL: verify metadata, masks and calibration." else NULL)+
     ggplot2::theme_classic(base_size=9,base_family="sans")+
     ggplot2::theme(strip.background=ggplot2::element_blank(),strip.text=ggplot2::element_text(face="bold",hjust=0,size=10),
       axis.line.y=ggplot2::element_blank(),axis.ticks.y=ggplot2::element_blank(),
@@ -134,9 +156,11 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
       legend.position="top",legend.justification="left",plot.caption.position="plot",plot.caption=ggplot2::element_text(hjust=0,size=7,colour="#47535D"),
       plot.margin=ggplot2::margin(10,12,10,10),panel.spacing=grid::unit(14,"pt"))
   attr(plt,"FunMel_statistics")<-summary
+  attr(plt,"FunMel_caption")<-full_caption
   if(!is.null(file)) {
     if(length(file)!=1L || is.na(file) || !nzchar(file)) stop("file must be an output prefix.")
     if(is.null(height)) height<-max(5,3.2+0.65*nrow(cf))
+    writeLines(full_caption,paste0(file,"_caption.txt"))
     utils::write.csv(summary,paste0(file,"_statistics.csv"),row.names=FALSE)
     for(ext in c("pdf","svg","png")) ggplot2::ggsave(paste0(file,".",ext),plt,width=width,height=height,dpi=600,
       device=if(ext=="svg") grDevices::svg else if(ext=="pdf") grDevices::cairo_pdf else "png",bg="white")

@@ -14,11 +14,14 @@ plot_treatment_comparison(
   width = 7.2,
   height = NULL,
   palette = NULL,
-  require_qc = FALSE
+  require_qc = FALSE,
+  caption = c("none", "brief", "full")
 )
 }
 \arguments{
-\item{colonies}{Colony table or an analyze_plates() batch result.}
+\item{colonies}{Colony table, batch result, project object, current project
+folder, project.rds or saved analysis RDS. Projects use current metadata;
+directly selected analysis files use their stored metadata snapshot.}
 
 \item{control}{Control treatment label.}
 
@@ -39,6 +42,10 @@ use dark outlined squares; treatments use filled circles.}
 
 \item{require_qc}{Default FALSE warns on unconfirmed recorded QC. TRUE requires
 every included plate to have qc_pass=TRUE.}
+
+\item{caption}{Text beneath the figure: none (default), brief, or full. The
+full explanation remains in the FunMel_caption attribute and is exported
+separately as _caption.txt. QC warnings and statistical safeguards remain.}
 }
 \value{
 A ggplot object, invisibly when exported. Colours and typography can

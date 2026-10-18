@@ -70,6 +70,9 @@
 - [`layout_by_treatment()`](https://mghotbi.github.io/FunMel/reference/layout_by_treatment.md)
   : Choose a segmentation layout from one metadata row
 
+- [`load_experiment()`](https://mghotbi.github.io/FunMel/reference/load_experiment.md)
+  : Open an existing experiment in its current folder
+
 - [`make_metadata()`](https://mghotbi.github.io/FunMel/reference/make_metadata.md)
   : Create a metadata template for matched treatment-control sets
 
@@ -98,7 +101,7 @@
   : Plot plate-level darkness and matched melanization coefficients
 
 - [`prepare_experiment()`](https://mghotbi.github.io/FunMel/reference/prepare_experiment.md)
-  : Prepare a folder or ZIP as a reviewable experiment project
+  : Prepare photographs as an experiment project
 
 - [`prepare_photo_archive()`](https://mghotbi.github.io/FunMel/reference/prepare_photo_archive.md)
   : Extract and locate the photographs required by metadata
@@ -108,6 +111,9 @@
   [`print(`*`<funmel_layout>`*`)`](https://mghotbi.github.io/FunMel/reference/print_funmel.md)
   [`print(`*`<funmel_plate>`*`)`](https://mghotbi.github.io/FunMel/reference/print_funmel.md)
   : Print a FunMel object summary
+
+- [`read_experiment()`](https://mghotbi.github.io/FunMel/reference/read_experiment.md)
+  : Read saved experiment tables
 
 - [`read_plate()`](https://mghotbi.github.io/FunMel/reference/read_plate.md)
   : Read a plate photograph
