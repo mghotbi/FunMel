@@ -19,7 +19,6 @@ __MACOSX/
 .Renviron
 .Rprofile
 # pkgdown output is generated locally; commit it only if your hosting needs it.
-docs/
 # Keep authored R, man, vignettes, tests, inst and README files tracked.
 *.zip
 !inst/validation/*.zip

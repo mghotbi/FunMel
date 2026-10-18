@@ -1,0 +1,66 @@
+# Prepare photographs as an experiment project
+
+Finds photographs recursively, preserving their relative paths. With a
+batch/control and batch/treatment folder structure, each batch path
+proposes a separate set_id and the leaf folder proposes the treatment.
+Only explicit control folder names are recognized. Other structures
+produce blank labels for the user to complete. Folder suggestions never
+confirm experimental identity or QC. One photograph must represent one
+independent plate; repeated time points of a plate are not independent
+replicates.
+
+## Usage
+
+``` r
+prepare_experiment(
+  input = NULL,
+  project_dir = "FunMel_project",
+  metadata = NULL,
+  control_folders = c("control", "controls"),
+  max_uncompressed_mb = 2048
+)
+```
+
+## Arguments
+
+- input:
+
+  Photograph folder, ZIP, or a photograph inside the intended folder.
+  Selecting a photograph includes all supported images in its containing
+  folder and subfolders, not only that image. For multiple batches,
+  supply the root folder or ZIP. NULL opens a file chooser. Selecting an
+  existing project or analysis RDS beside project.rds reopens it with
+  load_experiment().
+
+- project_dir:
+
+  New output folder; must be empty or not yet exist.
+
+- metadata:
+
+  Optional metadata data frame or CSV path. Otherwise a unique
+  plate_metadata.csv in the input is used, or a template is proposed.
+
+- control_folders:
+
+  Exact folder labels denoting controls (case-insensitive).
+
+- max_uncompressed_mb:
+
+  Maximum total selected ZIP entry size in MB.
+
+## Value
+
+A funmel_project with paths to metadata, images, QC and result files.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+project <- prepare_experiment() # Choose a photo ZIP or one photo in its folder.
+# Edit project$metadata_file: verify set_id, treatment and centre_model.
+result <- run_experiment(project, n_spots = 5, spot_radius_mm = 0.4)
+# Inspect project$qc_dir; review reminders do not require approval-flag edits.
+reviewed <- finish_experiment(project)
+} # }
+```
