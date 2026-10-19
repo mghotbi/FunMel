@@ -1,3 +1,11 @@
+# FunMel 0.4.17
+
+* Correct Windows image-path validation by normalizing both photographs and
+  their image root to the same separator before comparison. Valid nested paths
+  work across platforms; paths outside the root, including symlink escapes,
+  remain rejected.
+* Add path-boundary, Windows drive/UNC, and real-file regression tests.
+
 # FunMel 0.4.16
 
 * Function examples are embedded directly in the vignette. Rendering the catalog

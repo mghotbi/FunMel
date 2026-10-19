@@ -1,7 +1,7 @@
 Package: FunMel
 Title: Colour-Calibrated Quantification of Fungal Melanization in
         Confrontation Assays
-Version: 0.4.16
+Version: 0.4.17
 Authors@R: 
     person("Mitra", "Ghotbi", email = "mitra.ghotbi@gmail.com",
            role = c("aut", "cre"),
@@ -33,4 +33,3 @@ URL: https://mghotbi.github.io/FunMel,
         https://github.com/mghotbi/FunMel
 BugReports: https://github.com/mghotbi/FunMel/issues
 Config/roxygen2/version: 8.1.0
-Packaged: 2026-10-18 11:49:39 UTC; root

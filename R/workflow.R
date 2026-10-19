@@ -146,8 +146,8 @@ run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5, ...) {
   if(length(missing)) stop("Photographs are missing or unavailable locally: ",
     paste(utils::head(missing,5L),collapse="; "),
     ". Restore the files or correct the recorded image paths before rerunning.",call.=FALSE)
-  roots <- normalizePath(files,mustWork=TRUE)
-  if(any(!startsWith(roots,paste0(project$image_root,.Platform$file.sep)))) stop("Image paths must remain within the project image root.")
+  if(any(!image_paths_within_root(files,project$image_root)))
+    stop("Image paths must remain within the project image root.",call.=FALSE)
   # Preflight settings and file checks precede any changes to review flags.
   if(any(names(dots) %in% c("files","metadata","layout","qc_dir","coefficient_control","keep_images")))
     stop("Project files, metadata, layouts and QC are managed by run_experiment; pass only image settings.")
@@ -314,4 +314,24 @@ read_project_metadata <- function(project) {
   tryCatch(utils::read.csv(p,stringsAsFactors=FALSE,check.names=FALSE),
     error=function(e) stop("Cannot read project metadata CSV at ",p,": ",conditionMessage(e),
       ". Check permissions and download cloud files locally.",call.=FALSE))
+}
+
+# Canonicalize both sides before comparing: Windows normalizePath() otherwise
+# returns backslashes while .Platform$file.sep and file.path() use forward slashes.
+image_paths_within_root <- function(paths, root) {
+  paths <- normalizePath(paths, winslash="/", mustWork=TRUE)
+  root <- normalizePath(root, winslash="/", mustWork=TRUE)
+  canonical_paths_within_root(paths, root)
+}
+
+# Component boundary prevents e.g. photos_backup from matching photos.
+# Inputs are canonical absolute paths; symlinks have already been resolved.
+canonical_paths_within_root <- function(paths, root,
+                                        windows=.Platform$OS.type=="windows") {
+  if(windows) {
+    paths <- tolower(chartr("\\", "/", paths))
+    root <- tolower(chartr("\\", "/", root))
+  }
+  prefix <- paste0(sub("/+$", "", root), "/")
+  startsWith(paths, prefix)
 }

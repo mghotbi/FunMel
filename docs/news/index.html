@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.16</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,11 @@
       <small>Source: <a href="https://github.com/mghotbi/FunMel/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.17" id="funmel-0417">FunMel 0.4.17<a class="anchor" aria-label="anchor" href="#funmel-0417"></a></h2>
+<ul><li>Correct Windows image-path validation by normalizing both photographs and their image root to the same separator before comparison. Valid nested paths work across platforms; paths outside the root, including symlink escapes, remain rejected.</li>
+<li>Add path-boundary, Windows drive/UNC, and real-file regression tests.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.16" id="funmel-0416">FunMel 0.4.16<a class="anchor" aria-label="anchor" href="#funmel-0416"></a></h2>
 <ul><li>Function examples are embedded directly in the vignette. Rendering the catalog no longer looks up a script inside an installed FunMel package or loads FunMel.</li>
