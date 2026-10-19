@@ -23,7 +23,9 @@ test_that("finalization requires valid design but not metadata approval", {
   expect_identical(z$metadata[["User notes"]],m[["User notes"]])
   expect_equal(z$colonies$MI_mean,d$MI_mean)
   bad <- m;bad$treatment[1] <- NA
-  expect_error(finalize_analysis(r,bad),"treatment")
+  z_bad <- suppressWarnings(finalize_analysis(r,bad))
+  expect_identical(z_bad$comparison_status,"awaiting_design")
+  expect_equal(nrow(z_bad$melanization_coefficient),0L)
   r$failed <- data.frame(file="missing.JPG",error="missing")
   expect_error(finalize_analysis(r,m),"failed plates")
 })

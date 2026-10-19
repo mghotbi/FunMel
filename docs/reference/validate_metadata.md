@@ -9,7 +9,12 @@ the same plate are not new replicates.
 ## Usage
 
 ``` r
-validate_metadata(metadata, files = NULL, control = "control")
+validate_metadata(
+  metadata,
+  files = NULL,
+  control = "control",
+  stage = c("comparison", "measurement")
+)
 ```
 
 ## Arguments
@@ -30,6 +35,13 @@ validate_metadata(metadata, files = NULL, control = "control")
 - control:
 
   Exact label used for control plates, default control.
+
+- stage:
+
+  comparison (default) checks the matched experimental design.
+  measurement checks image identities only; experimental labels and
+  optional context fields may remain blank. Explicit invalid layouts are
+  still errors.
 
 ## Value
 

@@ -19,8 +19,10 @@ analyze_plates(
 \item{files}{Character vector of image paths, or a directory (all
 JPEG/PNG/TIFF files are used).}
 
-\item{metadata}{Optional design data frame. When supplied, file, plate_id,
-set_id and treatment are required and validated by \code{\link[=validate_metadata]{validate_metadata()}}.
+\item{metadata}{Optional design data frame with one row per image.
+Image identities are validated; missing plate IDs are generated. Treatment,
+set and context fields may remain blank for measurement. Matched coefficients
+are withheld until a valid experimental design is available.
 Extra design columns are merged into the output tables.}
 
 \item{layout}{A single \code{\link[=plate_layout]{plate_layout()}}, or a function

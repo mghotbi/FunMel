@@ -8,7 +8,13 @@ finish_experiment().
 ## Usage
 
 ``` r
-run_experiment(project, n_spots = NULL, spot_radius_mm = 0.5, ...)
+run_experiment(
+  project,
+  n_spots = NULL,
+  spot_radius_mm = 0.5,
+  ...,
+  default_centre = "fungus"
+)
 ```
 
 ## Arguments
@@ -31,6 +37,12 @@ run_experiment(project, n_spots = NULL, spot_radius_mm = 0.5, ...)
 - ...:
 
   Other analyze_plate() settings, such as dish_diameter_mm and max_dim.
+
+- default_centre:
+
+  Segmentation fallback for unlabeled images, default fungus. Use none
+  for control-only images. Per-image centre_model and known control
+  labels take precedence. No treatment or control identity is guessed.
 
 ## Value
 

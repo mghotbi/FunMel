@@ -159,7 +159,8 @@ metadata <- make_metadata(photo_dir,set_id="teaching_set",patterns=c(control="co
 metadata$centre_model <- ifelse(metadata$treatment=="control","none","fungus")
 metadata$partner_type <- metadata$centre_model
 metadata$operator <- "Teaching example" # Custom columns are preserved.
-validate_metadata(metadata)
+validate_metadata(metadata,stage="measurement") # Labels are optional for measuring.
+validate_metadata(metadata) # The matched comparison design is complete here.
 layout_by_treatment(metadata[1,,drop=FALSE])
 utils::write.csv(metadata,file.path(photo_dir,"plate_metadata.csv"),row.names=FALSE)
 files <- file.path(photo_dir,metadata$file)
@@ -189,3 +190,14 @@ stopifnot(length(extracted)==nrow(metadata),all(file.exists(extracted)))
 # from an archive; folder names alone cannot establish biological assignments.
 message("Function catalog completed. Outputs: ",catalog_dir)
 ```
+
+## Measurement-only projects
+
+Treatment and set labels are optional for image measurement. In `run_experiment()`,
+`default_centre="fungus"` is the standard fallback for unlabeled images; use
+`default_centre="none"` for unlabeled control-only photographs. Explicit row
+layouts and identified controls take precedence. Mixed collections need correct
+per-image layouts. `validate_metadata(...,stage="measurement")` checks identities
+without requiring an experimental design. The default comparison stage checks
+own-control matching. Finalization with incomplete matching saves measurements
+and reports `awaiting_design` without producing unsupported coefficients or plots.

@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.18</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,432 +69,300 @@
     
 <div class="funmel-hero">
 <p class="funmel-eyebrow">
-FUNGAL CONFRONTATION ASSAYS
+START WITH REAL PHOTOGRAPHS
 </p>
 <p class="funmel-lead">
-Photographs. Colony measurements. Matched controls.
+Prepare. Measure. Inspect. Compare.
 </p>
 <p>
-Measure four approximately round <em>Zymoseptoria tritici</em> colonies
-around another fungus, retain their image provenance, and compare each
-treatment with its own experimental controls.
+Run eight original plate photographs through the complete workflow,
+using supplied treatment/control assignments and the final
+matched-control figure.
 </p>
 </div>
 <div class="funmel-cards">
 <div class="funmel-card">
-<strong>01 · Get started</strong>
+<strong>01 · Run this example</strong>
 <p>
-Learn the objects, try a simulated plate, then prepare your photographs.
+Follow the five steps below. The photographs and metadata are included.
 </p>
 </div>
 <div class="funmel-card">
-<strong>02 · Real photographs</strong>
+<strong>02 · Understand the results</strong>
 <p>
-Follow the <a href="Real-14-day.html">complete eight-photo 14-day
-tutorial</a>, including metadata, spot tables and exported figures.
+The <a href="Real-14-day.html">detailed real-data tutorial</a> explains
+QC, measurements, statistics and exports.
 </p>
 </div>
 <div class="funmel-card">
-<strong>03 · Every function</strong>
+<strong>03 · Use your photographs</strong>
 <p>
-Explore the <a href="Function-examples.html">indexed function
-catalog</a> for specialist calibration, training and measurement tools.
+Follow the
+<a href="Real-14-day.html#standalone-alternative-analyze-your-own-14-day-zip">own-ZIP
+workflow</a> with your experimental assignments.
 </p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="install-and-load">1. Install and load<a class="anchor" aria-label="anchor" href="#install-and-load"></a>
 </h2>
-<p>Run installation once. After updating, restart R before loading the
-new package. In RStudio use <strong>Session → Restart R</strong>; other
-R applications can be closed and reopened. A loaded package should not
-be replaced in the same session.</p>
+<p>Install once. After an update, restart R before loading FunMel. In
+RStudio, choose <strong>Session → Restart R</strong>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mghotbi/FunMel"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mghotbi.github.io/FunMel">FunMel</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"FunMel"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] '0.4.16'</span></span></code></pre></div>
-<p>R &gt;= 4.1 and a source-compilation toolchain are required: Xcode
-Command Line Tools on macOS, matching Rtools on Windows, or R
-development tools and ImageMagick development libraries on Linux. To
-include locally installed vignettes, install with
-<code>build_vignettes=TRUE, dependencies=TRUE</code>:</p>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mghotbi.github.io/FunMel">FunMel</a></span><span class="op">)</span></span></code></pre></div>
+<p>Source installation requires Xcode Command Line Tools on macOS,
+matching Rtools on Windows, or R development tools and ImageMagick
+development libraries on Linux. R &gt;= 4.1 is required. To install the
+tutorials for offline use, add <code>build_vignettes=TRUE</code> to
+<code>install_github()</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="prepare-the-real-data-example">2. Prepare the real-data example<a class="anchor" aria-label="anchor" href="#prepare-the-real-data-example"></a>
+</h2>
+<p>Run these steps in order. The eight photographs contain two sets,
+each with three fungal confrontation plates and one control plate. The
+supplied metadata already identifies each plate’s treatment, own control
+and segmentation layout; no metadata entry or approval-flag edits are
+needed for this example.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mghotbi/FunMel"</span>,build_vignettes<span class="op">=</span><span class="cn">TRUE</span>,dependencies<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"FunMel"</span>,package<span class="op">=</span><span class="st">"FunMel"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"Real-14-day"</span>,package<span class="op">=</span><span class="st">"FunMel"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">photos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"14-days"</span>, package<span class="op">=</span><span class="st">"FunMel"</span><span class="op">)</span></span>
+<span><span class="va">project_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"FunMel_real_example_"</span><span class="op">)</span></span>
+<span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_experiment.html">prepare_experiment</a></span><span class="op">(</span>input<span class="op">=</span><span class="va">photos</span>, project_dir<span class="op">=</span><span class="va">project_dir</span><span class="op">)</span></span>
+<span><span class="va">project</span><span class="op">$</span><span class="va">project_dir</span></span>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3"</span></span></code></pre></div>
+<p><code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile()</a></code> supplies a new temporary folder name, so
+repeating the example creates a separate project without overwriting
+earlier work. Keep the printed folder location: all outputs will be
+saved there. To retain this practice run, copy the complete project
+folder to a permanent location before closing R.</p>
 </div>
 <div class="section level2">
-<h2 id="see-one-plate-before-starting-a-project">2. See one plate before starting a project<a class="anchor" aria-label="anchor" href="#see-one-plate-before-starting-a-project"></a>
+<h2 id="measure-and-inspect">3. Measure and inspect<a class="anchor" aria-label="anchor" href="#measure-and-inspect"></a>
 </h2>
-<p>This self-contained example uses a schematic image, not biological
-data. It shows the default arrangement: four target colonies and a
-central fungal partner.</p>
+<p>The 90-mm diameter below is an <strong>illustrative
+calibration</strong>. Verify the actual outer dish diameter before using
+measurements scientifically. The workflow measures the four target
+colonies on each plate and requests five circular spots per colony.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_plate.html">simulate_plate</a></span><span class="op">(</span>width<span class="op">=</span><span class="fl">400</span>,height<span class="op">=</span><span class="fl">400</span>,seed<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">plate_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyze_plate.html">analyze_plate</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">image</span>,n_spots<span class="op">=</span><span class="fl">3</span>,spot_radius_mm<span class="op">=</span><span class="fl">0.4</span>,</span>
-<span>                              n_boot<span class="op">=</span><span class="fl">20</span>,verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">plate_result</span><span class="op">$</span><span class="va">colonies</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"colony_id"</span>,<span class="st">"detected"</span>,<span class="st">"MI_mean"</span>,<span class="st">"MI_spot_mean"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;   colony_id detected  MI_mean MI_spot_mean</span></span>
-<span><span class="co">#&gt; 1        TL     TRUE 48.81529     45.58140</span></span>
-<span><span class="co">#&gt; 2        TR     TRUE 52.99384     51.84266</span></span>
-<span><span class="co">#&gt; 3        BR     TRUE 57.17307     57.43442</span></span>
-<span><span class="co">#&gt; 4        BL     TRUE 41.43033     43.49997</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_qc.html">plot_qc</a></span><span class="op">(</span><span class="va">plate_result</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="FunMel_files/figure-html/first-qc-1.png" class="r-plt" alt="Simulated plate: target-colony masks and central fungal core/hyphal-growth candidates." width="691.2"><p class="caption">
-Simulated plate: target-colony masks and central fungal
-core/hyphal-growth candidates.
-</p>
-</div>
-<p>Check the target outlines, central fungal tissue, connected hyphae
-and spot positions. These are image-based candidates, not species
-identifications or inhibition boundaries. The 20 bootstrap replicates
-keep teaching examples quick; they are not intended for precise
-uncertainty estimates.</p>
-<p>For a control without a central fungus:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">control_layout</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plate_layout.html">plate_layout</a></span><span class="op">(</span>centre<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span>
-<span><span class="va">control_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyze_plate.html">analyze_plate</a></span><span class="op">(</span><span class="fu"><a href="../reference/example_plate.html">example_plate</a></span><span class="op">(</span><span class="st">"control"</span><span class="op">)</span>,layout<span class="op">=</span><span class="va">control_layout</span>,</span>
-<span>                                max_dim<span class="op">=</span><span class="fl">1200</span>,n_boot<span class="op">=</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-<p>Melanization index is <strong>MI = 100 − CIELAB L*</strong>. A larger
-value means darker pixels. It is an image-darkness proxy, not measured
-melanin concentration. Exposure, lighting, colour calibration and masks
-affect the measurement.</p>
-</div>
-<div class="section level2">
-<h2 id="choose-the-right-starting-point">3. Choose the right starting point<a class="anchor" aria-label="anchor" href="#choose-the-right-starting-point"></a>
-</h2>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr class="header">
-<th>What you have</th>
-<th>What to do</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>No data yet; you want to learn</td>
-<td>Continue with the <a href="Real-14-day.html">real 14-day
-tutorial</a>
-</td>
-</tr>
-<tr class="even">
-<td>A new photo ZIP</td>
-<td>Use <code><a href="../reference/prepare_experiment.html">prepare_experiment()</a></code> and select the ZIP</td>
-</tr>
-<tr class="odd">
-<td>A new folder of photographs</td>
-<td>Supply its full path, or select one original photo with
-<code><a href="../reference/prepare_experiment.html">prepare_experiment()</a></code>
-</td>
-</tr>
-<tr class="even">
-<td>Several batches in nested folders</td>
-<td>Supply the common root folder or ZIP so every batch and its controls
-are included</td>
-</tr>
-<tr class="odd">
-<td>Saved measurements from an earlier session</td>
-<td>Use <code><a href="../reference/load_experiment.html">load_experiment()</a></code>; do not prepare the project
-again</td>
-</tr>
-</tbody>
-</table>
-<p>A file chooser selects <strong>files</strong>, not folders. Selecting
-one original photograph uses its containing folder and subfolders; the
-package prints the exact folder it will scan. It includes all supported
-photographs there, not just the selected image. For multiple batches,
-select their ZIP or supply the common root folder path. Do not select a
-QC figure or metadata CSV as an original photograph.</p>
-<div class="section level3">
-<h3 id="new-photographs-prepare-once">New photographs: prepare once<a class="anchor" aria-label="anchor" href="#new-photographs-prepare-once"></a>
-</h3>
-<p>Choose <strong>one</strong> of these alternatives:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_experiment.html">prepare_experiment</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Choose a photo ZIP or one original photo.</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Alternative: replace this example path with the common photo-folder root.</span></span>
-<span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_experiment.html">prepare_experiment</a></span><span class="op">(</span><span class="st">"/full/path/to/photos"</span>,<span class="st">"FunMel_project"</span><span class="op">)</span></span></code></pre></div>
-<p>Use a new output folder. An existing nonempty output is protected
-against replacement. If work is already saved, use the reopening
-instructions below.</p>
-</div>
-<div class="section level3">
-<h3 id="saved-work-reopen-and-read">Saved work: reopen and read<a class="anchor" aria-label="anchor" href="#saved-work-reopen-and-read"></a>
-</h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_experiment.html">load_experiment</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Choose project.rds in its current project folder.</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_experiment.html">read_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">colonies</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">spots</span><span class="op">)</span></span></code></pre></div>
-<p>Keep the complete project folder together when moving it. The loader
-reconnects internal paths. Original photographs outside that folder keep
-their external paths; they are needed for remeasurement, not for reading
-or finalizing saved measurements. <code>project$result_file</code> is a
-filename; <code>result$spots</code> is a table.</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="check-the-experimental-design">4. Check the experimental design<a class="anchor" aria-label="anchor" href="#check-the-experimental-design"></a>
-</h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">project</span><span class="op">$</span><span class="va">metadata_file</span></span>
-<span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">project</span><span class="op">$</span><span class="va">metadata_file</span>,check.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">metadata</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_id"</span>,<span class="st">"set_id"</span>,<span class="st">"treatment"</span>,<span class="st">"centre_model"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu"><a href="../reference/validate_metadata.html">validate_metadata</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span></code></pre></div>
-<p>A unique <code>plate_metadata.csv</code> in the input is read
-automatically. Otherwise the package creates a template, proposing
-labels only for explicit structures such as <code>batch1/control/</code>
-and <code>batch1/fungus_A/</code>. Folder names cannot prove biological
-assignments. <strong>Correct missing or inaccurate information using
-laboratory records before analysis.</strong></p>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr class="header">
-<th>Field</th>
-<th>Required interpretation</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code>plate_id</code></td>
-<td>Globally unique independent plate, photographed once</td>
-</tr>
-<tr class="even">
-<td>
-<code>file</code>, <code>relative_file</code>
-</td>
-<td>Original image provenance; preserve the relative path</td>
-</tr>
-<tr class="odd">
-<td><code>set_id</code></td>
-<td>Matching treatment and control group; controls are never borrowed
-from another set</td>
-</tr>
-<tr class="even">
-<td><code>treatment</code></td>
-<td>Exact label <code>control</code> for controls; consistent actual
-treatment labels otherwise</td>
-</tr>
-<tr class="odd">
-<td>
-<code>centre_model</code>, <code>partner_type</code>
-</td>
-<td>
-<code>none</code> for controls, normally <code>fungus</code> for
-confrontation plates</td>
-</tr>
-<tr class="even">
-<td>
-<code>day</code>, <code>medium</code>, <code>zymo_strain</code>
-</td>
-<td>May be entirely unrecorded; once recorded, complete and constant
-within each set</td>
-</tr>
-<tr class="odd">
-<td>Other fields</td>
-<td>Retained experimental annotations, including user-defined
-columns</td>
-</tr>
-</tbody>
-</table>
-<p>For one control plus three treatment plates, enter four rows sharing
-a <code>set_id</code>; enter the control once. Four colonies per plate
-and multiple spots per colony are subsamples, not independent biological
-replicates. Repeated images of the same plate are not new independent
-replicates.</p>
-<p>For a nested ZIP, relative paths distinguish identical basenames.
-Supply one combined metadata table with <code>metadata=</code> when
-there are multiple metadata files. Use <code>control_folders="C"</code>
-only when that exact label genuinely denotes controls.</p>
-</div>
-<div class="section level2">
-<h2 id="measure-inspect-and-finish">5. Measure, inspect and finish<a class="anchor" aria-label="anchor" href="#measure-inspect-and-finish"></a>
-</h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dish_mm</span> <span class="op">&lt;-</span> <span class="fl">90</span> <span class="co"># Replace with the verified outer diameter of your dishes (mm).</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_experiment.html">run_experiment</a></span><span class="op">(</span><span class="va">project</span>,dish_diameter_mm<span class="op">=</span><span class="va">dish_mm</span>,max_dim<span class="op">=</span><span class="fl">1200</span>,</span>
-<span>                         n_spots<span class="op">=</span><span class="fl">5</span>,spot_radius_mm<span class="op">=</span><span class="fl">0.4</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_experiment.html">run_experiment</a></span><span class="op">(</span></span>
+<span>  <span class="va">project</span>, dish_diameter_mm<span class="op">=</span><span class="fl">90</span>, max_dim<span class="op">=</span><span class="fl">1200</span>,</span>
+<span>  n_spots<span class="op">=</span><span class="fl">5</span>, spot_radius_mm<span class="op">=</span><span class="fl">0.4</span>, n_boot<span class="op">=</span><span class="fl">20</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">result</span><span class="op">$</span><span class="va">analysis_status</span></span>
+<span><span class="co">#&gt; [1] "complete"</span></span>
 <span><span class="va">result</span><span class="op">$</span><span class="va">failed</span></span>
-<span><span class="va">project</span><span class="op">$</span><span class="va">qc_dir</span></span></code></pre></div>
-<p>A completed run reports <code>"complete"</code> and zero failed
-images. Inspect every QC PNG for target masks, central fungal
-tissue/hyphae, spots, scale, lighting and warnings before
-interpretation. Informative QC warnings do not block the default
-workflow. Genuine failures still require correction; successful
-processing is not automatic biological validation.</p>
-<p>The diameter must be an actual, finite positive measurement. All
-plates in one run use that setting; analyze different dish sizes
-separately. Omit <code>n_spots</code> and <code>spot_radius_mm</code>
-for whole-colony measurements only.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; [1] file  error</span></span>
+<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
+<span><span class="va">project</span><span class="op">$</span><span class="va">qc_dir</span></span>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3/qc"</span></span></code></pre></div>
+<p>The expected status is <code>"complete"</code> with zero failed
+photographs. Open the printed QC folder and inspect the target-colony
+masks, central fungal tissue and hyphae, sampling spots, scale and
+lighting before interpreting results. QC reminders do not require
+changing approval flags. Resolve genuine failed photographs before
+finalizing. The 20 bootstrap resamples keep this practice run quick;
+they are not intended for precise uncertainty estimates.</p>
+<p>Inspect the measurements directly:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">colonies</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_id"</span>, <span class="st">"colony_id"</span>, <span class="st">"MI_mean"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>             digits<span class="op">=</span><span class="fl">3</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">plate_id</th>
+<th align="left">colony_id</th>
+<th align="right">MI_mean</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">TL</td>
+<td align="right">70.448</td>
+</tr>
+<tr class="even">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">TR</td>
+<td align="right">72.105</td>
+</tr>
+<tr class="odd">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">BR</td>
+<td align="right">74.293</td>
+</tr>
+<tr class="even">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">BL</td>
+<td align="right">69.635</td>
+</tr>
+<tr class="odd">
+<td align="left">2026_10_02_99_39</td>
+<td align="left">TL</td>
+<td align="right">71.186</td>
+</tr>
+<tr class="even">
+<td align="left">2026_10_02_99_39</td>
+<td align="left">TR</td>
+<td align="right">68.283</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">spots</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_id"</span>, <span class="st">"colony_id"</span>, <span class="st">"spot_id"</span>, <span class="st">"MI_mean"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>             digits<span class="op">=</span><span class="fl">3</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">plate_id</th>
+<th align="left">colony_id</th>
+<th align="right">spot_id</th>
+<th align="right">MI_mean</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">TL</td>
+<td align="right">1</td>
+<td align="right">71.710</td>
+</tr>
+<tr class="even">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">TL</td>
+<td align="right">2</td>
+<td align="right">74.014</td>
+</tr>
+<tr class="odd">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">TL</td>
+<td align="right">3</td>
+<td align="right">69.632</td>
+</tr>
+<tr class="even">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">TL</td>
+<td align="right">4</td>
+<td align="right">68.491</td>
+</tr>
+<tr class="odd">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">TL</td>
+<td align="right">5</td>
+<td align="right">76.129</td>
+</tr>
+<tr class="even">
+<td align="left">2026_10_02_99_38</td>
+<td align="left">TR</td>
+<td align="right">1</td>
+<td align="right">71.611</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
+<h2 id="calculate-coefficients-and-display-the-final-figure">4. Calculate coefficients and display the final figure<a class="anchor" aria-label="anchor" href="#calculate-coefficients-and-display-the-final-figure"></a>
+</h2>
+<p>Finalization reuses the saved measurements and matches each treatment
+to its own set’s control.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
-<span><span class="va">reviewed</span><span class="op">$</span><span class="va">melanization_coefficient</span></span>
-<span><span class="va">reviewed</span><span class="op">$</span><span class="va">assessment</span><span class="op">$</span><span class="va">status</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="../reference/plot_treatment_comparison.html">plot_treatment_comparison</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Finalization reuses saved measurements and exports CSV tables, an
-assessment RDS, and a treatment comparison in PDF, SVG and 600-dpi PNG.
-Different recorded contexts are finalized into separate folders listed
-in <code>context_index.csv</code>.</p>
-</div>
-<div class="section level2">
-<h2 id="read-the-results-correctly">6. Read the results correctly<a class="anchor" aria-label="anchor" href="#read-the-results-correctly"></a>
-</h2>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">reviewed</span><span class="op">$</span><span class="va">melanization_coefficient</span><span class="op">[</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"set_id"</span>, <span class="st">"treatment"</span>, <span class="st">"MI_treatment_mean"</span>, <span class="st">"MI_control_mean"</span>,</span>
+<span>    <span class="st">"melanization_coefficient"</span>, <span class="st">"n_treatment_plates"</span>, <span class="st">"n_control_plates"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>  digits<span class="op">=</span><span class="fl">3</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="50%">
-<col width="50%">
+<col width="11%">
+<col width="8%">
+<col width="15%">
+<col width="13%">
+<col width="21%">
+<col width="15%">
+<col width="14%">
 </colgroup>
 <thead><tr class="header">
-<th>Result</th>
-<th>Meaning</th>
+<th align="left">set_id</th>
+<th align="left">treatment</th>
+<th align="right">MI_treatment_mean</th>
+<th align="right">MI_control_mean</th>
+<th align="right">melanization_coefficient</th>
+<th align="right">n_treatment_plates</th>
+<th align="right">n_control_plates</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>
-<code>colonies</code> / colonies.csv</td>
-<td>Whole-colony colour, area, MI and optional spot summaries</td>
+<td align="left">A60_2_14_days</td>
+<td align="left">A60_2</td>
+<td align="right">68.996</td>
+<td align="right">42.374</td>
+<td align="right">1.628</td>
+<td align="right">3</td>
+<td align="right">1</td>
 </tr>
 <tr class="even">
-<td>
-<code>spots</code> / spots.csv</td>
-<td>One row per achieved circular ROI, with coordinates and pixel
-summaries</td>
-</tr>
-<tr class="odd">
-<td>
-<code>profiles</code> / profiles.csv</td>
-<td>Edge-to-centre darkness measurements</td>
-</tr>
-<tr class="even">
-<td>
-<code>plates</code> / plates.csv</td>
-<td>Plate-level detection, calibration and illumination status</td>
-</tr>
-<tr class="odd">
-<td>
-<code>metadata</code> / metadata_used.csv</td>
-<td>Complete metadata with custom names and values retained</td>
-</tr>
-<tr class="even">
-<td><code>melanization_coefficient</code></td>
-<td>Set-specific treatment-to-own-control ratios</td>
-</tr>
-<tr class="odd">
-<td>treatment_comparison_statistics.csv</td>
-<td>Means, SDs, counts and descriptive values plotted in the figure</td>
+<td align="left">B20_2_14_days</td>
+<td align="left">B20_2</td>
+<td align="right">67.463</td>
+<td align="right">51.813</td>
+<td align="right">1.302</td>
+<td align="right">3</td>
+<td align="right">1</td>
 </tr>
 </tbody>
 </table>
-<p>Whole-colony <code>MI_min</code>, <code>MI_mean</code> and
-<code>MI_max</code> describe eligible interior pixels, excluding the rim
-and saturated/specular pixels. <code>MI_spot_mean/min/max</code>
-summarize <strong>individual spot means</strong>, not the
-darkest/lightest whole-colony pixels or confidence limits. Spot
-placement is deterministic, spatially spread and non-overlapping. Check
-<code>n_spots_measured</code> and <code>spot_status</code>; incomplete
-summaries are unavailable rather than invented.</p>
-<p>The default coefficient divides the mean of treatment
-<strong>plate</strong> MI values by the mean of control
-<strong>plate</strong> MI values in the same set. Each plate averages
-its eligible target-colony MI means equally. Values above 1 indicate a
-darker image-based treatment mean, not a pigment-concentration fold
-change. Overall summaries weight set-specific ratios equally, rather
-than pooling all controls.</p>
-<p>One control per set permits descriptive ratios but not the package’s
-replicated-cell significance tests. With adequate replication,
-<code><a href="../reference/assess_experiment.html">assess_experiment()</a></code> uses
-<code>lme4</code>/<code>lmerTest</code>, matched-set contrasts and Holm
-adjustment. Review model status, convergence, singularity, assumptions
-and experimental coverage before interpreting inference. The comparison
-plot itself is descriptive: bars show one between-plate SD, not
-confidence intervals; ratio SD conditions on the shared control mean and
-omits its uncertainty.</p>
-<p>A prespecified, consistently applied spot-based descriptive analysis
-may use
-<code>melanization_coefficient(reviewed,response="MI_spot_mean")</code>.
-Keep that response separate from whole-colony MI.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_treatment_comparison.html">plot_treatment_comparison</a></span><span class="op">(</span><span class="va">reviewed</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></code></pre></div>
+<p><img src="FunMel_files/figure-html/comparison-real-1.png" class="r-plt" alt="" width="691.2"></p>
+<p>The left panel shows plate melanization indices; the right panel
+shows matched-control coefficients. Squares are controls, circles are
+treatment plates and lower diamonds are treatment means. Bars show one
+between-plate SD, not confidence intervals. Each set has only one
+control, so control SD and replicated-control significance tests are
+unavailable.</p>
+<p>MI is <code>100 - CIELAB L*</code>, an image-darkness proxy rather
+than a direct measurement of melanin concentration. Colonies and spots
+within a plate are subsamples; independent plates are the experimental
+units. See the <a href="Real-14-day.html">detailed real-data
+tutorial</a> for interpretation and limitations.</p>
 </div>
 <div class="section level2">
-<h2 id="continue-confidently">7. Continue confidently<a class="anchor" aria-label="anchor" href="#continue-confidently"></a>
+<h2 id="find-outputs-and-reopen-saved-work">5. Find outputs and reopen saved work<a class="anchor" aria-label="anchor" href="#find-outputs-and-reopen-saved-work"></a>
 </h2>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr class="header">
-<th>Message or situation</th>
-<th>Next step</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>Final outputs saved</td>
-<td>Finalization succeeded; read the exported tables and figure</td>
-</tr>
-<tr class="even">
-<td>Image QC unconfirmed</td>
-<td>Inspect masks, calibration and warnings; review before interpreting
-results</td>
-</tr>
-<tr class="odd">
-<td>Insufficient plate replication</td>
-<td>Use descriptive results; do not interpret absent p-values as a
-software failure</td>
-</tr>
-<tr class="even">
-<td>Missing treatment or matching control</td>
-<td>Complete actual assignments; another batch’s control is not a
-substitute</td>
-</tr>
-<tr class="odd">
-<td>Selected metadata CSV, PDF or SVG</td>
-<td>Reopen project.rds, or choose the original photo ZIP/photo</td>
-</tr>
-<tr class="even">
-<td>Output folder already exists</td>
-<td>Reopen its project.rds rather than preparing over saved work</td>
-</tr>
-<tr class="odd">
-<td>Missing saved file</td>
-<td>Open the current complete project folder; restore genuinely missing
-files</td>
-</tr>
-<tr class="even">
-<td>Flat-field correction withheld</td>
-<td>Inspect illumination status; withholding does not demonstrate
-adequate lighting</td>
-</tr>
-<tr class="odd">
-<td>Spots cannot fit</td>
-<td>Inspect masks and use consistent feasible spot settings across
-compared plates</td>
-</tr>
-</tbody>
-</table>
-<p>Custom metadata is retained; measurement-name conflicts receive a
-<code>metadata_</code> prefix only in measurement tables. The full
-metadata keeps original names. Changed segmentation layouts require
-reanalysis because the saved masks differ.</p>
-<p><strong>Next:</strong> <a href="Real-14-day.html">work through the
-real photographs</a>, explore <a href="Function-examples.html">every
-exported function</a>, or read the installed
-<code>guides/FunMel_overview.md</code> for algorithms and use alongside
-ImageJ/Fiji.</p>
-<p>Comparison captions are exported separately as
-<code>treatment_comparison_caption.txt</code>. Use
-<code>caption="brief"</code> or <code>caption="full"</code> in
-<code><a href="../reference/plot_treatment_comparison.html">plot_treatment_comparison()</a></code> to include a caption beneath
-the figure.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">project</span><span class="op">$</span><span class="va">project_dir</span></span>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3"</span></span></code></pre></div>
+<p>This folder contains colony, spot, profile and plate CSV tables;
+matched coefficients; saved R analyses; QC images; and the final
+<code>treatment_comparison.pdf</code>, <code>.svg</code> and
+<code>.png</code>. Statistics and the explanatory caption are saved
+separately. The exported figure has no embedded caption by default.</p>
+<p>After saving or moving the <strong>complete</strong> project folder,
+reopen it without preparing or measuring again:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_experiment.html">load_experiment</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Select project.rds in the saved project folder.</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_experiment.html">read_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
+<span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_experiment.html">read_experiment</a></span><span class="op">(</span><span class="va">project</span>, finalized<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="../reference/plot_treatment_comparison.html">plot_treatment_comparison</a></span><span class="op">(</span><span class="va">reviewed</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="use-your-own-photographs">Use your own photographs<a class="anchor" aria-label="anchor" href="#use-your-own-photographs"></a>
+</h2>
+<p>Follow the <a href="Real-14-day.html#standalone-alternative-analyze-your-own-14-day-zip">own-ZIP
+workflow</a> for separate input/output paths, preparation, reopening and
+measurement. Your photographs may have any supported names and any
+actual treatment codes; the bundled assignments apply only to the
+supplied photographs.</p>
+<p>Measurements do not require treatment names or approval flags. A
+mixed collection still needs correct per-image layouts:
+<code>fungus</code> for confrontations and <code>none</code> for
+controls. Matched coefficients need real treatment/control assignments
+within <code>set_id</code>; otherwise measurements are saved with
+<code>awaiting_design</code>. For exploration without treatment names,
+use the <a href="Real-14-day.html#explore-measurements-by-set-without-treatment-names">set-only
+measurement plot</a>. Every custom metadata column is retained.</p>
+<p>For specialist calibration, classification and measurement utilities,
+see the <a href="Function-examples.html">complete function
+examples</a>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -11,7 +11,7 @@ every plate — inspect them before using the numbers."><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.18</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,8 +69,10 @@ JPEG/PNG/TIFF files are used).</p></dd>
 
 
 <dt id="arg-metadata">metadata<a class="anchor" aria-label="anchor" href="#arg-metadata"></a></dt>
-<dd><p>Optional design data frame. When supplied, file, plate_id,
-set_id and treatment are required and validated by <code><a href="validate_metadata.html">validate_metadata()</a></code>.
+<dd><p>Optional design data frame with one row per image.
+Image identities are validated; missing plate IDs are generated. Treatment,
+set and context fields may remain blank for measurement. Matched coefficients
+are withheld until a valid experimental design is available.
 Extra design columns are merged into the output tables.</p></dd>
 
 

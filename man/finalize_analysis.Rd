@@ -19,7 +19,9 @@ TRUE requires every qc_pass flag to be logical TRUE. Review flags are never
 automatically changed to TRUE; calculated results retain their QC status.}
 }
 \value{
-Updated batch result, including matched coefficients and assessment.
+Updated batch result. A valid matching design adds coefficients and
+assessment. Otherwise comparison_status is awaiting_design, measurements
+remain available, and the reason is recorded without inventing comparisons.
 }
 \description{
 Reuses saved measurements without reprocessing photographs. Valid experimental

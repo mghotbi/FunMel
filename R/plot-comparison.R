@@ -24,6 +24,8 @@
 #' @param caption Text beneath the figure: none (default), brief, or full. The
 #'   full explanation remains in the FunMel_caption attribute and is exported
 #'   separately as _caption.txt. QC warnings and statistical safeguards remain.
+#' @details A project or finalized result awaiting matching assignments returns
+#'   invisible NULL with an informative message; no comparison file is created.
 #' @return A ggplot object, invisibly when exported. Colours and typography can
 #'   be edited using standard ggplot2 methods. Match the target journal's size
 #'   and caption requirements before submission. The attribute
@@ -47,7 +49,19 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
       meta <- read_project_metadata(p)
       check_saved_metadata(colonies,meta)
       colonies <- attach_result_metadata(colonies,meta)
+      issue <- comparison_metadata_issue(meta)
+      if(!is.null(issue)) {
+        if(isTRUE(require_qc)) check_qc_review(meta,require_qc=TRUE)
+        message("Comparison figure not generated: ",issue," Image measurements remain available.")
+        return(invisible(NULL))
+      }
     }
+  }
+  if(is.list(colonies) && !is.data.frame(colonies) &&
+     identical(colonies$comparison_status,"awaiting_design")) {
+    if(isTRUE(require_qc)) check_qc_review(colonies$metadata,require_qc=TRUE)
+    message("Comparison figure not generated: matching assignments are incomplete. Image measurements remain available; finish again after completing the design.")
+    return(invisible(NULL))
   }
   if(!is.logical(preview) || length(preview)!=1L || is.na(preview)) stop("preview must be TRUE or FALSE.")
   if(is.list(colonies) && !is.data.frame(colonies)) {

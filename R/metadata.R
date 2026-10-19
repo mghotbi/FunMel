@@ -1,7 +1,8 @@
 #' Create a metadata template for matched treatment-control sets
 #'
-#' Writes one row per image. Fill set_id, treatment and centre_model before
-#' analysis. All controls use the treatment label control; set_id decides which
+#' Writes one row per image. Treatment, set and optional annotations may remain
+#' blank for image measurement. For comparisons, controls use the treatment
+#' label control; set_id decides which
 #' controls belong to which treatments. The same treatment label across sets
 #' must represent the same intervention. See [validate_metadata()].
 #' Review experimental assignments and image masks before interpretation.
@@ -18,7 +19,8 @@
 #' @param extra Named list of additional metadata columns.
 #' @param recursive Search nested image folders. Relative paths distinguish repeated basenames.
 #' @param overwrite Whether to replace an existing template.
-#' @return Metadata invisibly, also written as CSV. Missing fields must be filled.
+#' @return Metadata invisibly, also written as CSV. Experimental assignments are
+#'   needed only for matched comparisons; optional annotations may remain blank.
 #' @export
 make_metadata <- function(dir,file=file.path(dir,"plate_metadata.csv"),
                           treatment=NA_character_,set_id=NA_character_,patterns=NULL,
@@ -39,7 +41,7 @@ make_metadata <- function(dir,file=file.path(dir,"plate_metadata.csv"),
   meta <- complete_metadata_columns(meta)
   if(file.exists(file) && !overwrite) stop("Metadata file exists; use overwrite=TRUE only if intended.")
   utils::write.csv(meta,file,row.names=FALSE,na="")
-  message("Metadata template saved. Fill set_id, treatment and centre_model; record biological partner_type separately. Review assignments before processing and image QC before interpretation. No approval-flag edits are required.")
+  message("Metadata template saved. Image measurement can proceed with blank experimental labels. Use the correct central layout; set_id and treatment are needed only for matched comparisons. Optional annotations and approval flags do not block the standard workflow.")
   invisible(meta)
 }
 
@@ -50,23 +52,39 @@ make_metadata <- function(dir,file=file.path(dir,"plate_metadata.csv"),
 #' centre_model is a computational recipe, not organism identification. For
 #' fungal confrontations, use centre_model=fungus so the central fungus is
 #' returned separately from the four target colonies and from bacterial outputs.
-#' @param row One metadata row with treatment and optional centre_model. Optional
+#' @param row One metadata row with optional treatment and centre_model. Optional
 #'   numeric rotation_deg, radius_frac, radius_mm, search_frac, start_deg and
 #'   n_colonies columns customize the layout per image. Explicit ... takes priority.
+#' @param default_centre Layout for an unlabeled row without a centre_model.
+#'   Default fungus; use none for control-only images. Explicit per-row layouts
+#'   and identified controls take precedence. This never assigns a treatment label.
 #' @param ... Other [plate_layout()] arguments, e.g. radius_mm or positions.
 #' @return A layout. Controls use centre=none. Explicit centre_model is respected.
 #' @export
-layout_by_treatment <- function(row,...) {
-  if(is.null(row) || nrow(row)!=1L || !"treatment" %in% names(row) || is.na(row$treatment))
-    stop("Provide one metadata row with a treatment label.")
-  ctrl<-as.character(row$treatment)=="control"
-  model<-if("centre_model" %in% names(row)) as.character(row$centre_model) else if("partner_type" %in% names(row)) as.character(row$partner_type) else if(ctrl) "none" else "fungus"
-  if(is.na(model) || !model %in% c("none","bacteria","fungus")) stop("Fill centre_model with none, bacteria or fungus.")
-  if(ctrl && model!="none") stop("Control plates require centre_model='none'.")
+layout_by_treatment <- function(row, ..., default_centre="fungus") {
+  if(is.null(row) || nrow(row)!=1L) stop("Provide one metadata row.")
+  model <- resolve_centre_model(row,default_centre)
   args<-list(centre=model,...)
   for(nm in c("rotation_deg","radius_frac","radius_mm","search_frac","start_deg","n_colonies"))
     if(nm %in% names(row) && !is.na(row[[nm]][1]) && !nm %in% names(args)) args[[nm]]<-row[[nm]][1]
   do.call(plate_layout,args)
+}
+
+# Internal resolution changes the computational layout, never biological labels.
+resolve_centre_model <- function(row, default_centre="fungus") {
+  value <- function(nm) if(nm %in% names(row) && !is.na(row[[nm]][1]) &&
+    nzchar(trimws(as.character(row[[nm]][1])))) as.character(row[[nm]][1]) else NA_character_
+  control <- identical(value("treatment"),"control")
+  model <- value("centre_model")
+  if(is.na(model)) {
+    partner <- value("partner_type")
+    model <- if(control) "none" else if(!is.na(partner) && partner %in% c("none","bacteria","fungus")) partner else NA_character_
+  }
+  if(is.na(model)) model <- default_centre
+  if(!is.na(model) && !model %in% c("none","bacteria","fungus"))
+    stop("centre_model must be none, bacteria or fungus.")
+  if(control && !is.na(model) && model!="none") stop("Control plates require centre_model='none'.")
+  model
 }
 
 #' Remove position-specific lighting bias from side-specific metrics

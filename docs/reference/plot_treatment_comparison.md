@@ -85,3 +85,9 @@ and caption requirements before submission. The attribute
 `FunMel_statistics` contains the plotted means, SDs, counts and
 descriptive differences. Export also writes a `_statistics.csv`
 companion table.
+
+## Details
+
+A project or finalized result awaiting matching assignments returns
+invisible NULL with an informative message; no comparison file is
+created.

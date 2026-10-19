@@ -62,3 +62,7 @@ never confidence intervals. Single-plate SD is unavailable. Ratio SD conditions
 on the shared control mean and does not quantify its uncertainty.
 Controls shown on multiple rows within a set are shared, not new replicates.
 }
+\details{
+A project or finalized result awaiting matching assignments returns
+invisible NULL with an informative message; no comparison file is created.
+}

@@ -3,7 +3,14 @@
 #' @noRd
 complete_metadata_columns <- function(metadata) {
   if(!is.data.frame(metadata) || anyDuplicated(names(metadata))) stop("Metadata must be a data frame with unique column names.")
-  defaults <- list(fungus=NA_character_,zymo_strain=NA_character_,medium=NA_character_,
+  if(!"file" %in% names(metadata) && "relative_file" %in% names(metadata))
+    metadata$file <- basename(metadata$relative_file)
+  if(!"plate_id" %in% names(metadata) && "file" %in% names(metadata)) {
+    refs <- if("relative_file" %in% names(metadata)) metadata$relative_file else metadata$file
+    metadata$plate_id <- make.unique(gsub("[^A-Za-z0-9._-]","_",tools::file_path_sans_ext(refs)),sep="_")
+  }
+  defaults <- list(set_id=NA_character_,treatment=NA_character_,centre_model=NA_character_,
+    partner_type=NA_character_,fungus=NA_character_,zymo_strain=NA_character_,medium=NA_character_,
     day=NA_real_,replicate=NA_integer_,photo_date=NA_character_,notes=NA_character_,
     qc_pass=FALSE)
   for(nm in setdiff(names(defaults),names(metadata))) metadata[[nm]] <- rep(defaults[[nm]],nrow(metadata))

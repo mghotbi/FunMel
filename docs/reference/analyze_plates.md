@@ -30,10 +30,11 @@ analyze_plates(
 
 - metadata:
 
-  Optional design data frame. When supplied, file, plate_id, set_id and
-  treatment are required and validated by
-  [`validate_metadata()`](https://mghotbi.github.io/FunMel/reference/validate_metadata.md).
-  Extra design columns are merged into the output tables.
+  Optional design data frame with one row per image. Image identities
+  are validated; missing plate IDs are generated. Treatment, set and
+  context fields may remain blank for measurement. Matched coefficients
+  are withheld until a valid experimental design is available. Extra
+  design columns are merged into the output tables.
 
 - layout:
 

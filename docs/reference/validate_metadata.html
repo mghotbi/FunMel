@@ -11,7 +11,7 @@ never borrowed from a different set. Use globally unique plate IDs and unambiguo
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.18</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,12 @@ never borrowed from a different set. Use globally unique plate IDs and unambiguo
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">validate_metadata</span><span class="op">(</span><span class="va">metadata</span>, files <span class="op">=</span> <span class="cn">NULL</span>, control <span class="op">=</span> <span class="st">"control"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">validate_metadata</span><span class="op">(</span></span>
+<span>  <span class="va">metadata</span>,</span>
+<span>  files <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  control <span class="op">=</span> <span class="st">"control"</span>,</span>
+<span>  stage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"comparison"</span>, <span class="st">"measurement"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -69,6 +74,12 @@ once in metadata; no unmatched or unused rows are accepted.</p></dd>
 
 <dt id="arg-control">control<a class="anchor" aria-label="anchor" href="#arg-control"></a></dt>
 <dd><p>Exact label used for control plates, default control.</p></dd>
+
+
+<dt id="arg-stage">stage<a class="anchor" aria-label="anchor" href="#arg-stage"></a></dt>
+<dd><p>comparison (default) checks the matched experimental design.
+measurement checks image identities only; experimental labels and optional
+context fields may remain blank. Explicit invalid layouts are still errors.</p></dd>
 
 </dl></div>
     <div class="section level2">

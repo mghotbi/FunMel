@@ -4,7 +4,12 @@
 \alias{validate_metadata}
 \title{Validate the plate-to-set metadata used for matched controls}
 \usage{
-validate_metadata(metadata, files = NULL, control = "control")
+validate_metadata(
+  metadata,
+  files = NULL,
+  control = "control",
+  stage = c("comparison", "measurement")
+)
 }
 \arguments{
 \item{metadata}{Data frame containing file, plate_id, set_id and treatment.
@@ -17,6 +22,10 @@ unrecorded optional columns may remain blank.}
 once in metadata; no unmatched or unused rows are accepted.}
 
 \item{control}{Exact label used for control plates, default control.}
+
+\item{stage}{comparison (default) checks the matched experimental design.
+measurement checks image identities only; experimental labels and optional
+context fields may remain blank. Explicit invalid layouts are still errors.}
 }
 \value{
 The validated metadata, invisibly. Errors explain invalid mappings.

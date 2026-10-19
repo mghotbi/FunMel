@@ -1,3 +1,15 @@
+# FunMel 0.4.18
+
+* Measure images without completing treatment, set or optional context labels.
+  Comparison validation remains strict; unmatched designs produce measurement-only
+  outputs and a clear comparison status instead of blocking image measurement.
+* Record the actual central segmentation model independently of biological labels.
+  Unlabeled images use the documented fungal layout by default; control-only runs
+  can use default_centre="none". Explicit row layouts take precedence.
+* Complete matching assignments later without repeating measurement when the
+  segmentation layout is unchanged. All metadata columns are retained.
+* Update the README, tutorials, examples and help for the measurement-first workflow.
+
 # FunMel 0.4.17
 
 * Correct Windows image-path validation by normalizing both photographs and

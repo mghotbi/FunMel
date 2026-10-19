@@ -56,3 +56,10 @@ contrasts. It retains shared-control covariance. Sparse designs and problematic
 fits are explicitly limited to descriptive results. Repeated images of the same
 plate across time require a study-specific repeated-measures model. The default
 workflow reports different recorded days, strains and media separately.
+
+Image measurement and experimental comparison are separate stages. Image identities
+are generated when a project is prepared, and unknown biological annotations are
+retained as missing values. An explicit per-image layout or the documented fungal
+fallback controls segmentation. Matching labels are needed only for own-control
+coefficients and treatment comparisons. Incomplete designs save measurement-only
+results with an explicit status; they do not produce inferred controls or p-values.

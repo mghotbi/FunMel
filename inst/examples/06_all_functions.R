@@ -78,7 +78,8 @@ metadata <- make_metadata(photo_dir,set_id="teaching_set",patterns=c(control="co
 metadata$centre_model <- ifelse(metadata$treatment=="control","none","fungus")
 metadata$partner_type <- metadata$centre_model
 metadata$operator <- "Teaching example" # Custom columns are preserved.
-validate_metadata(metadata)
+validate_metadata(metadata,stage="measurement") # Labels are optional for measuring.
+validate_metadata(metadata) # The matched comparison design is complete here.
 layout_by_treatment(metadata[1,,drop=FALSE])
 utils::write.csv(metadata,file.path(photo_dir,"plate_metadata.csv"),row.names=FALSE)
 files <- file.path(photo_dir,metadata$file)

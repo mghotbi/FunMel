@@ -33,11 +33,13 @@ make_metadata(
 \item{recursive}{Search nested image folders. Relative paths distinguish repeated basenames.}
 }
 \value{
-Metadata invisibly, also written as CSV. Missing fields must be filled.
+Metadata invisibly, also written as CSV. Experimental assignments are
+needed only for matched comparisons; optional annotations may remain blank.
 }
 \description{
-Writes one row per image. Fill set_id, treatment and centre_model before
-analysis. All controls use the treatment label control; set_id decides which
+Writes one row per image. Treatment, set and optional annotations may remain
+blank for image measurement. For comparisons, controls use the treatment
+label control; set_id decides which
 controls belong to which treatments. The same treatment label across sets
 must represent the same intervention. See \code{\link[=validate_metadata]{validate_metadata()}}.
 Review experimental assignments and image masks before interpretation.

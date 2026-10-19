@@ -36,7 +36,8 @@ test_that("ambiguous flat image folders are not automatically assigned controls"
   dest <- tempfile();on.exit(unlink(dest,recursive=TRUE),add=TRUE)
   p <- prepare_experiment(root,dest);m <- read.csv(p$metadata_file)
   expect_true(all(is.na(m$treatment)))
-  expect_error(run_experiment(p),"treatment")
+  expect_error(validate_metadata(read.csv(p$metadata_file)),"treatment")
+  expect_silent(validate_metadata(read.csv(p$metadata_file),stage="measurement"))
 })
 test_that("duplicate basenames are analyzed with exact metadata row mapping", {
   root <- project_folders();dest <- tempfile();on.exit(unlink(dest,recursive=TRUE),add=TRUE)

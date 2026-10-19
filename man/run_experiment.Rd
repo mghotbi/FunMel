@@ -4,7 +4,13 @@
 \alias{run_experiment}
 \title{Analyze all photographs in a prepared experiment}
 \usage{
-run_experiment(project, n_spots = NULL, spot_radius_mm = 0.5, ...)
+run_experiment(
+  project,
+  n_spots = NULL,
+  spot_radius_mm = 0.5,
+  ...,
+  default_centre = "fungus"
+)
 }
 \arguments{
 \item{project}{A funmel_project, its current folder, project.rds, or a saved
@@ -16,6 +22,10 @@ whole-colony pixels only. Spot and whole-colony results are kept separate.}
 \item{spot_radius_mm}{Radius of each optional circular ROI (mm).}
 
 \item{...}{Other analyze_plate() settings, such as dish_diameter_mm and max_dim.}
+
+\item{default_centre}{Segmentation fallback for unlabeled images, default
+fungus. Use none for control-only images. Per-image centre_model and known
+control labels take precedence. No treatment or control identity is guessed.}
 }
 \value{
 Batch result saved to image_analysis.rds and CSV tables.

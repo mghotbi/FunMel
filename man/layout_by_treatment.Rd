@@ -4,14 +4,18 @@
 \alias{layout_by_treatment}
 \title{Choose a segmentation layout from one metadata row}
 \usage{
-layout_by_treatment(row, ...)
+layout_by_treatment(row, ..., default_centre = "fungus")
 }
 \arguments{
-\item{row}{One metadata row with treatment and optional centre_model. Optional
+\item{row}{One metadata row with optional treatment and centre_model. Optional
 numeric rotation_deg, radius_frac, radius_mm, search_frac, start_deg and
 n_colonies columns customize the layout per image. Explicit ... takes priority.}
 
 \item{...}{Other \code{\link[=plate_layout]{plate_layout()}} arguments, e.g. radius_mm or positions.}
+
+\item{default_centre}{Layout for an unlabeled row without a centre_model.
+Default fungus; use none for control-only images. Explicit per-row layouts
+and identified controls take precedence. This never assigns a treatment label.}
 }
 \value{
 A layout. Controls use centre=none. Explicit centre_model is respected.

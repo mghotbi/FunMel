@@ -1,9 +1,10 @@
 # Create a metadata template for matched treatment-control sets
 
-Writes one row per image. Fill set_id, treatment and centre_model before
-analysis. All controls use the treatment label control; set_id decides
-which controls belong to which treatments. The same treatment label
-across sets must represent the same intervention. See
+Writes one row per image. Treatment, set and optional annotations may
+remain blank for image measurement. For comparisons, controls use the
+treatment label control; set_id decides which controls belong to which
+treatments. The same treatment label across sets must represent the same
+intervention. See
 [`validate_metadata()`](https://mghotbi.github.io/FunMel/reference/validate_metadata.md).
 Review experimental assignments and image masks before interpretation.
 No metadata approval flag is generated or required. Image QC warns by
@@ -64,4 +65,6 @@ make_metadata(
 
 ## Value
 
-Metadata invisibly, also written as CSV. Missing fields must be filled.
+Metadata invisibly, also written as CSV. Experimental assignments are
+needed only for matched comparisons; optional annotations may remain
+blank.

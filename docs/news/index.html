@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.18</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,13 @@
       <small>Source: <a href="https://github.com/mghotbi/FunMel/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.18" id="funmel-0418">FunMel 0.4.18<a class="anchor" aria-label="anchor" href="#funmel-0418"></a></h2>
+<ul><li>Measure images without completing treatment, set or optional context labels. Comparison validation remains strict; unmatched designs produce measurement-only outputs and a clear comparison status instead of blocking image measurement.</li>
+<li>Record the actual central segmentation model independently of biological labels. Unlabeled images use the documented fungal layout by default; control-only runs can use default_centre=“none”. Explicit row layouts take precedence.</li>
+<li>Complete matching assignments later without repeating measurement when the segmentation layout is unchanged. All metadata columns are retained.</li>
+<li>Update the README, tutorials, examples and help for the measurement-first workflow.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.17" id="funmel-0417">FunMel 0.4.17<a class="anchor" aria-label="anchor" href="#funmel-0417"></a></h2>
 <ul><li>Correct Windows image-path validation by normalizing both photographs and their image root to the same separator before comparison. Valid nested paths work across platforms; paths outside the root, including symlink escapes, remain rejected.</li>

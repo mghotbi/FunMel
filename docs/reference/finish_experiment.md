@@ -31,4 +31,7 @@ finish_experiment(project, ..., require_qc = FALSE)
 
 ## Value
 
-Reviewed result saved as reviewed_analysis.rds.
+Result saved as reviewed_analysis.rds. If the matching design is
+incomplete, saves measurement-only outputs and comparison_status.csv; no
+comparison figure is generated. Complete the matching labels and finish
+again without remeasuring, provided the recorded layouts remain correct.

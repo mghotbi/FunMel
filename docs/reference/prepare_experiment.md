@@ -4,8 +4,9 @@ Finds photographs recursively, preserving their relative paths. With a
 batch/control and batch/treatment folder structure, each batch path
 proposes a separate set_id and the leaf folder proposes the treatment.
 Only explicit control folder names are recognized. Other structures
-produce blank labels for the user to complete. Folder suggestions never
-confirm experimental identity or QC. One photograph must represent one
+produce blank labels that may remain blank for measurement; matching
+labels are needed for comparisons. Folder suggestions never confirm
+experimental identity or QC. One photograph must represent one
 independent plate; repeated time points of a plate are not independent
 replicates.
 
@@ -58,7 +59,7 @@ A funmel_project with paths to metadata, images, QC and result files.
 ``` r
 if (FALSE) { # \dontrun{
 project <- prepare_experiment() # Choose a photo ZIP or one photo in its folder.
-# Edit project$metadata_file: verify set_id, treatment and centre_model.
+# Matching labels can be supplied later; use the correct segmentation layout.
 result <- run_experiment(project, n_spots = 5, spot_radius_mm = 0.4)
 # Inspect project$qc_dir; review reminders do not require approval-flag edits.
 reviewed <- finish_experiment(project)

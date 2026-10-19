@@ -50,7 +50,9 @@ report_missing14 <- function(data,label) {
 image QC, matched coefficients, saved tables and publication-format exports.</p>
 </div>
 
-Start here after [installing FunMel](FunMel.html). Run numbered steps in order;
+Start here after [installing FunMel](FunMel.html). For your own photographs, use
+the [Get started workflow](FunMel.html); this article uses eight fixed example
+filenames and their supplied design. Run numbered steps in order;
 all objects used below are created in this article. The figures and tables shown
 here use the bundled photographs. The
 [function catalog](Function-examples.html) covers specialist tools separately.
@@ -100,10 +102,17 @@ location remains. For a project you want to keep, replace that assignment
 **before starting** with a new durable folder, for example:
 
 ```{r durable-folder, eval=FALSE}
-# Alternative to tempfile() above; use a new folder once.
-project_dir14 <- file.path(path.expand("~"),"FunMel_14_day_project")
-project14 <- prepare_experiment(photos14,project_dir14)
+# Alternative to tempfile(): keep the bundled practice project in your home folder.
+project_dir14 <- file.path(path.expand("~"), "FunMel_14_day_project")
+if (file.exists(file.path(project_dir14, "project.rds"))) {
+  project14 <- load_experiment(project_dir14)
+} else {
+  project14 <- prepare_experiment(input=photos14, project_dir=project_dir14)
+}
 ```
+
+`project_dir14` is the output folder, not the input ZIP. To analyze your own
+ZIP, use the separate input/output example in [Get started](FunMel.html).
 
 Do not run both preparation alternatives for the same project. To revisit work
 already saved, go directly to step 8. A folder or ZIP is passed directly here;
@@ -121,10 +130,8 @@ The combined metadata is discovered automatically. Inspect it before measuring:
 
 ```{r metadata14}
 metadata14 <- read.csv(project14$metadata_file,check.names=FALSE)
-knitr::kable(tutorial_table14(metadata14,
-  c("plate_id","set_id","treatment","centre_model","replicate"),
-  required=c("plate_id","set_id","treatment","centre_model"),label="metadata"),row.names=FALSE)
-validate_metadata(metadata14)
+knitr::kable(metadata14[c("plate_id","set_id","treatment","centre_model","replicate")],
+             row.names=FALSE)
 ```
 
 Each control appears once, labelled `treatment="control"` and
@@ -139,7 +146,7 @@ Verify treatment identities, controls, sets, day and any recorded strain/medium.
 Correct missing or inaccurate information. Additional user-defined columns are
 preserved.
 Do not infer biological identities from a filename alone. If corrections are
-needed, edit the project CSV and save it before the next step. Do not change
+needed, edit the project CSV and save it before matched comparisons. Do not change
 image identity or layout after analysis without remeasuring.
 
 ## 3. Set calibration and measure all eight plates
@@ -203,11 +210,12 @@ not have perfectly circular outlines. Correct unsuitable images or measurements
 before interpreting the final comparisons.
 
 ```{r illumination14, results='asis'}
-qc_table14 <- tutorial_table14(result14$plates,
-  c("plate_id","n_colonies_detected","central_detected","flat_field_status"),
-  required="plate_id",label="plate QC table")
-report_missing14(qc_table14,"plate QC")
-print(knitr::kable(qc_table14,row.names=FALSE))
+fields14 <- c("plate_id","n_colonies_detected","central_detected","flat_field_status")
+qc_table14 <- result14$plates[intersect(fields14,names(result14$plates))]
+missing14 <- setdiff(fields14,names(result14$plates))
+if(length(missing14)) cat("Not reported: ",paste(missing14,collapse=", "),
+                        "; no values were inferred. Inspect QC before interpretation.\n",sep="")
+knitr::kable(qc_table14,row.names=FALSE)
 ```
 
 Read the status recorded in your table. `withheld_degenerate_fit` means the
@@ -226,10 +234,8 @@ interpreting or reporting results.
 ## 5. Inspect whole-colony, spot and profile tables
 
 ```{r colony-table14, results='asis'}
-colony_table14 <- tutorial_table14(result14$colonies,
-  c("plate_id","colony_id","MI_min","MI_mean","MI_max","MI_spot_mean","n_spots_measured","spot_status"),
-  required=c("plate_id","colony_id","MI_mean"),label="colony measurements")
-report_missing14(colony_table14,"colony table")
+fields14 <- c("plate_id","colony_id","MI_min","MI_mean","MI_max","MI_spot_mean","n_spots_measured","spot_status")
+colony_table14 <- result14$colonies[intersect(fields14,names(result14$colonies))]
 knitr::kable(head(colony_table14),digits=2,row.names=FALSE)
 ```
 
@@ -239,10 +245,8 @@ knitr::kable(head(colony_table14),digits=2,row.names=FALSE)
 `MI_spot_min/max` are extrema of **spot means**, not pixel extrema.
 
 ```{r spot-table14, results='asis'}
-spot_table14 <- tutorial_table14(result14$spots,
-  c("plate_id","colony_id","spot_id","spot_radius_mm","n_pixels","MI_mean","MI_min","MI_max"),
-  required=c("plate_id","colony_id","spot_id","MI_mean"),label="spot measurements")
-report_missing14(spot_table14,"spot table")
+fields14 <- c("plate_id","colony_id","spot_id","spot_radius_mm","n_pixels","MI_mean","MI_min","MI_max")
+spot_table14 <- result14$spots[intersect(fields14,names(result14$spots))]
 knitr::kable(head(spot_table14),digits=2,row.names=FALSE)
 ```
 
@@ -253,10 +257,8 @@ Check `spot_status` and `n_spots_measured`; if all requested spots cannot fit
 without overlap, the incomplete summary is unavailable instead of invented.
 
 ```{r profiles14, results='asis'}
-profile_table14 <- tutorial_table14(result14$profiles,
-  c("plate_id","colony_id","mid_mm","MI_mean","MI_lo","MI_hi"),
-  required=c("plate_id","colony_id","MI_mean"),label="profiles")
-report_missing14(profile_table14,"profiles")
+fields14 <- c("plate_id","colony_id","mid_mm","MI_mean","MI_lo","MI_hi")
+profile_table14 <- result14$profiles[intersect(fields14,names(result14$profiles))]
 knitr::kable(head(profile_table14),digits=2,row.names=FALSE)
 ```
 
@@ -273,12 +275,10 @@ a **filename**, whereas `result14$spots` is a **data frame**.
 
 ```{r finish14, results='asis'}
 reviewed14 <- FunMel::finish_experiment(project14)
-coefficient_table14 <- tutorial_table14(reviewed14$melanization_coefficient,
-  c("set_id","treatment","MI_treatment_mean","MI_control_mean","melanization_coefficient",
-    "n_treatment_plates","n_control_plates"),
-  required=c("set_id","treatment","MI_treatment_mean","MI_control_mean","melanization_coefficient"),
-  label="matched coefficients")
-report_missing14(coefficient_table14,"coefficient table")
+fields14 <- c("set_id","treatment","MI_treatment_mean","MI_control_mean",
+              "melanization_coefficient","n_treatment_plates","n_control_plates")
+coefficient_table14 <- reviewed14$melanization_coefficient[
+  intersect(fields14,names(reviewed14$melanization_coefficient))]
 print(knitr::kable(coefficient_table14,digits=3,row.names=FALSE))
 reviewed14$assessment$status
 ```
@@ -322,6 +322,15 @@ replicates. The default figure and assessment use whole-colony MI.
 ```{r comparison14, fig.height=5.5, fig.cap="Descriptive real-data comparison. Each row uses that treatment's own set control; these are image-darkness ratios under the illustrative calibration."}
 print(plot_treatment_comparison(reviewed14))
 ```
+
+For your own project, a blank plotting result can mean that matching
+assignments are incomplete. Check `reviewed14$comparison_status` and
+`reviewed14$coefficient_error`. When the status is `awaiting_design`,
+`plot_treatment_comparison()` reports why it cannot create a matched comparison;
+use the set-only plot later in this article for descriptive measurements.
+After actual matching assignments are supplied, finalize again before plotting.
+Do not replace missing labels with guessed controls. A plot stored in a variable
+must be explicitly printed in a script or loop.
 
 You can also plot the finalized object already in memory:
 
@@ -439,10 +448,10 @@ synthetic teaching labels is not validated for these photographs.
 | sessionInfo.txt | R, platform and package versions |
 
 Different recorded day/strain/medium contexts create separate final output
-folders and `context_index.csv`; do not pool incompatible contexts. To adapt
-this tutorial to other photographs, replace the input folder/ZIP and verified
-metadata, retaining the own-control design. Do not reuse these eight-file labels
-for another experiment.
+folders and `context_index.csv`; do not pool incompatible contexts. For your own photographs, follow the [Get started workflow](FunMel.html) with
+your folder or ZIP and correct segmentation layouts. Keep its own image
+identities and experimental assignments. This article's filenames and numerical
+results refer only to the eight supplied photographs.
 
 The installed script `examples/walkthrough_14_days.R` follows the same numbered
 procedure. Precomputed tables in `extdata/14_day_example` are documented in their
@@ -451,3 +460,244 @@ procedure. Precomputed tables in `extdata/14_day_example` are documented in thei
 Comparison captions are exported separately as `treatment_comparison_caption.txt`.
 Use `caption="brief"` or `caption="full"` in `plot_treatment_comparison()` to include
 a caption beneath the figure.
+
+## Using your own photographs without completing experimental labels
+
+The bundled example has matching labels already supplied, so it produces matched
+coefficients. Your own photographs can be measured even when treatment, set and
+optional annotations are blank. Prepare a new project, then run it directly.
+Unlabeled rows use the standard fungal layout; use `default_centre="none"` for
+control-only photographs. Mixed collections require the correct per-image
+`centre_model` or known control labels so the appropriate layout is used.
+
+Finalization with an incomplete matching design saves measurements with
+`comparison_status="awaiting_design"` and an explanation in
+`comparison_status.csv`. It does not generate an unsupported comparison figure.
+Complete the actual treatment and own-control set assignments only when you need
+comparisons, then finish again. Do not remeasure unless the image layout changes.
+No optional strain, medium, date, notes or approval flags need filling merely to
+measure images. Inspect QC before interpretation. All displayed table examples use base R and `knitr::kable()`; no hidden tutorial
+helper needs to be copied. You can also use `head(result$colonies)` to inspect
+measurements immediately.
+
+## Explore measurements by set, without treatment names
+
+You can inspect measurements using only `set_id` and the image identities. You
+do not need to name the treatments, fill optional annotations or change approval
+flags. These commands work after `run_experiment()`; they do not require a
+completed coefficient calculation. For your own ZIP, first run the standalone
+workflow below, then use its `result14` and `project14` objects here.
+
+First, count the photographs recorded in each set:
+
+```{r set-count14}
+metadata14 <- read.csv(project14$metadata_file, check.names=FALSE)
+knitr::kable(as.data.frame(table(metadata14$set_id)),
+             col.names=c("Set", "Photographs"), row.names=FALSE)
+```
+
+Next, average the finite colony measurements within each independent plate,
+then summarize those plate means by set. Each plate receives equal weight;
+colonies and spots are subsamples rather than independent plate replicates.
+Inspect the QC images and resolve failed photographs before interpretation.
+Keep different days, strains, media and other experimental contexts separate;
+subset the colony table to a single context before running this summary if
+those contexts occur within the same set.
+
+```{r set-measurements14}
+colony_table14 <- result14$colonies
+usable14 <- colony_table14[
+  is.finite(colony_table14$MI_mean) &
+    !is.na(colony_table14$set_id) & nzchar(trimws(colony_table14$set_id)),
+  c("set_id", "plate_id", "MI_mean")
+]
+plate_means14 <- aggregate(MI_mean ~ set_id + plate_id,
+                           data=usable14, FUN=mean)
+knitr::kable(plate_means14, digits=3, row.names=FALSE)
+
+set_means14 <- aggregate(MI_mean ~ set_id, data=plate_means14, FUN=mean)
+plate_counts14 <- aggregate(plate_id ~ set_id, data=plate_means14, FUN=length)
+names(plate_counts14)[2] <- "n_measured_plates"
+set_summary14 <- merge(set_means14, plate_counts14, by="set_id")
+names(set_summary14)[names(set_summary14)=="MI_mean"] <- "mean_plate_MI"
+knitr::kable(set_summary14, digits=3, row.names=FALSE)
+```
+
+You can plot those plate means without assigning treatment names:
+
+```{r set-only-plot14, fig.height=3.8}
+# Keep individual plates visible; use the final figure's colours and typography.
+set_order14 <- sort(unique(as.character(plate_means14$set_id)))
+set_palette14 <- stats::setNames(
+  rep(c("#0072B2", "#D55E00", "#009E73", "#CC79A7", "#E69F00", "#56B4E9"),
+      length.out=length(set_order14)), set_order14)
+if (length(set_order14)>6L)
+  set_palette14 <- stats::setNames(
+    grDevices::hcl.colors(length(set_order14), "Dark 3"), set_order14)
+
+points14 <- plate_means14[order(plate_means14$set_id, plate_means14$plate_id), ]
+points14$row <- match(points14$set_id, set_order14)
+for (set14 in set_order14) {
+  ix14 <- which(points14$set_id==set14)
+  points14$row[ix14] <- points14$row[ix14] +
+    if (length(ix14)>1L) seq(0, 0.18, length.out=length(ix14)) else 0.08
+}
+set_sd14 <- aggregate(MI_mean ~ set_id, data=plate_means14, FUN=stats::sd)
+names(set_sd14)[2] <- "sd_plate_MI"
+summary_plot14 <- merge(set_summary14, set_sd14, by="set_id")
+summary_plot14$row <- match(summary_plot14$set_id, set_order14)-0.22
+intervals14 <- summary_plot14[is.finite(summary_plot14$sd_plate_MI), ]
+labels14 <- paste0(set_order14, "\n",
+  summary_plot14$n_measured_plates[match(set_order14, summary_plot14$set_id)],
+  " measured plates")
+
+set_plot14 <- ggplot2::ggplot(points14, ggplot2::aes(x=MI_mean, y=row)) +
+  ggplot2::geom_segment(data=intervals14, ggplot2::aes(
+    x=mean_plate_MI-sd_plate_MI, xend=mean_plate_MI+sd_plate_MI,
+    y=row, yend=row, colour=set_id), inherit.aes=FALSE, linewidth=0.65) +
+  ggplot2::geom_point(ggplot2::aes(colour=set_id, fill=set_id, shape="Plate"),
+                      size=2.6, stroke=0.8) +
+  ggplot2::geom_point(data=summary_plot14, ggplot2::aes(
+    x=mean_plate_MI, y=row, colour=set_id, fill=set_id, shape="Set mean"),
+    inherit.aes=FALSE, size=2.7) +
+  ggplot2::scale_colour_manual(values=set_palette14, guide="none") +
+  ggplot2::scale_fill_manual(values=set_palette14, guide="none") +
+  ggplot2::scale_shape_manual(values=c("Plate"=21, "Set mean"=18)) +
+  ggplot2::scale_y_continuous(breaks=seq_along(set_order14), labels=labels14,
+    limits=c(0.5, length(set_order14)+0.5)) +
+  ggplot2::labs(x="Plate melanization index", y=NULL, shape=NULL) +
+  ggplot2::theme_classic(base_size=9, base_family="sans") +
+  ggplot2::theme(
+    axis.line.y=ggplot2::element_blank(), axis.ticks.y=ggplot2::element_blank(),
+    axis.text=ggplot2::element_text(colour="#263238"),
+    axis.text.y=ggplot2::element_text(size=8),
+    panel.grid.major.y=ggplot2::element_line(colour="#E8ECEE", linewidth=0.3),
+    legend.position="top", legend.justification="left",
+    plot.margin=ggplot2::margin(10, 12, 10, 10))
+print(set_plot14)
+```
+
+Circles show individual plates; the lower diamond shows the set mean. Bars
+show one between-plate SD, not confidence intervals, and are unavailable for a
+single plate. Colours identify sets, not treatment or control roles. This
+optional descriptive plot complements the two-panel matched-control figure in
+step 7; it does not replace it or infer treatment effects, coefficients or
+p-values. There is no caption embedded beneath either figure by default.
+
+The plot displays in R and in this article. To save this optional figure, run:
+
+```{r export-set-plot14, eval=FALSE}
+for (ext14 in c("pdf", "svg", "png")) {
+  ggplot2::ggsave(file.path(project14$project_dir,
+                          paste0("set_measurements.", ext14)),
+                 plot=set_plot14, width=7.2, height=3.8, dpi=600, bg="white",
+                 device=if (ext14=="svg") grDevices::svg else
+                   if (ext14=="pdf") grDevices::cairo_pdf else "png")
+}
+```
+
+These are **descriptive summaries of all measured plates in each set**. If a
+set contains both control and confrontation plates, this summary includes both;
+it does not estimate the response to the interacting fungus. Blank set IDs
+are omitted, and plates without finite colony measurements are not counted.
+The count of successfully measured plates can therefore differ from the number
+of photographs in the metadata. Means based on incomplete colony detection
+need inspection as well.
+
+`set_id` groups photographs but cannot identify which member is the control.
+For matched melanization coefficients, record the actual control in each set
+as `treatment="control"` and identify the other plates with a treatment code.
+A short code such as `A60_2` is sufficient; a descriptive organism name is not
+required. Confirm the appropriate per-image layout, including
+`centre_model="none"` for control plates. If the layout changes, remeasure;
+otherwise save the assignments and run `finish_experiment(project14)` again.
+Without those assignments, `awaiting_design` is expected: measurements are
+available, but coefficient and treatment-comparison tables remain empty. Do not
+call `melanization_coefficient()` until the matching design is complete.
+
+## Standalone alternative: analyze your own 14-day ZIP
+
+Use this complete alternative for your own archive, rather than mixing it with
+the eight-photo example above. The ZIP is the input file; the project directory
+is a separate new output folder. It must not be inside the ZIP filename.
+Do not rerun preparation over an existing project; reopen its `project.rds` with
+`load_experiment()` instead, or choose a new output folder.
+
+```{r own-zip14, eval=FALSE}
+library(FunMel)
+photo_zip14 <- path.expand("~/Desktop/photos_14_days.zip")
+project_dir14 <- path.expand("~/Desktop/FunMel_14_day_project")
+
+# Reopen a prepared project; otherwise create it once from the ZIP.
+if (file.exists(file.path(project_dir14, "project.rds"))) {
+  project14 <- load_experiment(project_dir14)
+} else {
+  project14 <- prepare_experiment(
+    input = photo_zip14,
+    project_dir = project_dir14
+  )
+}
+
+# Read existing measurements, or measure if this project has none yet.
+if (file.exists(project14$result_file) || file.exists(project14$reviewed_file)) {
+  result14 <- read_experiment(project14)
+} else {
+  # Replace 90 with the verified outer diameter of your dishes (mm).
+  result14 <- run_experiment(
+    project14, dish_diameter_mm=90,
+    n_spots=5, spot_radius_mm=0.4
+  )
+}
+result14$failed
+head(result14$colonies)
+head(result14$spots)
+project14$qc_dir # Inspect all saved QC images before interpreting results.
+
+# After resolving any failed photographs:
+reviewed14 <- finish_experiment(project14)
+reviewed14$comparison_status
+comparison14 <- plot_treatment_comparison(reviewed14)
+if (!is.null(comparison14)) print(comparison14)
+project14$project_dir # Saved tables, analyses and any eligible comparison figures.
+```
+
+The two paths have different roles: `photo_zip14` is the existing photograph
+ZIP, and `project_dir14` is the output folder. `"~"` means your home folder;
+`path.expand()` converts it to a full path. `file.path()` joins folder names;
+it does not extract a ZIP or turn a ZIP file into a directory.
+
+The block above can be rerun: it reopens `project.rds` when present and reads
+saved measurements when available. To import a different ZIP, choose a new
+output folder; reopening an existing project keeps that project's photographs
+and metadata. To change the segmentation layout, dish scale or spot settings,
+call `run_experiment()` explicitly with the intended settings to replace the
+saved image measurements, then inspect the new QC and finalize again.
+
+If the output folder is nonempty but has no `project.rds`, keep its contents and
+choose another new output folder; do not delete results to bypass the check.
+A failed assignment such as `project14 <- prepare_experiment(...)` does not
+clear or update an older `project14` object. If preparation reports an existing
+project, reopen its actual folder:
+
+```{r reopen-own-folder14, eval=FALSE}
+project14 <- load_experiment(path.expand("~/Desktop/FunMel_14_day_project"))
+project14$project_dir
+```
+
+Replace the input ZIP path with the actual location on your computer. A file
+chooser is an alternative: `photo_zip14 <- file.choose()`. The example paths
+above use the macOS Desktop; on other systems supply the correct full paths or
+use the chooser and a new output folder under `path.expand("~")`.
+The `project14` object from this block refers to your own archive, not the
+bundled eight-photo example. Its photographs can have any supported filenames;
+do not reuse the bundled example's fixed QC-image names or expected coefficients.
+
+Treatment, set and optional annotations can stay blank for measurement. The
+fallback is a fungal confrontation layout. For unlabeled control-only images,
+add `default_centre="none"` to `run_experiment()`. Mixed collections require
+correct per-image `centre_model` values or verified control labels/folders.
+No manual approval flags or separate validation call are needed. Missing matching
+assignments produce measurement-only outputs with `awaiting_design`; add the
+real own-control assignments only when comparisons are needed. All metadata
+columns are preserved. Do not interpret a successful run as automatic biological
+validation; check masks, layouts, calibration and warnings.

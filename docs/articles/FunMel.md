@@ -1,35 +1,33 @@
 # Get started with FunMel
 
-FUNGAL CONFRONTATION ASSAYS
+START WITH REAL PHOTOGRAPHS
 
-Photographs. Colony measurements. Matched controls.
+Prepare. Measure. Inspect. Compare.
 
-Measure four approximately round *Zymoseptoria tritici* colonies around
-another fungus, retain their image provenance, and compare each
-treatment with its own experimental controls.
+Run eight original plate photographs through the complete workflow,
+using supplied treatment/control assignments and the final
+matched-control figure.
 
-**01 · Get started**
+**01 · Run this example**
 
-Learn the objects, try a simulated plate, then prepare your photographs.
+Follow the five steps below. The photographs and metadata are included.
 
-**02 · Real photographs**
+**02 · Understand the results**
 
-Follow the [complete eight-photo 14-day
-tutorial](https://mghotbi.github.io/FunMel/articles/Real-14-day.md),
-including metadata, spot tables and exported figures.
+The [detailed real-data
+tutorial](https://mghotbi.github.io/FunMel/articles/Real-14-day.md)
+explains QC, measurements, statistics and exports.
 
-**03 · Every function**
+**03 · Use your photographs**
 
-Explore the [indexed function
-catalog](https://mghotbi.github.io/FunMel/articles/Function-examples.md)
-for specialist calibration, training and measurement tools.
+Follow the [own-ZIP
+workflow](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#standalone-alternative-analyze-your-own-14-day-zip)
+with your experimental assignments.
 
 ## 1. Install and load
 
-Run installation once. After updating, restart R before loading the new
-package. In RStudio use **Session → Restart R**; other R applications
-can be closed and reopened. A loaded package should not be replaced in
-the same session.
+Install once. After an update, restart R before loading FunMel. In
+RStudio, choose **Session → Restart R**.
 
 ``` r
 
@@ -40,266 +38,182 @@ remotes::install_github("mghotbi/FunMel")
 ``` r
 
 library(FunMel)
-packageVersion("FunMel")
-#> [1] '0.4.16'
 ```
 
-R \>= 4.1 and a source-compilation toolchain are required: Xcode Command
-Line Tools on macOS, matching Rtools on Windows, or R development tools
-and ImageMagick development libraries on Linux. To include locally
-installed vignettes, install with
-`build_vignettes=TRUE, dependencies=TRUE`:
+Source installation requires Xcode Command Line Tools on macOS, matching
+Rtools on Windows, or R development tools and ImageMagick development
+libraries on Linux. R \>= 4.1 is required. To install the tutorials for
+offline use, add `build_vignettes=TRUE` to `install_github()`.
+
+## 2. Prepare the real-data example
+
+Run these steps in order. The eight photographs contain two sets, each
+with three fungal confrontation plates and one control plate. The
+supplied metadata already identifies each plate’s treatment, own control
+and segmentation layout; no metadata entry or approval-flag edits are
+needed for this example.
 
 ``` r
 
-remotes::install_github("mghotbi/FunMel",build_vignettes=TRUE,dependencies=TRUE)
-vignette("FunMel",package="FunMel")
-vignette("Real-14-day",package="FunMel")
+photos <- system.file("extdata", "14-days", package="FunMel")
+project_dir <- tempfile("FunMel_real_example_")
+project <- prepare_experiment(input=photos, project_dir=project_dir)
+project$project_dir
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3"
 ```
 
-## 2. See one plate before starting a project
+[`tempfile()`](https://rdrr.io/r/base/tempfile.html) supplies a new
+temporary folder name, so repeating the example creates a separate
+project without overwriting earlier work. Keep the printed folder
+location: all outputs will be saved there. To retain this practice run,
+copy the complete project folder to a permanent location before closing
+R.
 
-This self-contained example uses a schematic image, not biological data.
-It shows the default arrangement: four target colonies and a central
-fungal partner.
+## 3. Measure and inspect
+
+The 90-mm diameter below is an **illustrative calibration**. Verify the
+actual outer dish diameter before using measurements scientifically. The
+workflow measures the four target colonies on each plate and requests
+five circular spots per colony.
 
 ``` r
 
-sim <- simulate_plate(width=400,height=400,seed=1)
-plate_result <- analyze_plate(sim$image,n_spots=3,spot_radius_mm=0.4,
-                              n_boot=20,verbose=FALSE)
-plate_result$colonies[,c("colony_id","detected","MI_mean","MI_spot_mean")]
-#>   colony_id detected  MI_mean MI_spot_mean
-#> 1        TL     TRUE 48.81529     45.58140
-#> 2        TR     TRUE 52.99384     51.84266
-#> 3        BR     TRUE 57.17307     57.43442
-#> 4        BL     TRUE 41.43033     43.49997
-```
-
-``` r
-
-plot_qc(plate_result)
-```
-
-![Simulated plate: target-colony masks and central fungal
-core/hyphal-growth candidates.](FunMel_files/figure-html/first-qc-1.png)
-
-Simulated plate: target-colony masks and central fungal
-core/hyphal-growth candidates.
-
-Check the target outlines, central fungal tissue, connected hyphae and
-spot positions. These are image-based candidates, not species
-identifications or inhibition boundaries. The 20 bootstrap replicates
-keep teaching examples quick; they are not intended for precise
-uncertainty estimates.
-
-For a control without a central fungus:
-
-``` r
-
-control_layout <- plate_layout(centre="none")
-control_result <- analyze_plate(example_plate("control"),layout=control_layout,
-                                max_dim=1200,n_boot=20)
-```
-
-Melanization index is **MI = 100 − CIELAB L\***. A larger value means
-darker pixels. It is an image-darkness proxy, not measured melanin
-concentration. Exposure, lighting, colour calibration and masks affect
-the measurement.
-
-## 3. Choose the right starting point
-
-| What you have | What to do |
-|----|----|
-| No data yet; you want to learn | Continue with the [real 14-day tutorial](https://mghotbi.github.io/FunMel/articles/Real-14-day.md) |
-| A new photo ZIP | Use [`prepare_experiment()`](https://mghotbi.github.io/FunMel/reference/prepare_experiment.md) and select the ZIP |
-| A new folder of photographs | Supply its full path, or select one original photo with [`prepare_experiment()`](https://mghotbi.github.io/FunMel/reference/prepare_experiment.md) |
-| Several batches in nested folders | Supply the common root folder or ZIP so every batch and its controls are included |
-| Saved measurements from an earlier session | Use [`load_experiment()`](https://mghotbi.github.io/FunMel/reference/load_experiment.md); do not prepare the project again |
-
-A file chooser selects **files**, not folders. Selecting one original
-photograph uses its containing folder and subfolders; the package prints
-the exact folder it will scan. It includes all supported photographs
-there, not just the selected image. For multiple batches, select their
-ZIP or supply the common root folder path. Do not select a QC figure or
-metadata CSV as an original photograph.
-
-### New photographs: prepare once
-
-Choose **one** of these alternatives:
-
-``` r
-
-project <- prepare_experiment() # Choose a photo ZIP or one original photo.
-```
-
-``` r
-
-# Alternative: replace this example path with the common photo-folder root.
-project <- prepare_experiment("/full/path/to/photos","FunMel_project")
-```
-
-Use a new output folder. An existing nonempty output is protected
-against replacement. If work is already saved, use the reopening
-instructions below.
-
-### Saved work: reopen and read
-
-``` r
-
-project <- load_experiment() # Choose project.rds in its current project folder.
-result <- read_experiment(project)
-head(result$colonies)
-head(result$spots)
-```
-
-Keep the complete project folder together when moving it. The loader
-reconnects internal paths. Original photographs outside that folder keep
-their external paths; they are needed for remeasurement, not for reading
-or finalizing saved measurements. `project$result_file` is a filename;
-`result$spots` is a table.
-
-## 4. Check the experimental design
-
-``` r
-
-project$metadata_file
-metadata <- read.csv(project$metadata_file,check.names=FALSE)
-metadata[,c("plate_id","set_id","treatment","centre_model")]
-validate_metadata(metadata)
-```
-
-A unique `plate_metadata.csv` in the input is read automatically.
-Otherwise the package creates a template, proposing labels only for
-explicit structures such as `batch1/control/` and `batch1/fungus_A/`.
-Folder names cannot prove biological assignments. **Correct missing or
-inaccurate information using laboratory records before analysis.**
-
-| Field | Required interpretation |
-|----|----|
-| `plate_id` | Globally unique independent plate, photographed once |
-| `file`, `relative_file` | Original image provenance; preserve the relative path |
-| `set_id` | Matching treatment and control group; controls are never borrowed from another set |
-| `treatment` | Exact label `control` for controls; consistent actual treatment labels otherwise |
-| `centre_model`, `partner_type` | `none` for controls, normally `fungus` for confrontation plates |
-| `day`, `medium`, `zymo_strain` | May be entirely unrecorded; once recorded, complete and constant within each set |
-| Other fields | Retained experimental annotations, including user-defined columns |
-
-For one control plus three treatment plates, enter four rows sharing a
-`set_id`; enter the control once. Four colonies per plate and multiple
-spots per colony are subsamples, not independent biological replicates.
-Repeated images of the same plate are not new independent replicates.
-
-For a nested ZIP, relative paths distinguish identical basenames. Supply
-one combined metadata table with `metadata=` when there are multiple
-metadata files. Use `control_folders="C"` only when that exact label
-genuinely denotes controls.
-
-## 5. Measure, inspect and finish
-
-``` r
-
-dish_mm <- 90 # Replace with the verified outer diameter of your dishes (mm).
-result <- run_experiment(project,dish_diameter_mm=dish_mm,max_dim=1200,
-                         n_spots=5,spot_radius_mm=0.4)
+result <- run_experiment(
+  project, dish_diameter_mm=90, max_dim=1200,
+  n_spots=5, spot_radius_mm=0.4, n_boot=20
+)
 result$analysis_status
+#> [1] "complete"
 result$failed
+#> [1] file  error
+#> <0 rows> (or 0-length row.names)
 project$qc_dir
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3/qc"
 ```
 
-A completed run reports `"complete"` and zero failed images. Inspect
-every QC PNG for target masks, central fungal tissue/hyphae, spots,
-scale, lighting and warnings before interpretation. Informative QC
-warnings do not block the default workflow. Genuine failures still
-require correction; successful processing is not automatic biological
-validation.
+The expected status is `"complete"` with zero failed photographs. Open
+the printed QC folder and inspect the target-colony masks, central
+fungal tissue and hyphae, sampling spots, scale and lighting before
+interpreting results. QC reminders do not require changing approval
+flags. Resolve genuine failed photographs before finalizing. The 20
+bootstrap resamples keep this practice run quick; they are not intended
+for precise uncertainty estimates.
 
-The diameter must be an actual, finite positive measurement. All plates
-in one run use that setting; analyze different dish sizes separately.
-Omit `n_spots` and `spot_radius_mm` for whole-colony measurements only.
+Inspect the measurements directly:
+
+``` r
+
+knitr::kable(head(result$colonies[c("plate_id", "colony_id", "MI_mean")]),
+             digits=3, row.names=FALSE)
+```
+
+| plate_id         | colony_id | MI_mean |
+|:-----------------|:----------|--------:|
+| 2026_10_02_99_38 | TL        |  70.448 |
+| 2026_10_02_99_38 | TR        |  72.105 |
+| 2026_10_02_99_38 | BR        |  74.293 |
+| 2026_10_02_99_38 | BL        |  69.635 |
+| 2026_10_02_99_39 | TL        |  71.186 |
+| 2026_10_02_99_39 | TR        |  68.283 |
+
+``` r
+
+knitr::kable(head(result$spots[c("plate_id", "colony_id", "spot_id", "MI_mean")]),
+             digits=3, row.names=FALSE)
+```
+
+| plate_id         | colony_id | spot_id | MI_mean |
+|:-----------------|:----------|--------:|--------:|
+| 2026_10_02_99_38 | TL        |       1 |  71.710 |
+| 2026_10_02_99_38 | TL        |       2 |  74.014 |
+| 2026_10_02_99_38 | TL        |       3 |  69.632 |
+| 2026_10_02_99_38 | TL        |       4 |  68.491 |
+| 2026_10_02_99_38 | TL        |       5 |  76.129 |
+| 2026_10_02_99_38 | TR        |       1 |  71.611 |
+
+## 4. Calculate coefficients and display the final figure
+
+Finalization reuses the saved measurements and matches each treatment to
+its own set’s control.
 
 ``` r
 
 reviewed <- finish_experiment(project)
-reviewed$melanization_coefficient
-reviewed$assessment$status
-print(plot_treatment_comparison(project))
+knitr::kable(reviewed$melanization_coefficient[
+  c("set_id", "treatment", "MI_treatment_mean", "MI_control_mean",
+    "melanization_coefficient", "n_treatment_plates", "n_control_plates")],
+  digits=3, row.names=FALSE)
 ```
 
-Finalization reuses saved measurements and exports CSV tables, an
-assessment RDS, and a treatment comparison in PDF, SVG and 600-dpi PNG.
-Different recorded contexts are finalized into separate folders listed
-in `context_index.csv`.
+| set_id | treatment | MI_treatment_mean | MI_control_mean | melanization_coefficient | n_treatment_plates | n_control_plates |
+|:---|:---|---:|---:|---:|---:|---:|
+| A60_2_14_days | A60_2 | 68.996 | 42.374 | 1.628 | 3 | 1 |
+| B20_2_14_days | B20_2 | 67.463 | 51.813 | 1.302 | 3 | 1 |
 
-## 6. Read the results correctly
+``` r
 
-| Result | Meaning |
-|----|----|
-| `colonies` / colonies.csv | Whole-colony colour, area, MI and optional spot summaries |
-| `spots` / spots.csv | One row per achieved circular ROI, with coordinates and pixel summaries |
-| `profiles` / profiles.csv | Edge-to-centre darkness measurements |
-| `plates` / plates.csv | Plate-level detection, calibration and illumination status |
-| `metadata` / metadata_used.csv | Complete metadata with custom names and values retained |
-| `melanization_coefficient` | Set-specific treatment-to-own-control ratios |
-| treatment_comparison_statistics.csv | Means, SDs, counts and descriptive values plotted in the figure |
+comparison <- plot_treatment_comparison(reviewed)
+if (!is.null(comparison)) print(comparison)
+```
 
-Whole-colony `MI_min`, `MI_mean` and `MI_max` describe eligible interior
-pixels, excluding the rim and saturated/specular pixels.
-`MI_spot_mean/min/max` summarize **individual spot means**, not the
-darkest/lightest whole-colony pixels or confidence limits. Spot
-placement is deterministic, spatially spread and non-overlapping. Check
-`n_spots_measured` and `spot_status`; incomplete summaries are
-unavailable rather than invented.
+![](FunMel_files/figure-html/comparison-real-1.png)
 
-The default coefficient divides the mean of treatment **plate** MI
-values by the mean of control **plate** MI values in the same set. Each
-plate averages its eligible target-colony MI means equally. Values above
-1 indicate a darker image-based treatment mean, not a
-pigment-concentration fold change. Overall summaries weight set-specific
-ratios equally, rather than pooling all controls.
+The left panel shows plate melanization indices; the right panel shows
+matched-control coefficients. Squares are controls, circles are
+treatment plates and lower diamonds are treatment means. Bars show one
+between-plate SD, not confidence intervals. Each set has only one
+control, so control SD and replicated-control significance tests are
+unavailable.
 
-One control per set permits descriptive ratios but not the package’s
-replicated-cell significance tests. With adequate replication,
-[`assess_experiment()`](https://mghotbi.github.io/FunMel/reference/assess_experiment.md)
-uses `lme4`/`lmerTest`, matched-set contrasts and Holm adjustment.
-Review model status, convergence, singularity, assumptions and
-experimental coverage before interpreting inference. The comparison plot
-itself is descriptive: bars show one between-plate SD, not confidence
-intervals; ratio SD conditions on the shared control mean and omits its
-uncertainty.
+MI is `100 - CIELAB L*`, an image-darkness proxy rather than a direct
+measurement of melanin concentration. Colonies and spots within a plate
+are subsamples; independent plates are the experimental units. See the
+[detailed real-data
+tutorial](https://mghotbi.github.io/FunMel/articles/Real-14-day.md) for
+interpretation and limitations.
 
-A prespecified, consistently applied spot-based descriptive analysis may
-use `melanization_coefficient(reviewed,response="MI_spot_mean")`. Keep
-that response separate from whole-colony MI.
+## 5. Find outputs and reopen saved work
 
-## 7. Continue confidently
+``` r
 
-| Message or situation | Next step |
-|----|----|
-| Final outputs saved | Finalization succeeded; read the exported tables and figure |
-| Image QC unconfirmed | Inspect masks, calibration and warnings; review before interpreting results |
-| Insufficient plate replication | Use descriptive results; do not interpret absent p-values as a software failure |
-| Missing treatment or matching control | Complete actual assignments; another batch’s control is not a substitute |
-| Selected metadata CSV, PDF or SVG | Reopen project.rds, or choose the original photo ZIP/photo |
-| Output folder already exists | Reopen its project.rds rather than preparing over saved work |
-| Missing saved file | Open the current complete project folder; restore genuinely missing files |
-| Flat-field correction withheld | Inspect illumination status; withholding does not demonstrate adequate lighting |
-| Spots cannot fit | Inspect masks and use consistent feasible spot settings across compared plates |
+project$project_dir
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3"
+```
 
-Custom metadata is retained; measurement-name conflicts receive a
-`metadata_` prefix only in measurement tables. The full metadata keeps
-original names. Changed segmentation layouts require reanalysis because
-the saved masks differ.
+This folder contains colony, spot, profile and plate CSV tables; matched
+coefficients; saved R analyses; QC images; and the final
+`treatment_comparison.pdf`, `.svg` and `.png`. Statistics and the
+explanatory caption are saved separately. The exported figure has no
+embedded caption by default.
 
-**Next:** [work through the real
-photographs](https://mghotbi.github.io/FunMel/articles/Real-14-day.md),
-explore [every exported
-function](https://mghotbi.github.io/FunMel/articles/Function-examples.md),
-or read the installed `guides/FunMel_overview.md` for algorithms and use
-alongside ImageJ/Fiji.
+After saving or moving the **complete** project folder, reopen it
+without preparing or measuring again:
 
-Comparison captions are exported separately as
-`treatment_comparison_caption.txt`. Use `caption="brief"` or
-`caption="full"` in
-[`plot_treatment_comparison()`](https://mghotbi.github.io/FunMel/reference/plot_treatment_comparison.md)
-to include a caption beneath the figure.
+``` r
+
+project <- load_experiment() # Select project.rds in the saved project folder.
+result <- read_experiment(project)
+reviewed <- read_experiment(project, finalized=TRUE)
+print(plot_treatment_comparison(reviewed))
+```
+
+## Use your own photographs
+
+Follow the [own-ZIP
+workflow](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#standalone-alternative-analyze-your-own-14-day-zip)
+for separate input/output paths, preparation, reopening and measurement.
+Your photographs may have any supported names and any actual treatment
+codes; the bundled assignments apply only to the supplied photographs.
+
+Measurements do not require treatment names or approval flags. A mixed
+collection still needs correct per-image layouts: `fungus` for
+confrontations and `none` for controls. Matched coefficients need real
+treatment/control assignments within `set_id`; otherwise measurements
+are saved with `awaiting_design`. For exploration without treatment
+names, use the [set-only measurement
+plot](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#explore-measurements-by-set-without-treatment-names).
+Every custom metadata column is retained.
+
+For specialist calibration, classification and measurement utilities,
+see the [complete function
+examples](https://mghotbi.github.io/FunMel/articles/Function-examples.md).

@@ -190,8 +190,10 @@ print.funmel_result <- function(x, ...) {
 #'
 #' @param files Character vector of image paths, or a directory (all
 #'   JPEG/PNG/TIFF files are used).
-#' @param metadata Optional design data frame. When supplied, file, plate_id,
-#'   set_id and treatment are required and validated by [validate_metadata()].
+#' @param metadata Optional design data frame with one row per image.
+#'   Image identities are validated; missing plate IDs are generated. Treatment,
+#'   set and context fields may remain blank for measurement. Matched coefficients
+#'   are withheld until a valid experimental design is available.
 #'   Extra design columns are merged into the output tables.
 #' @param layout A single [plate_layout()], or a function
 #'   `function(metadata_row)` returning the layout for each plate (e.g.
@@ -234,11 +236,12 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
     paste(utils::head(missing,5L),collapse="; "),". Analysis has not started. Check extraction and use prepare_photo_archive() for ZIP files.")
   if (is.null(metadata) && anyDuplicated(tools::file_path_sans_ext(basename(files))))
     stop("Image basenames must be unique; duplicate names would overwrite plate results.")
-  if (!is.null(metadata)) validate_metadata(metadata,files=files,
+  if (!is.null(metadata)) metadata <- complete_metadata_columns(metadata)
+  if (!is.null(metadata)) validate_metadata(metadata,stage="measurement",files=files,
     control=if(is.null(coefficient_control)) "control" else coefficient_control)
   metadata_index <- if(is.null(metadata)) NULL else match_image_rows(files,metadata)
   if (!is.null(qc_dir)) dir.create(qc_dir, showWarnings = FALSE, recursive = TRUE)
-  out_c <- list(); out_p <- list(); out_s <- list(); out_spots <- list(); failed <- list()
+  out_c <- list(); out_p <- list(); out_s <- list(); out_spots <- list(); out_layout <- list(); failed <- list()
   for (k in seq_along(files)) {
     f <- files[k]
     pid <- tools::file_path_sans_ext(basename(f))
@@ -258,6 +261,7 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
       if (verbose) cli::cli_alert_danger(conditionMessage(r))
       next
     }
+    out_layout[[pid]] <- data.frame(plate_id=pid,centre_model=lay$centre,stringsAsFactors=FALSE)
     out_spots[[pid]] <- r$spots
     out_c[[pid]] <- r$colonies
     out_p[[pid]] <- r$profiles
@@ -267,6 +271,7 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
   result <- list(colonies = bind_rows_fill(out_c), profiles = bind_rows_fill(out_p),
        spots = bind_rows_fill(out_spots),
        plates = bind_rows_fill(out_s),
+       analysis_layout = bind_rows_fill(out_layout),
        failed = if (length(failed)) do.call(rbind, failed) else data.frame(file = character(), error = character()))
   if(!nrow(result$colonies)) result$colonies<-data.frame(plate_id=character(),colony_id=character(),MI_mean=double(),detected=logical())
   if(!nrow(result$profiles)) result$profiles<-data.frame(plate_id=character(),colony_id=character(),ring=integer(),MI_mean=double())
