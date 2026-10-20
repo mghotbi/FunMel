@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -105,6 +105,7 @@
 <span><span class="va">project</span><span class="op">$</span><span class="va">project_dir</span> <span class="co"># Saved tables and any eligible comparison figures.</span></span></code></pre></div>
 <p>A new project needs a new or empty output folder. Reopening retains that project’s photographs; choose another folder for a different archive. To change analysis settings, rerun <code><a href="reference/run_experiment.html">run_experiment()</a></code> explicitly. The default layout is four target colonies around a central fungus. Control-only images need <code>default_centre="none"</code>; mixed collections need correct per-image layouts.</p>
 <p>Measurement needs no treatment names or approval-flag edits. A treatment comparison still requires real treatment/control assignments within each <code>set_id</code>. Otherwise FunMel saves measurements, reports <code>awaiting_design</code> and explains why no comparison figure is produced. The real-data tutorial also shows a descriptive set plot that needs no treatment names.</p>
+<p>The output folder also contains <code>run_summary.csv</code>, <code>metadata_issues.csv</code>, <code>measurement_issues.csv</code> and <code>layout_assignments.csv</code>. These distinguish missing experimental assignments from incomplete colony/spot measurements. See the <a href="https://mghotbi.github.io/FunMel/articles/Real-14-day.html#when-coefficient-tables-are-empty">real-data troubleshooting guide</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="tutorials">Tutorials<a class="anchor" aria-label="anchor" href="#tutorials"></a>

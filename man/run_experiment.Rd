@@ -40,4 +40,8 @@ Dish diameter and any supplied pixel scale must be finite positive numeric scala
 Missing project metadata must be restored or its recorded path corrected.
 A batch with failed images saves error reports and warns; it does not report success.
 Inspect result$failed and resolve every failed image before finalization.
+Image completion is separate from colony completeness. run_summary.csv reports
+finite target MI counts; measurement_issues.csv identifies missing colonies and
+incomplete spot sampling. metadata_issues.csv lists design fields and affected
+plates, while layout_assignments.csv records the actual layout and its source.
 }

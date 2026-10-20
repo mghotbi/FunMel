@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -132,7 +132,7 @@ needed for this example.</p>
 <span><span class="va">project_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"FunMel_real_example_"</span><span class="op">)</span></span>
 <span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_experiment.html">prepare_experiment</a></span><span class="op">(</span>input<span class="op">=</span><span class="va">photos</span>, project_dir<span class="op">=</span><span class="va">project_dir</span><span class="op">)</span></span>
 <span><span class="va">project</span><span class="op">$</span><span class="va">project_dir</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpesXl4B/FunMel_real_example_3fdd7f1cd2d3"</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile()</a></code> supplies a new temporary folder name, so
 repeating the example creates a separate project without overwriting
 earlier work. Keep the printed folder location: all outputs will be
@@ -157,14 +157,17 @@ colonies on each plate and requests five circular spots per colony.</p>
 <span><span class="co">#&gt; [1] file  error</span></span>
 <span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
 <span><span class="va">project</span><span class="op">$</span><span class="va">qc_dir</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3/qc"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpesXl4B/FunMel_real_example_3fdd7f1cd2d3/qc"</span></span></code></pre></div>
 <p>The expected status is <code>"complete"</code> with zero failed
 photographs. Open the printed QC folder and inspect the target-colony
 masks, central fungal tissue and hyphae, sampling spots, scale and
-lighting before interpreting results. QC reminders do not require
-changing approval flags. Resolve genuine failed photographs before
-finalizing. The 20 bootstrap resamples keep this practice run quick;
-they are not intended for precise uncertainty estimates.</p>
+lighting before interpreting results. <code>result$run_summary</code>
+separates image completion from colony completeness;
+<code>measurement_issues.csv</code> names missing colonies or incomplete
+spot sampling. QC reminders do not require changing approval flags.
+Resolve genuine failed photographs before finalizing. The 20 bootstrap
+resamples keep this practice run quick; they are not intended for
+precise uncertainty estimates.</p>
 <p>Inspect the measurements directly:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">colonies</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_id"</span>, <span class="st">"colony_id"</span>, <span class="st">"MI_mean"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>,</span>
@@ -330,7 +333,7 @@ tutorial</a> for interpretation and limitations.</p>
 </h2>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">project</span><span class="op">$</span><span class="va">project_dir</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpesXl4B/FunMel_real_example_3fdd7f1cd2d3"</span></span></code></pre></div>
 <p>This folder contains colony, spot, profile and plate CSV tables;
 matched coefficients; saved R analyses; QC images; and the final
 <code>treatment_comparison.pdf</code>, <code>.svg</code> and
@@ -359,7 +362,12 @@ controls. Matched coefficients need real treatment/control assignments
 within <code>set_id</code>; otherwise measurements are saved with
 <code>awaiting_design</code>. For exploration without treatment names,
 use the <a href="Real-14-day.html#explore-measurements-by-set-without-treatment-names">set-only
-measurement plot</a>. Every custom metadata column is retained.</p>
+measurement plot</a>. Missing target MI instead produces
+<code>awaiting_measurement_review</code> and identifies the affected
+plate/colony. Use the <a href="Real-14-day.html#when-coefficient-tables-are-empty">real-data
+troubleshooting guide</a> for diagnostics, control assignment and the
+correct reanalysis procedure. Every custom metadata column is
+retained.</p>
 <p>For specialist calibration, classification and measurement utilities,
 see the <a href="Function-examples.html">complete function
 examples</a>.</p>

@@ -12,8 +12,10 @@
 #'   TRUE requires every qc_pass flag to be logical TRUE. Review flags are never
 #'   automatically changed to TRUE; calculated results retain their QC status.
 #' @return Updated batch result. A valid matching design adds coefficients and
-#'   assessment. Otherwise comparison_status is awaiting_design, measurements
-#'   remain available, and the reason is recorded without inventing comparisons.
+#'   assessment. Missing design assignments give comparison_status awaiting_design;
+#'   missing target MI gives awaiting_measurement_review. Measurements remain
+#'   available with metadata_issues, measurement_issues, layout_assignments and
+#'   run_summary diagnostics. No missing MI is imputed or silently excluded.
 #' @export
 finalize_analysis <- function(result, metadata, ..., require_qc=FALSE) {
   if(!is.list(result) || is.null(result$colonies) || !nrow(result$colonies)) stop("Supply a completed batch result.")
@@ -23,16 +25,24 @@ finalize_analysis <- function(result, metadata, ..., require_qc=FALSE) {
   if(!"qc_pass" %in% names(metadata)) metadata$qc_pass <- FALSE
   check_saved_metadata(result,metadata)
   result <- attach_result_metadata(result,metadata)
+  result <- add_workflow_diagnostics(result,metadata)
   issue <- comparison_metadata_issue(metadata)
+  pending_status <- "awaiting_design"
+  if(is.null(issue)) {
+    issue <- missing_target_measurement_issue(result)
+    pending_status <- "awaiting_measurement_review"
+  }
   if(!is.null(issue)) {
-    result$comparison_status <- "awaiting_design"
+    result$comparison_status <- pending_status
     result$coefficient_error <- paste0("Comparisons withheld: ",issue)
     result$qc_review <- check_qc_review(metadata,require_qc=require_qc)
-    result$assessment <- list(status="awaiting_design",reason=issue)
+    result$assessment <- list(status=pending_status,reason=issue)
     for(nm in c("melanization_coefficient","coefficient_plate_means","per_plate_coefficients"))
       result[[nm]] <- if(is.data.frame(result[[nm]])) result[[nm]][FALSE,,drop=FALSE] else data.frame()
     message("Image measurements are available. ",result$coefficient_error,
-      " Optional strain, medium, date and notes may remain blank. Complete only the matching design when comparisons are needed; no approval flags are required.")
+      " See comparison_status.csv and the diagnostic tables for next steps. No approval-flag edits are required.")
+    result <- add_workflow_diagnostics(result,metadata)
+    report_workflow_diagnostics(result)
     return(result)
   }
   result$comparison_status <- "complete"
@@ -42,7 +52,7 @@ finalize_analysis <- function(result, metadata, ..., require_qc=FALSE) {
   result$per_plate_coefficients <- result$assessment$per_plate_coefficients
   result$qc_review <- result$assessment$qc_review
   result$coefficient_error <- NULL
-  result
+  add_workflow_diagnostics(result,metadata)
 }
 
 check_saved_metadata <- function(result,metadata) {
@@ -58,8 +68,11 @@ check_saved_metadata <- function(result,metadata) {
     if(anyNA(idx)) stop("Saved segmentation layouts do not match plate IDs.")
     requested <- vapply(seq_len(nrow(metadata)),function(i)
       resolve_centre_model(metadata[i,,drop=FALSE],NA_character_),character(1))
-    if(any(!is.na(requested) & requested!=recorded$centre_model[idx]))
-      stop("Changing centre_model requires image reanalysis; saved masks used another layout.")
+    changed <- !is.na(requested) & requested!=recorded$centre_model[idx]
+    if(any(changed))
+      stop("Changing centre_model requires image reanalysis for plate(s): ",
+        paste(metadata$plate_id[changed],collapse=", "),
+        ". Saved masks used another layout. Save the corrected assignments, rerun run_experiment(project), inspect QC, then finish again.",call.=FALSE)
     immutable <- setdiff(immutable,c("centre_model","partner_type"))
   }
   for(nm in setdiff(intersect(layout_fields,names(metadata)),names(old)))

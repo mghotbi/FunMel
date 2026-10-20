@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1457,6 +1457,158 @@ with <code>awaiting_design</code>; add the real own-control assignments
 only when comparisons are needed. All metadata columns are preserved. Do
 not interpret a successful run as automatic biological validation; check
 masks, layouts, calibration and warnings.</p>
+</div>
+<div class="section level2">
+<h2 id="when-coefficient-tables-are-empty">When coefficient tables are empty<a class="anchor" aria-label="anchor" href="#when-coefficient-tables-are-empty"></a>
+</h2>
+<p>Colony <strong>melanization index (MI)</strong> and the matched
+<strong>melanization coefficient (MC)</strong> are different outputs. MI
+is stored in <code>colonies.csv</code> (and individual spot MI in
+<code>spots.csv</code>). MC divides treatment plate means by their own
+set’s control mean. A coefficient CSV with headers but no rows means no
+comparison was computed; inspect its recorded reason rather than
+treating it as zero.</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">result14</span><span class="op">$</span><span class="va">run_summary</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>File</th>
+<th>What to check</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>comparison_status.csv</code></td>
+<td>Why comparisons are withheld or whether finalization is
+complete</td>
+</tr>
+<tr class="even">
+<td><code>metadata_issues.csv</code></td>
+<td>Actual plate IDs, missing/inconsistent design fields and next
+steps</td>
+</tr>
+<tr class="odd">
+<td><code>measurement_issues.csv</code></td>
+<td>Plate and colony IDs with missing MI or incomplete requested
+spots</td>
+</tr>
+<tr class="even">
+<td><code>layout_assignments.csv</code></td>
+<td>The layout actually used, and whether it came from metadata or a
+default</td>
+</tr>
+<tr class="odd">
+<td><code>run_summary.csv</code></td>
+<td>Image failures, finite target MI counts, incomplete spots and
+comparison status</td>
+</tr>
+</tbody>
+</table>
+<p>An empty issue table means that no issue of that type was found by
+those checks; it does not establish biological validation. Diagnostic
+reports are separate from metadata: they do not overwrite custom
+annotations or approve any plate.</p>
+<div class="section level3">
+<h3 id="understand-the-status-before-continuing">Understand the status before continuing<a class="anchor" aria-label="anchor" href="#understand-the-status-before-continuing"></a>
+</h3>
+<ul>
+<li>
+<code>analysis_status="complete"</code> means all photographs were
+processed without a whole-image failure. An expected colony can still be
+undetected. For example, 20 processed plates can contain only 79 finite
+MI values among 80 target rows.</li>
+<li>
+<code>comparison_status="awaiting_design"</code> means required
+matching assignments are missing or inconsistent. Treatment names may be
+simple codes; real controls must be identified within each set. Other
+annotations may remain blank.</li>
+<li>
+<code>comparison_status="awaiting_measurement_review"</code> means a
+target colony is undetected or has nonfinite MI. Check the named QC
+image and correct its input or layout before reanalysis. The package
+saves measurements and withholds comparisons rather than inventing or
+silently omitting the missing value.</li>
+<li>Incomplete spots are reported separately. A colony with one of five
+requested spots can still have a valid whole-colony MI, but its
+requested spot summary is unavailable. Inspect masks and scale; use
+consistent feasible spot settings if remeasuring. Do not substitute a
+single achieved spot for five requested spots.</li>
+</ul>
+<p><code><a href="../reference/plot_treatment_comparison.html">plot_treatment_comparison()</a></code> explains the recorded reason
+and returns no comparison plot when the design or target measurements
+are unavailable. The set-only plot above remains descriptive and
+requires inspection of incomplete plates; it does not solve missing
+control assignments.</p>
+</div>
+<div class="section level3">
+<h3 id="assign-controls-from-experimental-records">Assign controls from experimental records<a class="anchor" aria-label="anchor" href="#assign-controls-from-experimental-records"></a>
+</h3>
+<p>The bundled eight photographs already have their design supplied.
+Your own ZIP may contain different photographs or additional sets:
+folder names such as <code>A33_1_14_days</code> identify a group but do
+not identify its control. Do not apply the bundled control assignments
+to unrelated images or guess that the last image in a folder is the
+control.</p>
+<p>For a design with <strong>one experimental treatment per
+set</strong>, users who want to use set names as treatment codes can
+select their actual controls explicitly:</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_experiment.html">load_experiment</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Open the existing project.rds.</span></span>
+<span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">project</span><span class="op">$</span><span class="va">metadata_file</span>, check.names<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                     stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_id"</span>, <span class="st">"set_id"</span>, <span class="st">"treatment"</span><span class="op">)</span><span class="op">]</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Select only independently verified control photographs; one or more per set.</span></span>
+<span><span class="va">control_ids</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/select.list.html" class="external-link">select.list</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">plate_id</span>, multiple<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>                                 title<span class="op">=</span><span class="st">"Select the actual control plate IDs"</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">control_ids</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"No controls selected; metadata was not changed."</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Appropriate only when each set represents one experimental treatment.</span></span>
+<span><span class="va">metadata</span><span class="op">$</span><span class="va">treatment</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">set_id</span><span class="op">)</span></span>
+<span><span class="va">metadata</span><span class="op">$</span><span class="va">treatment</span><span class="op">[</span><span class="va">metadata</span><span class="op">$</span><span class="va">plate_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">control_ids</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"control"</span></span>
+<span><span class="va">metadata</span><span class="op">$</span><span class="va">centre_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">plate_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">control_ids</span>,</span>
+<span>                                <span class="st">"none"</span>, <span class="st">"fungus"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/validate_metadata.html">validate_metadata</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span> <span class="co"># Check actual matching before saving these assignments.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">metadata</span>, <span class="va">project</span><span class="op">$</span><span class="va">metadata_file</span>, row.names<span class="op">=</span><span class="cn">FALSE</span>, na<span class="op">=</span><span class="st">""</span><span class="op">)</span></span></code></pre></div>
+<p>This optional selection is an experimental assignment, not an
+approval flag. The code deliberately uses set names as treatment codes.
+If a set contains several different experimental treatments, supply
+their distinct true labels instead. All other metadata columns are
+retained. Cancel selection if the control identities are unknown;
+measurements can still be explored.</p>
+</div>
+<div class="section level3">
+<h3 id="decide-whether-image-reanalysis-is-needed">Decide whether image reanalysis is needed<a class="anchor" aria-label="anchor" href="#decide-whether-image-reanalysis-is-needed"></a>
+</h3>
+<p>If you only correct treatment/set labels and the saved image layouts
+were already correct, run <code>finish_experiment(project)</code> again;
+it reuses measurements.</p>
+<p>If actual controls were processed using <code>fungus</code>,
+correcting those controls to <code>none</code> changes segmentation.
+Save the corrected metadata and <strong>rerun image analysis</strong>,
+inspect the new QC images, then finalize:</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Replace 90 with the verified dish diameter; keep the intended sampling settings.</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_experiment.html">run_experiment</a></span><span class="op">(</span><span class="va">project</span>, dish_diameter_mm<span class="op">=</span><span class="fl">90</span>, max_dim<span class="op">=</span><span class="fl">1200</span>,</span>
+<span>                         n_spots<span class="op">=</span><span class="fl">5</span>, spot_radius_mm<span class="op">=</span><span class="fl">0.4</span><span class="op">)</span></span>
+<span><span class="va">result</span><span class="op">$</span><span class="va">failed</span></span>
+<span><span class="va">result</span><span class="op">$</span><span class="va">run_summary</span></span>
+<span><span class="va">result</span><span class="op">$</span><span class="va">measurement_issues</span></span>
+<span><span class="va">project</span><span class="op">$</span><span class="va">qc_dir</span></span>
+<span><span class="co"># Resolve genuine failed/missing target measurements before interpreting comparisons.</span></span>
+<span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
+<span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_treatment_comparison.html">plot_treatment_comparison</a></span><span class="op">(</span><span class="va">reviewed</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></code></pre></div>
+<p>When a saved layout conflicts with a newly assigned control, the
+message names the affected plate IDs and explains that reanalysis is
+required. No missing measurement is filled from another colony or
+control, and no control is borrowed from a different set. Inspect the
+original photograph/QC when a colony cannot be resolved; software cannot
+establish a measurement for an absent or obscured target.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

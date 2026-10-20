@@ -26,6 +26,8 @@
 #'   separately as _caption.txt. QC warnings and statistical safeguards remain.
 #' @details A project or finalized result awaiting matching assignments returns
 #'   invisible NULL with an informative message; no comparison file is created.
+#'   Saved results awaiting target-measurement review also return invisible NULL
+#'   with the affected plate/colony IDs. Complete target measurements are required.
 #' @return A ggplot object, invisibly when exported. Colours and typography can
 #'   be edited using standard ggplot2 methods. Match the target journal's size
 #'   and caption requirements before submission. The attribute
@@ -58,10 +60,23 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
     }
   }
   if(is.list(colonies) && !is.data.frame(colonies) &&
-     identical(colonies$comparison_status,"awaiting_design")) {
-    if(isTRUE(require_qc)) check_qc_review(colonies$metadata,require_qc=TRUE)
-    message("Comparison figure not generated: matching assignments are incomplete. Image measurements remain available; finish again after completing the design.")
+     !is.null(colonies$comparison_status) &&
+     colonies$comparison_status %in% c("awaiting_design","awaiting_measurement_review")) {
+    if(isTRUE(require_qc)) check_qc_review(if(!is.null(colonies$metadata)) colonies$metadata else colonies$colonies,require_qc=TRUE)
+    reason <- colonies$coefficient_error
+    if(is.null(reason) && !is.null(colonies$assessment$reason)) reason <- colonies$assessment$reason
+    if(is.null(reason)) reason <- "matching assignments or target measurements are incomplete"
+    message("Comparison figure not generated: ",reason,
+      " Image measurements remain available in colonies.csv. See metadata_issues.csv and measurement_issues.csv for affected plate/colony IDs.")
     return(invisible(NULL))
+  }
+  if(is.list(colonies) && !is.data.frame(colonies)) {
+    issue <- missing_target_measurement_issue(colonies)
+    if(!is.null(issue)) {
+      if(isTRUE(require_qc)) check_qc_review(if(!is.null(colonies$metadata)) colonies$metadata else colonies$colonies,require_qc=TRUE)
+      message("Comparison figure not generated: ",issue)
+      return(invisible(NULL))
+    }
   }
   if(!is.logical(preview) || length(preview)!=1L || is.na(preview)) stop("preview must be TRUE or FALSE.")
   if(is.list(colonies) && !is.data.frame(colonies)) {

@@ -37,6 +37,8 @@ finalize_analysis(result, metadata, ..., require_qc = FALSE)
 ## Value
 
 Updated batch result. A valid matching design adds coefficients and
-assessment. Otherwise comparison_status is awaiting_design, measurements
-remain available, and the reason is recorded without inventing
-comparisons.
+assessment. Missing design assignments give comparison_status
+awaiting_design; missing target MI gives awaiting_measurement_review.
+Measurements remain available with metadata_issues, measurement_issues,
+layout_assignments and run_summary diagnostics. No missing MI is imputed
+or silently excluded.

@@ -59,7 +59,7 @@ photos <- system.file("extdata", "14-days", package="FunMel")
 project_dir <- tempfile("FunMel_real_example_")
 project <- prepare_experiment(input=photos, project_dir=project_dir)
 project$project_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpesXl4B/FunMel_real_example_3fdd7f1cd2d3"
 ```
 
 [`tempfile()`](https://rdrr.io/r/base/tempfile.html) supplies a new
@@ -88,16 +88,18 @@ result$failed
 #> [1] file  error
 #> <0 rows> (or 0-length row.names)
 project$qc_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3/qc"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpesXl4B/FunMel_real_example_3fdd7f1cd2d3/qc"
 ```
 
 The expected status is `"complete"` with zero failed photographs. Open
 the printed QC folder and inspect the target-colony masks, central
 fungal tissue and hyphae, sampling spots, scale and lighting before
-interpreting results. QC reminders do not require changing approval
-flags. Resolve genuine failed photographs before finalizing. The 20
-bootstrap resamples keep this practice run quick; they are not intended
-for precise uncertainty estimates.
+interpreting results. `result$run_summary` separates image completion
+from colony completeness; `measurement_issues.csv` names missing
+colonies or incomplete spot sampling. QC reminders do not require
+changing approval flags. Resolve genuine failed photographs before
+finalizing. The 20 bootstrap resamples keep this practice run quick;
+they are not intended for precise uncertainty estimates.
 
 Inspect the measurements directly:
 
@@ -177,7 +179,7 @@ interpretation and limitations.
 ``` r
 
 project$project_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpUBOROy/FunMel_real_example_1b88708d0af3"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpesXl4B/FunMel_real_example_3fdd7f1cd2d3"
 ```
 
 This folder contains colony, spot, profile and plate CSV tables; matched
@@ -212,7 +214,11 @@ treatment/control assignments within `set_id`; otherwise measurements
 are saved with `awaiting_design`. For exploration without treatment
 names, use the [set-only measurement
 plot](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#explore-measurements-by-set-without-treatment-names).
-Every custom metadata column is retained.
+Missing target MI instead produces `awaiting_measurement_review` and
+identifies the affected plate/colony. Use the [real-data troubleshooting
+guide](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#when-coefficient-tables-are-empty)
+for diagnostics, control assignment and the correct reanalysis
+procedure. Every custom metadata column is retained.
 
 For specialist calibration, classification and measurement utilities,
 see the [complete function

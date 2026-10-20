@@ -20,6 +20,8 @@ Result saved as reviewed_analysis.rds. If the matching design is
 incomplete, saves measurement-only outputs and comparison_status.csv;
 no comparison figure is generated. Complete the matching labels and finish
 again without remeasuring, provided the recorded layouts remain correct.
+Missing target MI instead gives awaiting_measurement_review and saves
+diagnostic tables without computing coefficients or inventing measurements.
 }
 \description{
 Loads saved measurements and metadata without a manual approval gate, and

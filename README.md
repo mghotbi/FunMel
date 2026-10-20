@@ -70,6 +70,11 @@ FunMel saves measurements, reports `awaiting_design` and explains why no compari
 figure is produced. The real-data tutorial also shows a descriptive set plot
 that needs no treatment names.
 
+The output folder also contains `run_summary.csv`, `metadata_issues.csv`,
+`measurement_issues.csv` and `layout_assignments.csv`. These distinguish missing
+experimental assignments from incomplete colony/spot measurements. See the
+[real-data troubleshooting guide](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#when-coefficient-tables-are-empty).
+
 ## Tutorials
 
 | Task | Guide |

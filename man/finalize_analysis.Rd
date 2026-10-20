@@ -20,8 +20,10 @@ automatically changed to TRUE; calculated results retain their QC status.}
 }
 \value{
 Updated batch result. A valid matching design adds coefficients and
-assessment. Otherwise comparison_status is awaiting_design, measurements
-remain available, and the reason is recorded without inventing comparisons.
+assessment. Missing design assignments give comparison_status awaiting_design;
+missing target MI gives awaiting_measurement_review. Measurements remain
+available with metadata_issues, measurement_issues, layout_assignments and
+run_summary diagnostics. No missing MI is imputed or silently excluded.
 }
 \description{
 Reuses saved measurements without reprocessing photographs. Valid experimental

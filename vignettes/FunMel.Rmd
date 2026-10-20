@@ -95,6 +95,8 @@ project$qc_dir
 The expected status is `"complete"` with zero failed photographs. Open the
 printed QC folder and inspect the target-colony masks, central fungal tissue
 and hyphae, sampling spots, scale and lighting before interpreting results.
+`result$run_summary` separates image completion from colony completeness;
+`measurement_issues.csv` names missing colonies or incomplete spot sampling.
 QC reminders do not require changing approval flags. Resolve genuine failed
 photographs before finalizing. The 20 bootstrap resamples keep this practice
 run quick; they are not intended for precise uncertainty estimates.
@@ -172,6 +174,9 @@ for controls. Matched coefficients need real treatment/control assignments
 within `set_id`; otherwise measurements are saved with `awaiting_design`.
 For exploration without treatment names, use the
 [set-only measurement plot](Real-14-day.html#explore-measurements-by-set-without-treatment-names).
+Missing target MI instead produces `awaiting_measurement_review` and identifies
+the affected plate/colony. Use the [real-data troubleshooting guide](Real-14-day.html#when-coefficient-tables-are-empty)
+for diagnostics, control assignment and the correct reanalysis procedure.
 Every custom metadata column is retained.
 
 For specialist calibration, classification and measurement utilities, see the

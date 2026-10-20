@@ -65,4 +65,6 @@ Controls shown on multiple rows within a set are shared, not new replicates.
 \details{
 A project or finalized result awaiting matching assignments returns
 invisible NULL with an informative message; no comparison file is created.
+Saved results awaiting target-measurement review also return invisible NULL
+with the affected plate/colony IDs. Complete target measurements are required.
 }

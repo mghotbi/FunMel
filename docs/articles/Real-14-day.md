@@ -869,3 +869,129 @@ measurement-only outputs with `awaiting_design`; add the real
 own-control assignments only when comparisons are needed. All metadata
 columns are preserved. Do not interpret a successful run as automatic
 biological validation; check masks, layouts, calibration and warnings.
+
+## When coefficient tables are empty
+
+Colony **melanization index (MI)** and the matched **melanization
+coefficient (MC)** are different outputs. MI is stored in `colonies.csv`
+(and individual spot MI in `spots.csv`). MC divides treatment plate
+means by their own set’s control mean. A coefficient CSV with headers
+but no rows means no comparison was computed; inspect its recorded
+reason rather than treating it as zero.
+
+``` r
+
+knitr::kable(result14$run_summary, row.names=FALSE)
+```
+
+| File | What to check |
+|----|----|
+| `comparison_status.csv` | Why comparisons are withheld or whether finalization is complete |
+| `metadata_issues.csv` | Actual plate IDs, missing/inconsistent design fields and next steps |
+| `measurement_issues.csv` | Plate and colony IDs with missing MI or incomplete requested spots |
+| `layout_assignments.csv` | The layout actually used, and whether it came from metadata or a default |
+| `run_summary.csv` | Image failures, finite target MI counts, incomplete spots and comparison status |
+
+An empty issue table means that no issue of that type was found by those
+checks; it does not establish biological validation. Diagnostic reports
+are separate from metadata: they do not overwrite custom annotations or
+approve any plate.
+
+### Understand the status before continuing
+
+- `analysis_status="complete"` means all photographs were processed
+  without a whole-image failure. An expected colony can still be
+  undetected. For example, 20 processed plates can contain only 79
+  finite MI values among 80 target rows.
+- `comparison_status="awaiting_design"` means required matching
+  assignments are missing or inconsistent. Treatment names may be simple
+  codes; real controls must be identified within each set. Other
+  annotations may remain blank.
+- `comparison_status="awaiting_measurement_review"` means a target
+  colony is undetected or has nonfinite MI. Check the named QC image and
+  correct its input or layout before reanalysis. The package saves
+  measurements and withholds comparisons rather than inventing or
+  silently omitting the missing value.
+- Incomplete spots are reported separately. A colony with one of five
+  requested spots can still have a valid whole-colony MI, but its
+  requested spot summary is unavailable. Inspect masks and scale; use
+  consistent feasible spot settings if remeasuring. Do not substitute a
+  single achieved spot for five requested spots.
+
+[`plot_treatment_comparison()`](https://mghotbi.github.io/FunMel/reference/plot_treatment_comparison.md)
+explains the recorded reason and returns no comparison plot when the
+design or target measurements are unavailable. The set-only plot above
+remains descriptive and requires inspection of incomplete plates; it
+does not solve missing control assignments.
+
+### Assign controls from experimental records
+
+The bundled eight photographs already have their design supplied. Your
+own ZIP may contain different photographs or additional sets: folder
+names such as `A33_1_14_days` identify a group but do not identify its
+control. Do not apply the bundled control assignments to unrelated
+images or guess that the last image in a folder is the control.
+
+For a design with **one experimental treatment per set**, users who want
+to use set names as treatment codes can select their actual controls
+explicitly:
+
+``` r
+
+project <- load_experiment() # Open the existing project.rds.
+metadata <- read.csv(project$metadata_file, check.names=FALSE,
+                     stringsAsFactors=FALSE)
+print(metadata[c("plate_id", "set_id", "treatment")], row.names=FALSE)
+
+# Select only independently verified control photographs; one or more per set.
+control_ids <- utils::select.list(metadata$plate_id, multiple=TRUE,
+                                 title="Select the actual control plate IDs")
+if (!length(control_ids)) stop("No controls selected; metadata was not changed.")
+
+# Appropriate only when each set represents one experimental treatment.
+metadata$treatment <- as.character(metadata$set_id)
+metadata$treatment[metadata$plate_id %in% control_ids] <- "control"
+metadata$centre_model <- ifelse(metadata$plate_id %in% control_ids,
+                                "none", "fungus")
+validate_metadata(metadata) # Check actual matching before saving these assignments.
+write.csv(metadata, project$metadata_file, row.names=FALSE, na="")
+```
+
+This optional selection is an experimental assignment, not an approval
+flag. The code deliberately uses set names as treatment codes. If a set
+contains several different experimental treatments, supply their
+distinct true labels instead. All other metadata columns are retained.
+Cancel selection if the control identities are unknown; measurements can
+still be explored.
+
+### Decide whether image reanalysis is needed
+
+If you only correct treatment/set labels and the saved image layouts
+were already correct, run `finish_experiment(project)` again; it reuses
+measurements.
+
+If actual controls were processed using `fungus`, correcting those
+controls to `none` changes segmentation. Save the corrected metadata and
+**rerun image analysis**, inspect the new QC images, then finalize:
+
+``` r
+
+# Replace 90 with the verified dish diameter; keep the intended sampling settings.
+result <- run_experiment(project, dish_diameter_mm=90, max_dim=1200,
+                         n_spots=5, spot_radius_mm=0.4)
+result$failed
+result$run_summary
+result$measurement_issues
+project$qc_dir
+# Resolve genuine failed/missing target measurements before interpreting comparisons.
+reviewed <- finish_experiment(project)
+comparison <- plot_treatment_comparison(reviewed)
+if (!is.null(comparison)) print(comparison)
+```
+
+When a saved layout conflicts with a newly assigned control, the message
+names the affected plate IDs and explains that reanalysis is required.
+No missing measurement is filled from another colony or control, and no
+control is borrowed from a different set. Inspect the original
+photograph/QC when a colony cannot be resolved; software cannot
+establish a measurement for an absent or obscured target.

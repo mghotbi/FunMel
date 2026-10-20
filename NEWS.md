@@ -1,3 +1,18 @@
+# FunMel 0.4.19
+
+* Distinguish image-processing completion from missing target-colony MI and
+  incomplete sampling spots. Export per-colony issues and a run summary.
+* Export affected design fields and plate IDs, plus actual segmentation layouts
+  and their source. Unlabeled defaults never establish control identity.
+* Preserve measurements while withholding comparisons with explicit reasons.
+  Missing target MI now records awaiting_measurement_review; no values are
+  imputed and incomplete target rows are not silently excluded.
+* Name affected plates when a changed layout requires reanalysis. Explain the
+  difference between label-only corrections and control-layout corrections.
+* Add regression coverage and real-data guidance. The image-analysis algorithms,
+  coefficient formula, mixed-model assessment and final figure styling are unchanged.
+* Exclude generated vignette intermediates and retain portable release dates.
+
 # FunMel 0.4.18
 
 * Measure images without completing treatment, set or optional context labels.

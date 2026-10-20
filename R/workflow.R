@@ -111,6 +111,9 @@ prepare_experiment <- function(input = NULL, project_dir = "FunMel_project",
     result_file=file.path(home,"image_analysis.rds"),reviewed_file=file.path(home,"reviewed_analysis.rds")),class="funmel_project")
   utils::write.csv(metadata,project$metadata_file,row.names=FALSE,na="")
   saveRDS(project,file.path(home,"project.rds"))
+  issues <- metadata_design_issues(metadata)
+  utils::write.csv(issues,file.path(home,"metadata_issues.csv"),row.names=FALSE)
+  if(nrow(issues)) message("Matched comparisons are not ready: see metadata_issues.csv for the affected plate IDs and fields. Measurement can proceed; no controls or treatment identities have been inferred.")
   message("Prepared ",nrow(metadata)," photographs. Edit ",project$metadata_file,
     " to review labels when comparisons are needed. Image measurement can start now; unlabeled images use the fungal layout by default. For control-only images use default_centre='none'. No approval-flag edits are required. Then run run_experiment(project).")
   project
@@ -135,6 +138,10 @@ prepare_experiment <- function(input = NULL, project_dir = "FunMel_project",
 #' Missing project metadata must be restored or its recorded path corrected.
 #' A batch with failed images saves error reports and warns; it does not report success.
 #' Inspect result$failed and resolve every failed image before finalization.
+#' Image completion is separate from colony completeness. run_summary.csv reports
+#' finite target MI counts; measurement_issues.csv identifies missing colonies and
+#' incomplete spot sampling. metadata_issues.csv lists design fields and affected
+#' plates, while layout_assignments.csv records the actual layout and its source.
 #' @export
 run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5,
                            ..., default_centre="fungus") {
@@ -172,10 +179,14 @@ run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5,
   n_failed <- nrow(result$failed)
   result$analysis_status <- if(n_failed==length(files)) "failed" else if(n_failed>0L) "partial" else "complete"
   design_issue <- comparison_metadata_issue(meta)
-  result$comparison_status <- if(is.null(design_issue)) "not_finalized" else "awaiting_design"
+  measurement_issue <- missing_target_measurement_issue(result)
+  result$comparison_status <- if(!is.null(design_issue)) "awaiting_design" else
+    if(!is.null(measurement_issue)) "awaiting_measurement_review" else "not_finalized"
   result$coefficient_error <- if(n_failed) "Resolve failed photographs and rerun before finalization." else
     if(!is.null(design_issue)) paste0("Comparisons withheld: ",design_issue) else
+    if(!is.null(measurement_issue)) measurement_issue else
     "Awaiting finalization; inspect image QC and use finish_experiment(project)."
+  result <- add_workflow_diagnostics(result,meta)
   saveRDS(result,project$result_file)
   write_experiment_tables(result,project$project_dir)
   if(n_failed==length(files)) {
@@ -185,10 +196,11 @@ run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5,
     warning(length(files)-n_failed," of ",length(files)," photographs analyzed; ",n_failed,
       " failed. Inspect result$failed or failed.csv, correct the errors and rerun before finalization.",call.=FALSE)
   } else {
-    message("Successfully analyzed ",length(files)," photographs. Inspect ",project$qc_dir,
+    message("Processed ",length(files)," photographs with no whole-image failures. Inspect ",project$qc_dir,
       "; check masks, calibration and experimental labels before interpreting results. ",
       "No approval-flag edits are required. Run finish_experiment(project) to export tables and, when matching labels are complete, comparison figures.")
   }
+  report_workflow_diagnostics(result)
   result
 }
 
@@ -209,6 +221,8 @@ run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5,
 #'   incomplete, saves measurement-only outputs and comparison_status.csv;
 #'   no comparison figure is generated. Complete the matching labels and finish
 #'   again without remeasuring, provided the recorded layouts remain correct.
+#'   Missing target MI instead gives awaiting_measurement_review and saves
+#'   diagnostic tables without computing coefficients or inventing measurements.
 #' @export
 finish_experiment <- function(project, ..., require_qc=FALSE) {
   project <- as_funmel_project(project)
@@ -216,13 +230,15 @@ finish_experiment <- function(project, ..., require_qc=FALSE) {
   meta <- read_project_metadata(project)
   if(nrow(result$failed)) stop("Resolve all failed photographs before finalization.")
   design_issue <- comparison_metadata_issue(meta)
-  if(!is.null(design_issue)) {
+  if(!is.null(design_issue) || !is.null(missing_target_measurement_issue(result))) {
     reviewed <- finalize_analysis(result,meta,...,require_qc=require_qc)
     archive_comparison_exports(project$project_dir)
     saveRDS(reviewed,project$reviewed_file)
     write_experiment_tables(reviewed,project$project_dir)
     message("Measurements saved in ",project$project_dir,
-      ". Comparisons are awaiting experimental assignments; see comparison_status.csv. No photographs need remeasurement unless their layout changes.")
+      ". Comparison status: ",reviewed$comparison_status,
+      "; see comparison_status.csv, metadata_issues.csv and measurement_issues.csv. ",
+      "Correct missing measurements or changed layouts by reanalysis; label-only corrections do not require remeasurement when the saved layouts remain correct.")
     return(reviewed)
   }
   context <- recorded_context_columns(meta)
@@ -258,6 +274,7 @@ finish_experiment <- function(project, ..., require_qc=FALSE) {
     reviewed$qc_review$require_qc <- require_qc
     reviewed$assessment <- NULL;reviewed$coefficient_error <- NULL
     reviewed$comparison_status <- "complete"
+    reviewed <- add_workflow_diagnostics(reviewed,meta)
     saveRDS(reviewed,project$reviewed_file)
     write_experiment_tables(reviewed,project$project_dir)
     utils::write.csv(contexts,file.path(project$project_dir,"context_index.csv"),row.names=FALSE)
@@ -306,6 +323,8 @@ write_experiment_tables <- function(result, path) {
       require_qc=isTRUE(qr$require_qc),pending_plate_ids=paste(qr$pending_plate_ids,collapse=";")),
       file.path(path,"qc_review_status.csv"),row.names=FALSE)
   }
+  for(nm in intersect(c("metadata_issues","measurement_issues","layout_assignments","run_summary"),names(result)))
+    utils::write.csv(result[[nm]],file.path(path,paste0(nm,".csv")),row.names=FALSE)
   if(!is.null(result$metadata)) utils::write.csv(result$metadata,file.path(path,"metadata_used.csv"),row.names=FALSE)
   for(nm in intersect(c("colonies","profiles","spots","plates","failed","melanization_coefficient",
     "coefficient_plate_means","per_plate_coefficients"),names(result)))
