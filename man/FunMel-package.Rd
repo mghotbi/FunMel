@@ -31,5 +31,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Mitra Ghotbi \email{mitra.ghotbi@gmail.com} (\href{https://orcid.org/0000-0001-9185-9993}{ORCID})
 
+Authors:
+\itemize{
+  \item Mitra Ghotbi \email{mitra.ghotbi@gmail.com} (\href{https://orcid.org/0000-0001-9185-9993}{ORCID})
+}
+
 }
 \keyword{internal}
