@@ -361,6 +361,101 @@ PDF and SVG retain vector text and geometry; PNG is 600 dpi. Check the target
 journal's final dimensions, font sizes and caption requirements. Changing display
 labels does not change metadata or statistical matching.
 
+
+## Recovering a failed dish fit or tissue mask
+
+An image can finish processing while its masks remain incorrect. Review the dish
+circle first: an incorrect rim changes both the scale and all expected target
+positions. FunMel retries a failed automatic background choice against dark and
+light backgrounds, accepting a supported, plausible circle. This safeguard does
+not establish that every accepted circle or colony outline is correct.
+
+For a difficult photograph, use the built-in recovery tools. **Select an original
+JPG/PNG/TIFF photograph, not its ZIP archive, QC PNG or an R script.** The package
+functions are available after `library(FunMel)`; `source(file.choose())` is not
+needed. Set the verified diameter directly before running a recovery command.
+
+```{r recovery-dish, eval=FALSE}
+library(FunMel)
+photo <- file.choose() # Select one ORIGINAL photograph.
+dish_mm <- 90         # Use 90 ONLY for a verified 90-mm outer rim.
+fixed <- retry_funmel_dish(
+  photo, dish_diameter_mm=dish_mm, centre="fungus", max_dim=1200
+)
+# For a true control without a central partner, use centre="none".
+```
+
+Click three widely separated points on the **same outer rim**. The tool repeats
+automatic tissue segmentation using that circle. Inspect the newly saved QC.
+If a target is still missing, or central tissue is assigned to a target, review
+actual tissue boundaries:
+
+```{r recovery-tissue, eval=FALSE}
+fixed <- recover_funmel_plate(
+  photo, dish_diameter_mm=dish_mm, centre="fungus", max_dim=1200,
+  n_spots=5, spot_radius_mm=0.4, n_boot=200
+)
+```
+
+After the three rim clicks, outline TL, TR, BR and BL in that order, followed by
+the **whole visible central fungal extent** for a confrontation. Click vertices
+in sequence around each boundary; finish each outline with right-click/Esc.
+Controls require only the four targets. Boundaries may be irregular and are not
+forced into circles. Outlines cannot overlap or extend beyond analysed agar.
+If organisms overlap so that their boundaries cannot be distinguished, the
+photograph cannot support an unambiguous tissue-specific measurement.
+
+Both tools return a `funmel_result` and create a new folder in the home directory, outside the photograph collection.
+The folder contains measurement CSVs, `recovered_QC.png`, `annotation.rds`,
+`recovered_analysis.rds` and session information. Original photographs and project
+results are not overwritten by the recovery call. `fixed$recovery_dir` gives the
+new folder. Polygon recovery records `boundary_source="manual_polygon"`.
+
+To apply a correction in a complete experiment, use the **exact plate ID from the
+project metadata**, rather than its position in a menu:
+
+```{r recovery-project, eval=FALSE}
+metadata <- read.csv(project$metadata_file, check.names=FALSE)
+print(metadata[c("plate_id", "relative_file")], row.names=FALSE)
+
+# Replace the placeholder with the exact plate_id for the selected photograph.
+corrections <- stats::setNames(list(fixed$annotation), "EXACT_PLATE_ID")
+result <- run_experiment(
+  project, dish_diameter_mm=dish_mm, max_dim=1200,
+  n_spots=5, spot_radius_mm=0.4, n_boot=200,
+  corrections=corrections
+)
+reviewed <- finish_experiment(project)
+```
+
+The full project rerun replaces its saved image-analysis run, so make a copy of
+the project directory first when the earlier run must be retained. Recovered
+measurements replace the affected photograph's original measurements; they are
+not added as another replicate. Multiple annotations can be supplied in the named
+list. Include all corrections needed for a subsequent rerun. The saved batch
+result retains applied annotations in `result$annotations`.
+
+A checksum rejects a different or changed photograph. Working resolution, physical
+dish diameter and the metadata/layout's centre model must also match the annotation.
+These checks do not confirm experimental treatment/control roles; retain verified
+own-set controls and contextual metadata. Open- and closed-lid photographs of one
+plate are repeated photographs, not independent biological replicates.
+
+### Interpreting colony diameters
+
+`eq_diameter_mm` in `colonies.csv` is `2*sqrt(area_mm2/pi)`: the diameter of a
+circle with the same target-colony area. It is not the maximum or minimum caliper
+(Feret) diameter of an irregular colony. `central_diameter_mm` in `plates.csv`
+is twice `central_radius_mm`, using the segmented central partner area. For a
+fungal layout that region includes connected central hyphal growth. Confirm
+`central_partner_type`, `central_detected` and the QC outline before interpreting
+it as a central fungal diameter. Controls have no central diameter.
+
+Manual whole-extent outlines do not separately identify a dense core and peripheral
+hyphal tissue; corresponding hyphal-subregion summaries remain unavailable and
+`hyphae_status` explains this. Neither diameter is a measure of biomass, and neither
+manual outlining nor a low fitting error establishes biological validation.
+
 ## 8. Close R, reopen the project and read saved tables
 
 For a project saved in a durable folder, start a fresh session and select its

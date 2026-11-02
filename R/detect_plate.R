@@ -62,11 +62,28 @@ detect_plate <- function(plate, dish = NULL, dish_diameter_mm = 90,
     circ <- list(x = dish[1], y = dish[2], r = dish[3], rmse = NA_real_, coverage = NA_real_)
     method <- "manual"
   } else {
-    circ <- fit_dish_circle(plate$lab[, , 1], background, seed)
+    H <- dim(plate$rgb)[1]; W <- dim(plate$rgb)[2]
+    plausible <- function(z) is.list(z) && all(is.finite(c(z$x,z$y,z$r))) &&
+      z$r>=0.15*min(H,W) && z$r<=0.8*max(H,W) &&
+      z$x>=1 && z$x<=W && z$y>=1 && z$y<=H
+    circ <- tryCatch(fit_dish_circle(plate$lab[,,1],background,seed),error=identity)
     method <- "auto"
+    if(!plausible(circ) && background=="auto") {
+      candidates <- lapply(c("dark","light"),function(bg)
+        tryCatch(fit_dish_circle(plate$lab[,,1],bg,seed),error=identity))
+      good <- which(vapply(candidates,function(z) plausible(z) &&
+        is.finite(z$coverage) && z$coverage>=0.4 &&
+        is.finite(z$rmse) && z$rmse/z$r<=0.03,logical(1)))
+      if(length(good)) {
+        score <- vapply(candidates[good],function(z) z$coverage-z$rmse/z$r,numeric(1))
+        chosen <- good[which.max(score)]; circ <- candidates[[chosen]]
+        method <- paste0("auto_fallback_",c("dark","light")[chosen])
+      }
+    }
+    if(inherits(circ,"error")) stop(circ)
   }
   H <- dim(plate$rgb)[1]; W <- dim(plate$rgb)[2]
-  if (method == "auto" && (circ$r < 0.15 * min(H, W) || circ$r > 0.8 * max(H, W))) {
+  if (method != "manual" && !plausible(circ)) {
     cli::cli_abort(c(
       "Dish detection failed (implausible radius {round(circ$r)} px).",
       "i" = "Photograph the dish on a uniform, contrasting background, or pass {.arg dish = c(x, y, r)}.",

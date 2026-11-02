@@ -34,7 +34,8 @@ analyze_plate(
   keep_images = TRUE,
   verbose = TRUE,
   n_spots = NULL,
-  spot_radius_mm = 0.5
+  spot_radius_mm = 0.5,
+  annotation = NULL
 )
 }
 \arguments{
@@ -94,6 +95,9 @@ correction.}
 \item{n_spots}{Optional spots per target colony; NULL keeps only whole-colony measurements.}
 
 \item{spot_radius_mm}{Circular spot radius (mm); see \code{\link[=sample_colony_spots]{sample_colony_spots()}}.}
+
+\item{annotation}{Optional saved recovery annotation from \code{\link[=retry_funmel_dish]{retry_funmel_dish()}} or
+\code{\link[=recover_funmel_plate]{recover_funmel_plate()}}. Image checksum, scale, layout and resolution must match.}
 }
 \value{
 An object of class \code{funmel_result}, a list with

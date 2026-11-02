@@ -1,3 +1,11 @@
+# FunMel 0.4.20
+
+* Retry failed automatic dish fits against dark/light backgrounds, accepting only a geometrically plausible circle with sufficient rim support. Ordinary successful fits are unchanged.
+* Add retry_funmel_dish() and recover_funmel_plate() for optional reviewed dish and tissue boundaries, with saved annotations and QC.
+* Apply saved annotations in analyze_plate(annotation=) or project/batch corrections keyed by exact plate ID. Check image checksum, resolution, diameter and centre model before reuse.
+* Report central_diameter_mm in plates.csv and boundary_source in colonies.csv. Manual central outlines measure whole visible fungal extent; dense core and peripheral hyphae are not separately inferred.
+* Document colony diameters, failed-mask recovery and correct reintegration without duplicate biological replicates.
+
 # FunMel 0.4.19
 
 * Distinguish image-processing completion from missing target-colony MI and

@@ -12,7 +12,8 @@ analyze_plates(
   ...,
   verbose = TRUE,
   coefficient_control = "control",
-  coefficient_by = NULL
+  coefficient_by = NULL,
+  corrections = NULL
 )
 }
 \arguments{
@@ -41,6 +42,9 @@ QC figure per plate.}
 calculation; NULL disables it. Calculated when treatment metadata exists.}
 
 \item{coefficient_by}{Matching columns for controls, e.g. strain and day.}
+
+\item{corrections}{Optional named list of recovery annotations, keyed by exact metadata
+plate_id. Each annotation is checked against its original photograph and settings.}
 }
 \value{
 A list of three data frames (\code{colonies}, \code{profiles}, \code{plates})

@@ -25,7 +25,10 @@ whole-colony pixels only. Spot and whole-colony results are kept separate.}
 
 \item{default_centre}{Segmentation fallback for unlabeled images, default
 fungus. Use none for control-only images. Per-image centre_model and known
-control labels take precedence. No treatment or control identity is guessed.}
+control labels take precedence. No treatment or control identity is guessed.
+Recovery annotations can be reapplied using
+\code{corrections=list(actual_plate_id=corrected$annotation)} in \code{...}.
+Use identical image resolution, dish diameter and centre model.}
 }
 \value{
 Batch result saved to image_analysis.rds and CSV tables.

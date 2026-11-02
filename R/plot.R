@@ -26,7 +26,9 @@ plot_qc <- function(x, panels = c("overlay", "classes"),
   p <- x$plate
   ob <- p$objects
   if(!is.null(ob$central_object)) ob$bacteria <- if(!is.null(ob$central_core)) ob$central_core else ob$central_object
-  partner_label <- if(identical(ob$partner_type,"fungus")) "central fungal core" else "central bacterium"
+  manual_central <- identical(ob$boundary_source,"manual_polygon") && identical(ob$partner_type,"fungus")
+  if(manual_central) ob$bacteria <- ob$central_object
+  partner_label <- if(manual_central) "reviewed central fungal extent" else if(identical(ob$partner_type,"fungus")) "central fungal core" else "central bacterium"
   has_partner <- !is.null(ob$bacteria) && any(ob$bacteria)
   periphery_label <- if(identical(ob$partner_type,"fungus")) "central hyphal growth" else "peripheral material"
   has_hyphae <- !is.null(ob$hyphae) && any(ob$hyphae)

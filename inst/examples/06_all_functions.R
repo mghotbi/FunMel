@@ -108,3 +108,14 @@ stopifnot(length(extracted)==nrow(metadata),all(file.exists(extracted)))
 # prepare_experiment also accepts ZIPs. Supply verified metadata when absent
 # from an archive; folder names alone cannot establish biological assignments.
 message("Function catalog completed. Outputs: ",catalog_dir)
+
+# 9. Optional recovery on ORIGINAL photographs (requires user clicks).
+# Enable explicitly before sourcing: options(FunMel.recover=TRUE).
+# These calls illustrate the API; use your measured diameter and true plate role.
+if(interactive() && isTRUE(getOption("FunMel.recover",FALSE))) {
+  photograph <- file.choose()
+  dish_mm <- as.numeric(readline("Measured outer dish diameter in mm: "))
+  fixed <- retry_funmel_dish(photograph,dish_diameter_mm=dish_mm,centre="fungus")
+  # If tissue masks still fail QC, review the actual boundaries:
+  fixed <- recover_funmel_plate(photograph,dish_diameter_mm=dish_mm,centre="fungus")
+}

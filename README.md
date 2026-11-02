@@ -95,3 +95,17 @@ Matched coefficients divide treatment plate means by their own set's control
 mean. One control per set supports descriptive ratios, not replicated-control
 significance tests. The tutorials explain statistical requirements, figure
 contents and limitations in detail.
+
+## Recovering an incorrect mask
+
+Inspect the QC image before using a measurement. `retry_funmel_dish()` corrects
+an outer dish circle with three clicks; `recover_funmel_plate()` additionally
+collects reviewed target and central-fungus outlines. Both save a new recovery
+folder. Reapply saved annotations by exact plate ID when rerunning a project;
+see [the real-data recovery guide](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#recovering-a-failed-dish-fit-or-tissue-mask).
+No external recovery script is required.
+
+Target diameter is `eq_diameter_mm` in `colonies.csv`. Central fungal diameter is
+`central_diameter_mm` in `plates.csv`. Both are diameters of circles with the same
+segmented area, not maximum caliper/Feret diameters. Physical units require
+verified calibration and reviewed boundaries.

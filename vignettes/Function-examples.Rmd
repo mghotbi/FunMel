@@ -69,6 +69,8 @@ Interactive annotation alone needs user clicks; enable `options(FunMel.annotate=
 | `prepare_experiment()` | 7. Metadata, batch analysis and a complete saved project from synthetic images. |
 | `prepare_photo_archive()` | 8. ZIP input (a nested archive may contain many sets with their own controls). |
 | `read_experiment()` | 7. Metadata, batch analysis and a complete saved project from synthetic images. |
+| `retry_funmel_dish()` | Real-data recovery guide: correct the dish and repeat automatic segmentation. |
+| `recover_funmel_plate()` | Real-data recovery guide: review target/central boundaries and save reusable annotations. |
 | `read_plate()` | 1. Layout, simulation and import. |
 | `run_experiment()` | 7. Metadata, batch analysis and a complete saved project from synthetic images. |
 | `sample_colony_spots()` | 3. The individual image-processing steps (normally analyze_plate does these). |
@@ -189,6 +191,17 @@ stopifnot(length(extracted)==nrow(metadata),all(file.exists(extracted)))
 # prepare_experiment also accepts ZIPs. Supply verified metadata when absent
 # from an archive; folder names alone cannot establish biological assignments.
 message("Function catalog completed. Outputs: ",catalog_dir)
+
+# 9. Optional recovery on ORIGINAL photographs (requires user clicks).
+# Enable explicitly before sourcing: options(FunMel.recover=TRUE).
+# These calls illustrate the API; use your measured diameter and true plate role.
+if(interactive() && isTRUE(getOption("FunMel.recover",FALSE))) {
+  photograph <- file.choose()
+  dish_mm <- as.numeric(readline("Measured outer dish diameter in mm: "))
+  fixed <- retry_funmel_dish(photograph,dish_diameter_mm=dish_mm,centre="fungus")
+  # If tissue masks still fail QC, review the actual boundaries:
+  fixed <- recover_funmel_plate(photograph,dish_diameter_mm=dish_mm,centre="fungus")
+}
 ```
 
 ## Measurement-only projects
@@ -201,3 +214,8 @@ per-image layouts. `validate_metadata(...,stage="measurement")` checks identitie
 without requiring an experimental design. The default comparison stage checks
 own-control matching. Finalization with incomplete matching saves measurements
 and reports `awaiting_design` without producing unsupported coefficients or plots.
+
+The built-in recovery tools are demonstrated in the
+[real-data recovery guide](Real-14-day.html#recovering-a-failed-dish-fit-or-tissue-mask).
+They require original photographs and user clicks unless saved coordinates are
+supplied; no unverified biological roles are inferred.

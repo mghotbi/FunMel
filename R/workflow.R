@@ -132,6 +132,9 @@ prepare_experiment <- function(input = NULL, project_dir = "FunMel_project",
 #' @param default_centre Segmentation fallback for unlabeled images, default
 #'   fungus. Use none for control-only images. Per-image centre_model and known
 #'   control labels take precedence. No treatment or control identity is guessed.
+#' Recovery annotations can be reapplied using
+#' `corrections=list(actual_plate_id=corrected$annotation)` in `...`.
+#' Use identical image resolution, dish diameter and centre model.
 #' @param ... Other analyze_plate() settings, such as dish_diameter_mm and max_dim.
 #' @return Batch result saved to image_analysis.rds and CSV tables.
 #' @details Dish diameter and any supplied pixel scale must be finite positive numeric scalars. Invalid settings stop before image processing or changes to project QC flags.

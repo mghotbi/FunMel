@@ -1,4 +1,4 @@
-# FunMel 0.4.19 maintenance and validation checklist
+# FunMel 0.4.20 maintenance and validation checklist
 
 Use independent plates as the biological units. Four target colonies and any
 sampling spots within a plate are subsamples. Each treatment is compared with
@@ -31,9 +31,11 @@ Check that no metadata approval gate or required approval-flag editing appears
 in public guides, examples, help or the rendered site. The standard workflow
 uses reminders; structural metadata checks and failed-image checks remain.
 
-For 0.4.19, run both installed scripts `examples/06_all_functions.R` and
+For 0.4.20, run both installed scripts `examples/06_all_functions.R` and
 `examples/walkthrough_14_days.R`. Check catalog coverage against namespace
 exports. Interactive tissue annotation requires a separate human click session.
 Test moved projects, direct saved-result reading, missing metadata errors and
 project-input comparison plotting. Reconnection must preserve measurements and
 experimental assignments and must not invent missing metadata.
+
+Validate recovery annotations against changed photographs, working dimensions, centre models and calibration. Check that corrections replace exact plate IDs and that repeated photographs are not counted as independent plates.

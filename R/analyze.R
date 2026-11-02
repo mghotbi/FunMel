@@ -13,6 +13,8 @@
 #' @param dish Optional manual dish circle `c(x, y, r)` in working pixels.
 #' @param mm_per_px Optional known scale (mm per working-image pixel);
 #'   overrides `dish_diameter_mm`.
+#' @param annotation Optional saved recovery annotation from [retry_funmel_dish()] or
+#'   [recover_funmel_plate()]. Image checksum, scale, layout and resolution must match.
 #' @param reference Optional exposure / white-balance reference: a grey-card
 #'   region `c(x, y, r)` in relative image coordinates, or `"agar"`; see
 #'   [model_background()].
@@ -74,12 +76,18 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
                           n_boot = 200L, block_mm = 0.5, ring_width_mm = 0.5,
                           profile_mode = c("absolute", "relative"), n_rings = 10L,
                           qc_file = NULL, keep_images = TRUE, verbose = TRUE,
-                          n_spots = NULL, spot_radius_mm = 0.5) {
+                          n_spots = NULL, spot_radius_mm = 0.5, annotation = NULL) {
   validate_image_settings(list(dish_diameter_mm=dish_diameter_mm,mm_per_px=mm_per_px,
     max_dim=max_dim,n_spots=n_spots,spot_radius_mm=spot_radius_mm,
     max_clipped_fraction=max_clipped_fraction))
   profile_mode <- match.arg(profile_mode)
   stopifnot(inherits(layout, "funmel_layout"))
+  if(!is.null(annotation)) {
+    .fm_validate_annotation(annotation,path,max_dim,dish_diameter_mm,layout$centre)
+    if(!is.null(dish) && !isTRUE(all.equal(unname(dish),annotation$dish)))
+      stop("dish conflicts with the saved recovery annotation.")
+    dish <- annotation$dish
+  }
   params <- as.list(environment())
   params$path <- if (is.character(path)) path else "<array>"
   params$layout <- layout
@@ -88,6 +96,8 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
 
   step("Reading image")
   plate <- read_plate(path, max_dim = max_dim, id = id)
+  if(!is.null(annotation) && !identical(as.integer(annotation$working_dim),dim(plate$rgb)[1:2]))
+    stop("Recovery annotation working image dimensions/orientation differ; recreate the annotation.")
   step("Detecting dish")
   plate <- detect_plate(plate, dish = dish, dish_diameter_mm = dish_diameter_mm,
                         agar_fraction = agar_fraction, mm_per_px = mm_per_px)
@@ -96,12 +106,17 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
   plate <- model_background(plate, flat_field = flat_field, min_delta_e = min_delta_e,
                             max_clipped_fraction = max_clipped_fraction,
                             reference = reference, reference_lab = reference_lab)
+  if(!is.null(annotation$polygons)) {
+    step("Applying reviewed tissue boundaries")
+    plate <- .fm_apply_polygons(plate,layout,annotation$polygons)
+  } else {
   step("Classifying target colonies, central core and hyphal growth")
   plate <- classify_pixels(plate, layout, classifier = classifier)
   step("Separating colonies")
   plate <- segment_colonies(plate, layout, min_area_mm2 = min_area_mm2,
                             min_core_mm = min_core_mm, morph_mm = morph_mm,
                             edge_criterion = edge_criterion)
+  }
   step("Measuring")
   col <- measure_colonies(plate, edge_exclude_mm = edge_exclude_mm, dark_L = dark_L,
                           n_boot = n_boot, block_mm = block_mm)
@@ -154,6 +169,7 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
                         plate = plate, params = params, warnings = warn,
                         version = as.character(utils::packageVersion("FunMel"))),
                    class = "funmel_result")
+  res$annotation <- annotation
   if (!is.null(qc_file)) {
     grDevices::png(qc_file, width = 2400, height = 1250, res = 150)
     on.exit(grDevices::dev.off(), add = TRUE)
@@ -202,6 +218,8 @@ print.funmel_result <- function(x, ...) {
 #'   `NULL` writes nothing; give a folder, e.g. `qc_dir = "qc"`, to save one
 #'   QC figure per plate.
 #' @param ... Further arguments passed to [analyze_plate()].
+#' @param corrections Optional named list of recovery annotations, keyed by exact metadata
+#'   plate_id. Each annotation is checked against its original photograph and settings.
 #' @param coefficient_control Control treatment label for automatic coefficient
 #'   calculation; NULL disables it. Calculated when treatment metadata exists.
 #' @param coefficient_by Matching columns for controls, e.g. strain and day.
@@ -223,7 +241,7 @@ print.funmel_result <- function(x, ...) {
 #' @export
 analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
                            qc_dir = NULL, ..., verbose = TRUE,
-                           coefficient_control = "control", coefficient_by = NULL) {
+                           coefficient_control = "control", coefficient_by = NULL, corrections = NULL) {
   validate_image_settings(list(...))
   if(!is.character(files) || anyNA(files) || any(!nzchar(files))) stop("files must be image paths without missing values.")
   if (length(files) == 1 && dir.exists(files)) {
@@ -241,6 +259,14 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
     control=if(is.null(coefficient_control)) "control" else coefficient_control)
   metadata_index <- if(is.null(metadata)) NULL else match_image_rows(files,metadata)
   if (!is.null(qc_dir)) dir.create(qc_dir, showWarnings = FALSE, recursive = TRUE)
+  if(!is.null(corrections)) {
+    plate_ids <- if(is.null(metadata)) tools::file_path_sans_ext(basename(files)) else as.character(metadata$plate_id)
+    if(!is.list(corrections)||is.null(names(corrections))||anyNA(names(corrections))||
+       any(!nzchar(names(corrections)))||anyDuplicated(names(corrections))||
+       any(!names(corrections) %in% plate_ids))
+      stop("corrections must be a named list keyed by exact plate IDs in this run.")
+  }
+  out_annotations <- list()
   out_c <- list(); out_p <- list(); out_s <- list(); out_spots <- list(); out_layout <- list(); failed <- list()
   for (k in seq_along(files)) {
     f <- files[k]
@@ -254,7 +280,7 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
     if (verbose) cli::cli_alert("[{k}/{length(files)}] {basename(f)}")
     qc <- if (is.null(qc_dir)) NULL else file.path(qc_dir, paste0(pid, "_qc.png"))
     r <- tryCatch(analyze_plate(f, layout = lay, id = pid, qc_file = qc,
-                                keep_images = FALSE, verbose = FALSE, ...),
+                                keep_images = FALSE, verbose = FALSE, annotation=corrections[[pid]], ...),
                   error = function(e) e)
     if (inherits(r, "error")) {
       failed[[length(failed) + 1]] <- data.frame(file = f, error = conditionMessage(r))
@@ -262,6 +288,7 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
       next
     }
     out_layout[[pid]] <- data.frame(plate_id=pid,centre_model=lay$centre,stringsAsFactors=FALSE)
+    if(!is.null(r$annotation)) out_annotations[[pid]] <- r$annotation
     out_spots[[pid]] <- r$spots
     out_c[[pid]] <- r$colonies
     out_p[[pid]] <- r$profiles
@@ -271,7 +298,7 @@ analyze_plates <- function(files, metadata = NULL, layout = plate_layout(),
   result <- list(colonies = bind_rows_fill(out_c), profiles = bind_rows_fill(out_p),
        spots = bind_rows_fill(out_spots),
        plates = bind_rows_fill(out_s),
-       analysis_layout = bind_rows_fill(out_layout),
+       analysis_layout = bind_rows_fill(out_layout), annotations=out_annotations,
        failed = if (length(failed)) do.call(rbind, failed) else data.frame(file = character(), error = character()))
   if(!nrow(result$colonies)) result$colonies<-data.frame(plate_id=character(),colony_id=character(),MI_mean=double(),detected=logical())
   if(!nrow(result$profiles)) result$profiles<-data.frame(plate_id=character(),colony_id=character(),ring=integer(),MI_mean=double())
