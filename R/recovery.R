@@ -53,13 +53,15 @@
   grDevices::png(output,width=2000,height=1250,res=150)
   on.exit(grDevices::dev.off())
   graphics::par(mar=c(1,1,3,1))
-  .fm_show(p,"Reviewed boundaries: Zymoseptoria targets; orange = whole central fungal extent")
+  .fm_show(p,if(identical(ob$boundary_source,"guided_polygon"))
+    "PROPOSED boundaries: inspect all target interiors and the whole central fungal extent" else
+    "Reviewed boundaries: Zymoseptoria targets; orange = whole central fungal extent")
   th <- seq(0,2*pi,length.out=361)
   d <- p$dish
   graphics::lines(d$x+d$r_outer*cos(th),d$y+d$r_outer*sin(th),
                   col="#00B8D4",lty=2,lwd=2)
   bound <- function(mask,col) {
-    b <- getFromNamespace("mask_boundary","FunMel")(mask)
+    b <- mask_boundary(mask)
     w <- which(b,arr.ind=TRUE)
     if(nrow(w)) graphics::points(w[,2],w[,1],pch=".",col=col)
   }
@@ -175,9 +177,11 @@
      n_spots=n_spots,spot_radius_mm=spot_radius_mm,n_boot=n_boot,
      flat_field=flat_field,edge_exclude_mm=edge_exclude_mm,keep_images=TRUE)
   if(manual && any(!is.finite(res$colonies$MI_mean)))
-    stop("A reviewed target has no usable MI; inspect exposure, outlines and edge exclusion.")
+    stop("A target has no usable MI; inspect exposure, outlines and edge exclusion.")
   dir.create(output_dir,recursive=TRUE)
   if(!dir.exists(output_dir)) stop("Could not create recovery output directory.")
+  res$recovery_dir <- normalizePath(output_dir)
+  res$recovery_status <- "measured_requires_review"
   for(nm in c("colonies","spots","profiles"))
     utils::write.csv(res[[nm]],file.path(output_dir,paste0(nm,".csv")),row.names=FALSE,na="")
   utils::write.csv(res$plate_summary,file.path(output_dir,"plates.csv"),row.names=FALSE,na="")
@@ -197,8 +201,10 @@
 #'
 #' `retry_funmel_dish()` uses three outer-rim clicks to correct the dish circle
 #' and reruns automatic tissue segmentation. `recover_funmel_plate()` additionally
-#' collects reviewed polygons for TL, TR, BR, BL and, on confrontations, the whole
-#' central fungus. Finish each polygon with right-click/Esc. These are optional
+#' defaults to guided recovery: click one centre per peripheral target after the
+#' three dish-rim clicks. It proposes target boundaries and central fungal extent
+#' without freehand outlines. All proposed boundaries require visual review.
+#' mode='manual' retains freehand outlines finished with right-click/Esc. These are optional
 #' recovery tools for photographs whose automatic masks fail visual review.
 #'
 #' @details
@@ -225,8 +231,17 @@
 #' @param n_boot Number of spatial bootstrap replicates.
 #' @param flat_field Whether to request illumination correction.
 #' @param edge_exclude_mm Margin excluded from colour measurements in mm.
+#' @param mode guided (default) proposes boundaries from four target-centre
+#'   clicks; manual requests freehand boundaries. Supplied polygons take precedence.
+#' @param seeds Optional four-row x/y matrix named TL, TR, BR, BL for guided
+#'   recovery without clicks, in working-image pixels.
 #' @return A `funmel_result` with `annotation` and `recovery_dir`. New measurement
 #' CSVs, annotation RDS, result RDS, QC PNG and session information are saved.
+#' Guided failures return a boundary proposal with recovery_status=awaiting_boundaries
+#' and saved diagnostics/QC, without measurements. Successful recovery returns
+#' recovery_status=measured_requires_review; no review flags are approved.
+#' Closing the graphics window during guided selection returns recovery_status=cancelled
+#' with an informative message and no new measurements.
 #' @examples
 #' \dontrun{
 #' photo <- file.choose() # Select an original JPG.
@@ -249,8 +264,42 @@ retry_funmel_dish <- function(path,dish_diameter_mm,centre=c("fungus","none"),
 recover_funmel_plate <- function(path,dish_diameter_mm,centre=c("fungus","none"),
                                  output_dir=NULL,max_dim=1200,dish=NULL,polygons=NULL,
                                  n_spots=5,spot_radius_mm=0.4,n_boot=200,
-                                 flat_field=TRUE,edge_exclude_mm=0.1) {
+                                 flat_field=TRUE,edge_exclude_mm=0.1,
+                                 mode=c("guided","manual"),seeds=NULL) {
+  if(!is.null(output_dir) && file.exists(output_dir))
+    stop("Use a NEW output directory; original results will not be overwritten.")
   centre <- match.arg(centre)
+  mode <- match.arg(mode)
+  if(is.null(polygons) && mode=="guided") {
+    proposal <- tryCatch(suggest_funmel_polygons(path,dish_diameter_mm,centre=centre,dish=dish,
+      seeds=seeds,max_dim=max_dim,central_auto=TRUE),error=function(e) {
+        if(grepl("graphics device closed|selection cancelled",conditionMessage(e),ignore.case=TRUE)) {
+          message("Recovery cancelled because the graphics selection was interrupted. Rerun the call, keep the photograph window open, and click each requested point. No new measurements were saved.")
+          return(structure(list(recovery_status="cancelled",recovery_dir=NULL),class="funmel_recovery_cancelled"))
+        }
+        stop(e)
+      })
+    if(inherits(proposal,"funmel_recovery_cancelled")) return(invisible(proposal))
+    needed <- c("TL","TR","BR","BL",if(centre=="fungus") "central_fungus")
+    if(!all(needed %in% names(proposal$polygons))) {
+      if(is.null(output_dir)) output_dir <- tempfile("FunMel_proposal_",tmpdir=path.expand("~"))
+      if(file.exists(output_dir)) stop("Use a NEW output directory; original results will not be overwritten.")
+      dir.create(output_dir,recursive=TRUE)
+      if(!dir.exists(output_dir)) stop("Could not create proposal directory.")
+      proposal$recovery_dir <- normalizePath(output_dir)
+      proposal$recovery_status <- "awaiting_boundaries"
+      saveRDS(proposal,file.path(output_dir,"boundary_proposal.rds"))
+      utils::write.csv(proposal$guidance$diagnostics,file.path(output_dir,"boundary_diagnostics.csv"),row.names=FALSE)
+      grDevices::png(file.path(output_dir,"proposed_QC.png"),width=2000,height=1400,res=150)
+      tryCatch(plot(proposal),finally=grDevices::dev.off())
+      message("Boundary proposals saved in ",proposal$recovery_dir,
+        ". No measurements were calculated: unresolved boundaries are listed in boundary_diagnostics.csv. Use a reviewed manual override for unresolved tissue.")
+      return(invisible(proposal))
+    }
+    dish <- proposal$dish
+    polygons <- proposal$polygons
+    message("Boundaries proposed from target centres and local contrast. Measurements are provisional: inspect every target interior and the central fungal fringe in recovered_QC.png.")
+  }
   .fm_recovery(path,dish_diameter_mm,centre,output_dir,max_dim,dish,polygons,
     n_spots,spot_radius_mm,n_boot,flat_field,edge_exclude_mm,TRUE)
 }

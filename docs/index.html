@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.24</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -167,6 +167,19 @@
 <span><span class="va">reviewed</span><span class="op">$</span><span class="va">coefficient_plate_means</span></span></code></pre></div>
 <p>If three of four targets have usable MI, their three values contribute to the matched coefficient. The failed row stays in <code>colonies.csv</code>; it is listed in <code>excluded_colonies.csv</code> and <code>measurement_issues.csv</code>, and actual used/excluded counts are reported. No missing MI is replaced with zero or copied from another colony. A plate with no usable targets remains unavailable. Whole-image failures and missing control assignments must still be resolved.</p>
 <p>Inspect the named QC images: failures associated with colony colour or size can bias the remaining-colony comparison. For complete-target analysis use <code>finish_experiment(project, na_action="error")</code>. Details are in the real-data vignette’s <strong>Incomplete target colonies</strong> section.</p>
+</div>
+<div class="section level2">
+<h2 id="recover-a-difficult-photograph-with-seven-clicks">Recover a difficult photograph with seven clicks<a class="anchor" aria-label="anchor" href="#recover-a-difficult-photograph-with-seven-clicks"></a>
+</h2>
+<p>If automatic tissue classification selects the central fungus as a target or misses the pink target colonies, use:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">photo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.choose.html" class="external-link">file.choose</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Select the original JPG.</span></span>
+<span><span class="va">fixed</span> <span class="op">&lt;-</span> <span class="fu">FunMel</span><span class="fu">::</span><span class="fu"><a href="reference/retry_funmel_dish.html">recover_funmel_plate</a></span><span class="op">(</span></span>
+<span>  <span class="va">photo</span>, dish_diameter_mm <span class="op">=</span> <span class="va">dish_mm</span>, centre <span class="op">=</span> <span class="st">"fungus"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">fixed</span><span class="op">$</span><span class="va">recovery_status</span></span></code></pre></div>
+<p>Set <code>dish_mm</code> to the verified physical diameter first. Click three widely separated outer dish-rim points, then click once inside each target in the prompted order: <strong>top-left, top-right, bottom-right, bottom-left</strong>. Each step finishes automatically. Keep the photograph window open; no outline drawing, right-click or Esc is required in this default guided mode.</p>
+<p>Open <code>fixed$recovery_dir</code> and inspect the proposed boundaries in <code>recovered_QC.png</code>. <code>measured_requires_review</code> means provisional measurements were saved; <code>awaiting_boundaries</code> means unresolved proposals and diagnostics were saved without measurements. A closed graphics window returns <code>cancelled</code>. The central extent is a contrast-based proposal requiring visual review, not an automatic identification of hyphae or pigment. Explicit manual overrides remain available for uncertain boundaries; see the real-data tutorial.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

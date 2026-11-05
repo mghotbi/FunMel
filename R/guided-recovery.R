@@ -24,7 +24,15 @@
   if(boundary=="outer_extent") {
     # A closed peripheral rim can enclose a differently coloured target centre.
     # Geometry is proposed only: the reviewer must exclude agar/foreign tissue.
-    candidates <- setdiff(unique(as.vector(labels)),0L)
+    pos <- which(labels>0L,arr.ind=TRUE)
+    candidates <- integer()
+    if(nrow(pos)) {
+      lab <- labels[pos]
+      xmin <- tapply(pos[,2],lab,min); xmax <- tapply(pos[,2],lab,max)
+      ymin <- tapply(pos[,1],lab,min); ymax <- tapply(pos[,1],lab,max)
+      candidates <- as.integer(names(xmin)[xmin<=seed[1] & xmax>=seed[1] &
+        ymin<=seed[2] & ymax>=seed[2]])
+    }
     mask <- matrix(FALSE,H,W)
     best_area <- 0L
     for(k in candidates) {
@@ -63,13 +71,14 @@
 #' @param seeds Four-row x/y matrix with row names TL, TR, BR, BL. NULL requests
 #'   one click per target. Seeds are in the resized working image, not original pixels.
 #' @param radius_px Search radius, one number or a named vector for all four targets.
-#'   The outer 20 percent estimates local agar lightness. Default is 0.20 times
+#'   The outer 20 percent estimates local agar lightness. Default is 0.25 times
 #'   the dish radius. Keep other colonies, rim and writing outside this region.
 #' @param polarity One of auto, bright, dark, or a named vector for all targets.
 #' @param min_contrast Minimum lightness difference from local agar, default 3.
 #' @param fraction Fraction of seed contrast used as the threshold, between 0 and 1.
 #' @param polygons Optional named manual overrides. A central_fungus outline is
-#'   required for confrontations; if absent it is collected interactively.
+#'   required for confrontations; if absent it is proposed by central_auto or
+#'   optionally collected interactively when central_auto=FALSE.
 #' @param exclusions List of x/y polygons marking artifacts. They are excluded
 #'   from seed/background estimation and detection. This does not reconstruct
 #'   hidden tissue or modify the photograph.
@@ -78,6 +87,12 @@
 #'   enclosing the target seed, including its interior. seed_component uses only
 #'   the connected candidate containing the seed. Both require visual review;
 #'   use a manual outline for open rims, mixed organisms or uncertain boundaries.
+#' @param central_auto Propose central fungal extent automatically (default).
+#'   FALSE retains the optional interactive manual central outline.
+#' @param central_seed Optional central x/y seed; default is the dish centre.
+#' @param central_radius_px Central search radius; default 0.75 times dish radius.
+#' @param central_fraction Central seed-contrast fraction, default 0.1. This is
+#'   a lightness threshold proposal, not a validated biological hyphal edge.
 #' @return A funmel_boundary_proposal containing polygons, image geometry and
 #'   per-target detection diagnostics. Failed targets have no polygon and must
 #'   be supplied manually. plot() displays outlines for review. No measurements
@@ -87,20 +102,26 @@
 #' is retained for measurement; existing explicit calibration settings still
 #' apply when running recovery. Automatic mode chooses bright/dark from the
 #' seed and surrounding agar; it does not establish biological identity.
-#' The central fungus is outlined independently, including its visible fringe,
-#' and is not inferred from the bright plug. Mask contact with the search limit
+#' Central fungal extent is proposed independently from local lightness contrast;
+#' inspect the visible fringe because a plug-based seed can miss differently
+#' coloured peripheral tissue. Supplied manual boundaries take precedence. Mask contact with the search limit
 #' is rejected. A radius is a search window, never a forced circular boundary.
 #' @export
 suggest_funmel_polygons <- function(path,dish_diameter_mm,centre=c("fungus","none"),
     dish=NULL,seeds=NULL,radius_px=NULL,polarity="auto",min_contrast=3,fraction=.35,
     polygons=list(),exclusions=list(),max_dim=1200,
-    boundary=c("outer_extent","seed_component")) {
+    boundary=c("outer_extent","seed_component"),
+    central_auto=TRUE,central_seed=NULL,central_radius_px=NULL,central_fraction=.1) {
   centre <- match.arg(centre)
   boundary <- match.arg(boundary)
   validate_image_settings(list(dish_diameter_mm=dish_diameter_mm,max_dim=max_dim))
   if(length(min_contrast)!=1L || !is.finite(min_contrast) || min_contrast<=0 ||
      length(fraction)!=1L || !is.finite(fraction) || fraction<=0 || fraction>=1)
     stop("min_contrast must be positive and fraction strictly between zero and one.")
+  if(!is.logical(central_auto) || length(central_auto)!=1L || is.na(central_auto))
+    stop("central_auto must be TRUE or FALSE.")
+  if(length(central_fraction)!=1L || !is.finite(central_fraction) || central_fraction<=0 || central_fraction>=1)
+    stop("central_fraction must be between zero and one.")
   ids <- c("TL","TR","BR","BL")
   if(!is.list(polygons) || (length(polygons) &&
       (is.null(names(polygons)) || anyDuplicated(names(polygons)) ||
@@ -115,7 +136,7 @@ suggest_funmel_polygons <- function(path,dish_diameter_mm,centre=c("fungus","non
       stop(name," needs one value or four values named TL, TR, BR, BL.")
     z[ids]
   }
-  if(is.null(radius_px)) radius_px <- .2*p$dish$r_outer
+  if(is.null(radius_px)) radius_px <- .25*p$dish$r_outer
   radius_px <- expand(radius_px,"radius_px")
   polarity <- expand(polarity,"polarity")
   if(!is.numeric(radius_px) || any(!is.finite(radius_px)|radius_px<8))
@@ -163,10 +184,34 @@ suggest_funmel_polygons <- function(path,dish_diameter_mm,centre=c("fungus","non
       seed_contrast_L=if(failed) NA_real_ else result$seed_contrast_L,
       status=if(failed) conditionMessage(result) else "review_required")
   }
-  if(centre=="fungus" && is.null(polygons$central_fungus) && interactive())
-    polygons$central_fungus <- .fm_click_polygon(p,"Outline whole central fungus including visible fringe")
+  if(centre=="fungus" && is.null(polygons$central_fungus)) {
+    if(central_auto) {
+      if(is.null(central_seed)) central_seed <- c(p$dish$x,p$dish$y)
+      if(is.null(central_radius_px)) central_radius_px <- .75*p$dish$r_outer
+      result <- tryCatch({
+        if(length(central_seed)!=2L || any(!is.finite(central_seed)) ||
+           central_seed[1]<1 || central_seed[1]>W || central_seed[2]<1 || central_seed[2]>H)
+          stop("Central seed must lie inside the working image.")
+        if(length(central_radius_px)!=1L || !is.finite(central_radius_px) || central_radius_px<8)
+          stop("Central search radius must be at least eight pixels.")
+        ex <- excluded
+        for(z in polygons[intersect(ids,names(polygons))]) ex <- ex | .fm_polygon_mask(z,H,W)
+        .fm_seed_outline(L,central_seed,central_radius_px,"auto",min_contrast,central_fraction,ex,"outer_extent")
+      },error=function(e)e)
+      failed <- inherits(result,"error")
+      if(!failed) polygons$central_fungus <- result$polygon
+      diagnostics$central_fungus <- data.frame(colony_id="central_fungus",method="central_lightness_proposal",
+        polarity=if(failed) NA_character_ else result$polarity,
+        background_L=if(failed) NA_real_ else result$background_L,
+        seed_contrast_L=if(failed) NA_real_ else result$seed_contrast_L,
+        status=if(failed) conditionMessage(result) else "review_required")
+    } else if(interactive()) {
+      polygons$central_fungus <- .fm_click_polygon(p,"Outline whole central fungus including visible fringe")
+    }
+  }
   guidance <- list(method="seeded_lightness",seeds=seeds,radius_px=radius_px,
-    polarity=polarity,boundary=boundary,min_contrast=min_contrast,fraction=fraction,exclusions=exclusions,
+    polarity=polarity,boundary=boundary,central_auto=central_auto,central_seed=central_seed,
+    central_radius_px=central_radius_px,central_fraction=central_fraction,min_contrast=min_contrast,fraction=fraction,exclusions=exclusions,
     diagnostics=do.call(rbind,diagnostics),proposed_polygons=polygons,
     image_md5=unname(as.character(tools::md5sum(path))),max_dim=max_dim,
     working_dim=dim(p$rgb)[1:2],dish_diameter_mm=dish_diameter_mm,

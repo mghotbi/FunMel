@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.24</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,17 @@
       <small>Source: <a href="https://github.com/mghotbi/FunMel/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.24" id="funmel-0424">FunMel 0.4.24<a class="anchor" aria-label="anchor" href="#funmel-0424"></a></h2>
+<ul><li>Call the internal mask-boundary function directly when drawing recovery QC, resolving the undeclared getFromNamespace lookup reported by R CMD check.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.23" id="funmel-0423">FunMel 0.4.23<a class="anchor" aria-label="anchor" href="#funmel-0423"></a></h2>
+<ul><li>Default difficult-plate recovery to three dish-rim clicks and one centre click for each target. Target and central fungal boundaries are proposed without freehand polygons or right-click/Esc termination.</li>
+<li>Record guided boundary provenance and provisional status; no QC approval is inferred. Unresolved proposals save diagnostics without invented measurements.</li>
+<li>Report interrupted guided selections with an informative cancellation status.</li>
+<li>Retain optional manual polygons, original-image measurements, own-set matching, missing-colony exclusion policy and existing figure/website styling.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.22" id="funmel-0422">FunMel 0.4.22<a class="anchor" aria-label="anchor" href="#funmel-0422"></a></h2>
 <ul><li>Continue matched comparisons with remaining measurable target colonies by default, warning with affected plate/colony IDs and actual usable counts.</li>

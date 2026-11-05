@@ -11,7 +11,7 @@ exception to quality control. Use manual overrides when an edge is ambiguous."><
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.24</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,11 @@ exception to quality control. Use manual overrides when an edge is ambiguous.</p
 <span>  polygons <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  exclusions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  max_dim <span class="op">=</span> <span class="fl">1200</span>,</span>
-<span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"outer_extent"</span>, <span class="st">"seed_component"</span><span class="op">)</span></span>
+<span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"outer_extent"</span>, <span class="st">"seed_component"</span><span class="op">)</span>,</span>
+<span>  central_auto <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  central_seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  central_radius_px <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  central_fraction <span class="op">=</span> <span class="fl">0.1</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'funmel_boundary_proposal'</span></span>
@@ -94,7 +98,7 @@ one click per target. Seeds are in the resized working image, not original pixel
 
 <dt id="arg-radius-px">radius_px<a class="anchor" aria-label="anchor" href="#arg-radius-px"></a></dt>
 <dd><p>Search radius, one number or a named vector for all four targets.
-The outer 20 percent estimates local agar lightness. Default is 0.20 times
+The outer 20 percent estimates local agar lightness. Default is 0.25 times
 the dish radius. Keep other colonies, rim and writing outside this region.</p></dd>
 
 
@@ -112,7 +116,8 @@ the dish radius. Keep other colonies, rim and writing outside this region.</p></
 
 <dt id="arg-polygons">polygons<a class="anchor" aria-label="anchor" href="#arg-polygons"></a></dt>
 <dd><p>Optional named manual overrides. A central_fungus outline is
-required for confrontations; if absent it is collected interactively.</p></dd>
+required for confrontations; if absent it is proposed by central_auto or
+optionally collected interactively when central_auto=FALSE.</p></dd>
 
 
 <dt id="arg-exclusions">exclusions<a class="anchor" aria-label="anchor" href="#arg-exclusions"></a></dt>
@@ -130,6 +135,24 @@ hidden tissue or modify the photograph.</p></dd>
 enclosing the target seed, including its interior. seed_component uses only
 the connected candidate containing the seed. Both require visual review;
 use a manual outline for open rims, mixed organisms or uncertain boundaries.</p></dd>
+
+
+<dt id="arg-central-auto">central_auto<a class="anchor" aria-label="anchor" href="#arg-central-auto"></a></dt>
+<dd><p>Propose central fungal extent automatically (default).
+FALSE retains the optional interactive manual central outline.</p></dd>
+
+
+<dt id="arg-central-seed">central_seed<a class="anchor" aria-label="anchor" href="#arg-central-seed"></a></dt>
+<dd><p>Optional central x/y seed; default is the dish centre.</p></dd>
+
+
+<dt id="arg-central-radius-px">central_radius_px<a class="anchor" aria-label="anchor" href="#arg-central-radius-px"></a></dt>
+<dd><p>Central search radius; default 0.75 times dish radius.</p></dd>
+
+
+<dt id="arg-central-fraction">central_fraction<a class="anchor" aria-label="anchor" href="#arg-central-fraction"></a></dt>
+<dd><p>Central seed-contrast fraction, default 0.1. This is
+a lightness threshold proposal, not a validated biological hyphal edge.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
@@ -153,8 +176,9 @@ are calculated. Use recover_funmel_plate() with the reviewed polygons.</p>
 is retained for measurement; existing explicit calibration settings still
 apply when running recovery. Automatic mode chooses bright/dark from the
 seed and surrounding agar; it does not establish biological identity.
-The central fungus is outlined independently, including its visible fringe,
-and is not inferred from the bright plug. Mask contact with the search limit
+Central fungal extent is proposed independently from local lightness contrast;
+inspect the visible fringe because a plug-based seed can miss differently
+coloured peripheral tissue. Supplied manual boundaries take precedence. Mask contact with the search limit
 is rejected. A radius is a search window, never a forced circular boundary.</p>
     </div>
 

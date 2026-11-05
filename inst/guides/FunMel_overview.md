@@ -70,3 +70,9 @@ warning by default. The original rows, affected IDs and actual counts are
 retained in outputs. A plate with no usable targets remains unavailable.
 Use `na_action="error"` for complete-target analysis. Inspect exclusions because
 selective detection failure can bias the retained-colony comparison.
+
+Difficult-plate recovery defaults to seven clicks: three outer dish-rim points
+and four target centres. Local contrast proposes boundaries without freehand
+outlines. Outputs retain guided provenance and require visual QC; unresolved
+proposals save diagnostics without fabricated measurements. Manual boundaries
+remain an explicit alternative for ambiguous tissue.

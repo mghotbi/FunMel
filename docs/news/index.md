@@ -1,5 +1,25 @@
 # Changelog
 
+## FunMel 0.4.24
+
+- Call the internal mask-boundary function directly when drawing
+  recovery QC, resolving the undeclared getFromNamespace lookup reported
+  by R CMD check.
+
+## FunMel 0.4.23
+
+- Default difficult-plate recovery to three dish-rim clicks and one
+  centre click for each target. Target and central fungal boundaries are
+  proposed without freehand polygons or right-click/Esc termination.
+- Record guided boundary provenance and provisional status; no QC
+  approval is inferred. Unresolved proposals save diagnostics without
+  invented measurements.
+- Report interrupted guided selections with an informative cancellation
+  status.
+- Retain optional manual polygons, original-image measurements, own-set
+  matching, missing-colony exclusion policy and existing figure/website
+  styling.
+
 ## FunMel 0.4.22
 
 - Continue matched comparisons with remaining measurable target colonies

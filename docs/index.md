@@ -169,3 +169,33 @@ Inspect the named QC images: failures associated with colony colour or
 size can bias the remaining-colony comparison. For complete-target
 analysis use `finish_experiment(project, na_action="error")`. Details
 are in the real-data vignette’s **Incomplete target colonies** section.
+
+## Recover a difficult photograph with seven clicks
+
+If automatic tissue classification selects the central fungus as a
+target or misses the pink target colonies, use:
+
+``` r
+
+photo <- file.choose() # Select the original JPG.
+fixed <- FunMel::recover_funmel_plate(
+  photo, dish_diameter_mm = dish_mm, centre = "fungus"
+)
+fixed$recovery_status
+```
+
+Set `dish_mm` to the verified physical diameter first. Click three
+widely separated outer dish-rim points, then click once inside each
+target in the prompted order: **top-left, top-right, bottom-right,
+bottom-left**. Each step finishes automatically. Keep the photograph
+window open; no outline drawing, right-click or Esc is required in this
+default guided mode.
+
+Open `fixed$recovery_dir` and inspect the proposed boundaries in
+`recovered_QC.png`. `measured_requires_review` means provisional
+measurements were saved; `awaiting_boundaries` means unresolved
+proposals and diagnostics were saved without measurements. A closed
+graphics window returns `cancelled`. The central extent is a
+contrast-based proposal requiring visual review, not an automatic
+identification of hyphae or pigment. Explicit manual overrides remain
+available for uncertain boundaries; see the real-data tutorial.

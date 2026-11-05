@@ -490,11 +490,11 @@ whole-colony `MI_mean` in the default coefficient.
 
 ### Correct an unusual colony
 
-Use the manual recovery procedure below when the outer tissue boundary
-is clear but automatic detection selects the wrong band. It collects one
-outline for each target and one for the whole central fungus. This is
-the reliable fallback for a closed light rim around a differently
-coloured interior.
+Start with the guided recovery procedure below when automatic detection
+selects the wrong band. It uses one centre click per target to propose
+its outer boundary and enclosed interior. Use an explicit manual outline
+only when the proposed boundary does not match the visible target
+tissue.
 
 An optional guided proposal can reduce outlining:
 
@@ -502,7 +502,7 @@ An optional guided proposal can reduce outlining:
 
 photo <- file.choose() # Select an ORIGINAL JPG, not a ZIP or QC overlay.
 # Set dish_mm to the measured outer dish diameter before running this block.
-proposal <- suggest_funmel_polygons(
+proposal <- FunMel::suggest_funmel_polygons(
   photo, dish_diameter_mm=dish_mm, centre="fungus", max_dim=1200,
   boundary="outer_extent"
 )
@@ -510,11 +510,12 @@ plot(proposal)
 ```
 
 Click three outer dish-rim points and one point inside each target when
-requested. For confrontations, outline the whole visible central fungus
-too. The outer-extent proposal uses the outermost closed candidate
-enclosing the selected target centre and fills its interior. It is a
-geometric proposal, not an automatic species identification. An open
-ring, low contrast, contact with another organism or an ambiguous
+requested. The central fungal extent is proposed automatically from
+local lightness contrast around the dish centre; inspect its visible
+fringe carefully. The outer-extent proposal uses the outermost closed
+candidate enclosing the selected target centre and fills its interior.
+It is a geometric proposal, not an automatic species identification. An
+open ring, low contrast, contact with another organism or an ambiguous
 boundary requires a manual outline. Do not accept an outline merely
 because it is round.
 
@@ -523,7 +524,7 @@ settings:
 
 ``` r
 
-fixed <- recover_funmel_plate(
+fixed <- FunMel::recover_funmel_plate(
   photo, dish_diameter_mm=dish_mm, centre="fungus", max_dim=1200,
   dish=proposal$dish, polygons=proposal$polygons,
   n_spots=5, spot_radius_mm=0.4
@@ -531,9 +532,8 @@ fixed <- recover_funmel_plate(
 ```
 
 Use this only when all required proposed outlines are present and
-correct. Otherwise call
-[`recover_funmel_plate()`](https://mghotbi.github.io/FunMel/reference/retry_funmel_dish.md)
-without `polygons` to draw the actual whole-colony outlines. Apply
+correct. Otherwise use `recover_funmel_plate(..., mode="manual")` or
+supply corrected manual polygons for uncertain tissue. Apply
 `fixed$annotation` to the matching project plate as shown below, rerun
 measurements and finalization, and inspect the saved QC. Do not alter
 photograph brightness to improve detection: that also changes MI. Guided
@@ -567,7 +567,7 @@ directly before running a recovery command.
 library(FunMel)
 photo <- file.choose() # Select one ORIGINAL photograph.
 dish_mm <- 90         # Use 90 ONLY for a verified 90-mm outer rim.
-fixed <- retry_funmel_dish(
+fixed <- FunMel::retry_funmel_dish(
   photo, dish_diameter_mm=dish_mm, centre="fungus", max_dim=1200
 )
 # For a true control without a central partner, use centre="none".
@@ -580,28 +580,64 @@ assigned to a target, review actual tissue boundaries:
 
 ``` r
 
-fixed <- recover_funmel_plate(
+fixed <- FunMel::recover_funmel_plate(
   photo, dish_diameter_mm=dish_mm, centre="fungus", max_dim=1200,
   n_spots=5, spot_radius_mm=0.4, n_boot=200
 )
 ```
 
-After the three rim clicks, outline TL, TR, BR and BL in that order,
-followed by the **whole visible central fungal extent** for a
-confrontation. Click vertices in sequence around each boundary; finish
-each outline with right-click/Esc. Controls require only the four
-targets. Boundaries may be irregular and are not forced into circles.
-Outlines cannot overlap or extend beyond analysed agar. If organisms
-overlap so that their boundaries cannot be distinguished, the photograph
-cannot support an unambiguous tissue-specific measurement.
+The default is **guided recovery with seven clicks**:
 
-Both tools return a `funmel_result` and create a new folder in the home
-directory, outside the photograph collection. The folder contains
-measurement CSVs, `recovered_QC.png`, `annotation.rds`,
-`recovered_analysis.rds` and session information. Original photographs
-and project results are not overwritten by the recovery call.
-`fixed$recovery_dir` gives the new folder. Polygon recovery records
-`boundary_source="manual_polygon"`.
+1.  Click three widely separated points on the same outer dish rim.
+2.  Click once inside each pink target when prompted: TL, TR, BR, BL.
+3.  Wait for measurement and open the new QC output. Each click step
+    finishes automatically; keep the graphics window open. Do not draw
+    outlines or press right-click/Esc in this default mode.
+
+The target centres guide local bright/dark boundary proposals. The
+central fungal extent is proposed separately from local lightness
+contrast. Its visible fringe must be checked because differing
+pigmentation, transparent hyphae, shadows and contact with targets can
+make the edge ambiguous. Detection changes geometry, not the original
+photograph’s colours. The existing explicit colour calibration and
+background-correction settings still apply to measurement.
+
+``` r
+
+fixed$recovery_status
+if(!is.null(fixed$recovery_dir)) {
+  system2("open", shQuote(fixed$recovery_dir)) # macOS: open saved outputs.
+}
+```
+
+`measured_requires_review` means measurements, annotation and
+`recovered_QC.png` were saved. Guided boundaries are recorded as
+`boundary_source="guided_polygon"` and central extent as
+`central_boundary_source="guided_whole_extent"`; they are not labelled
+as manually reviewed. Dense core and peripheral hyphae are not
+separately identified by this proposal, so subregion measurements remain
+unavailable. Processing never sets an approval flag to TRUE.
+
+`awaiting_boundaries` means some proposals are unresolved. The folder
+contains `boundary_diagnostics.csv`, `boundary_proposal.rds` and
+`proposed_QC.png`, without invented colony measurements. `cancelled`
+means the graphics selection was interrupted; reopen the photograph
+window and rerun when ready. No new measurements are saved on
+cancellation.
+
+For uncertain edges, the optional `mode="manual"` collects freehand
+boundaries; supplied named `polygons` also take precedence. That
+optional mode uses right-click or Esc to finish an outline. It is not
+required for the default guided path. Outlines cannot overlap or extend
+beyond analysed agar. If overlapping organisms cannot be separated
+visually, the photograph does not support an unambiguous tissue-specific
+measurement.
+
+Recovery outputs are created in a new home-directory folder outside the
+photo collection. Original photographs and project results are not
+overwritten by a recovery call. Inspect every target interior, the dish
+boundary and the central fringe before interpreting or reusing the
+annotation.
 
 To apply a correction in a complete experiment, use the **exact plate ID
 from the project metadata**, rather than its position in a menu:
@@ -1083,10 +1119,6 @@ recorded reason rather than treating it as zero.
 
 knitr::kable(result14$run_summary, row.names=FALSE)
 ```
-
-| images_processed | image_failures | target_colony_rows | finite_detected_colony_MI | missing_colony_MI | colonies_with_incomplete_spots | image_processing_status | measurement_qc_status | comparison_status |
-|---:|---:|---:|---:|---:|---:|:---|:---|:---|
-| 8 | 0 | 32 | 32 | 0 | 0 | complete | no_missing_measurements | not_finalized |
 
 | File | What to check |
 |----|----|

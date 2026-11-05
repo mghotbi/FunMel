@@ -31,7 +31,9 @@ recover_funmel_plate(
   spot_radius_mm = 0.4,
   n_boot = 200,
   flat_field = TRUE,
-  edge_exclude_mm = 0.1
+  edge_exclude_mm = 0.1,
+  mode = c("guided", "manual"),
+  seeds = NULL
 )
 }
 \arguments{
@@ -56,16 +58,29 @@ recover_funmel_plate(
 \item{edge_exclude_mm}{Margin excluded from colour measurements in mm.}
 
 \item{polygons}{Named list of x/y vertex matrices. NULL collects interactive outlines.}
+
+\item{mode}{guided (default) proposes boundaries from four target-centre
+clicks; manual requests freehand boundaries. Supplied polygons take precedence.}
+
+\item{seeds}{Optional four-row x/y matrix named TL, TR, BR, BL for guided
+recovery without clicks, in working-image pixels.}
 }
 \value{
 A \code{funmel_result} with \code{annotation} and \code{recovery_dir}. New measurement
 CSVs, annotation RDS, result RDS, QC PNG and session information are saved.
+Guided failures return a boundary proposal with recovery_status=awaiting_boundaries
+and saved diagnostics/QC, without measurements. Successful recovery returns
+recovery_status=measured_requires_review; no review flags are approved.
+Closing the graphics window during guided selection returns recovery_status=cancelled
+with an informative message and no new measurements.
 }
 \description{
 \code{retry_funmel_dish()} uses three outer-rim clicks to correct the dish circle
 and reruns automatic tissue segmentation. \code{recover_funmel_plate()} additionally
-collects reviewed polygons for TL, TR, BR, BL and, on confrontations, the whole
-central fungus. Finish each polygon with right-click/Esc. These are optional
+defaults to guided recovery: click one centre per peripheral target after the
+three dish-rim clicks. It proposes target boundaries and central fungal extent
+without freehand outlines. All proposed boundaries require visual review.
+mode='manual' retains freehand outlines finished with right-click/Esc. These are optional
 recovery tools for photographs whose automatic masks fail visual review.
 }
 \details{

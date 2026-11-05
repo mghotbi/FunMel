@@ -21,7 +21,11 @@ suggest_funmel_polygons(
   polygons = list(),
   exclusions = list(),
   max_dim = 1200,
-  boundary = c("outer_extent", "seed_component")
+  boundary = c("outer_extent", "seed_component"),
+  central_auto = TRUE,
+  central_seed = NULL,
+  central_radius_px = NULL,
+  central_fraction = 0.1
 )
 
 # S3 method for class 'funmel_boundary_proposal'
@@ -56,7 +60,7 @@ plot(x, ...)
 - radius_px:
 
   Search radius, one number or a named vector for all four targets. The
-  outer 20 percent estimates local agar lightness. Default is 0.20 times
+  outer 20 percent estimates local agar lightness. Default is 0.25 times
   the dish radius. Keep other colonies, rim and writing outside this
   region.
 
@@ -75,7 +79,8 @@ plot(x, ...)
 - polygons:
 
   Optional named manual overrides. A central_fungus outline is required
-  for confrontations; if absent it is collected interactively.
+  for confrontations; if absent it is proposed by central_auto or
+  optionally collected interactively when central_auto=FALSE.
 
 - exclusions:
 
@@ -94,6 +99,24 @@ plot(x, ...)
   only the connected candidate containing the seed. Both require visual
   review; use a manual outline for open rims, mixed organisms or
   uncertain boundaries.
+
+- central_auto:
+
+  Propose central fungal extent automatically (default). FALSE retains
+  the optional interactive manual central outline.
+
+- central_seed:
+
+  Optional central x/y seed; default is the dish centre.
+
+- central_radius_px:
+
+  Central search radius; default 0.75 times dish radius.
+
+- central_fraction:
+
+  Central seed-contrast fraction, default 0.1. This is a lightness
+  threshold proposal, not a validated biological hyphal edge.
 
 - x:
 
@@ -117,7 +140,9 @@ Local brightness is used only to propose geometry. The original
 photograph is retained for measurement; existing explicit calibration
 settings still apply when running recovery. Automatic mode chooses
 bright/dark from the seed and surrounding agar; it does not establish
-biological identity. The central fungus is outlined independently,
-including its visible fringe, and is not inferred from the bright plug.
-Mask contact with the search limit is rejected. A radius is a search
-window, never a forced circular boundary.
+biological identity. Central fungal extent is proposed independently
+from local lightness contrast; inspect the visible fringe because a
+plug-based seed can miss differently coloured peripheral tissue.
+Supplied manual boundaries take precedence. Mask contact with the search
+limit is rejected. A radius is a search window, never a forced circular
+boundary.

@@ -18,7 +18,11 @@ suggest_funmel_polygons(
   polygons = list(),
   exclusions = list(),
   max_dim = 1200,
-  boundary = c("outer_extent", "seed_component")
+  boundary = c("outer_extent", "seed_component"),
+  central_auto = TRUE,
+  central_seed = NULL,
+  central_radius_px = NULL,
+  central_fraction = 0.1
 )
 
 \method{plot}{funmel_boundary_proposal}(x, ...)
@@ -36,7 +40,7 @@ suggest_funmel_polygons(
 one click per target. Seeds are in the resized working image, not original pixels.}
 
 \item{radius_px}{Search radius, one number or a named vector for all four targets.
-The outer 20 percent estimates local agar lightness. Default is 0.20 times
+The outer 20 percent estimates local agar lightness. Default is 0.25 times
 the dish radius. Keep other colonies, rim and writing outside this region.}
 
 \item{polarity}{One of auto, bright, dark, or a named vector for all targets.}
@@ -46,7 +50,8 @@ the dish radius. Keep other colonies, rim and writing outside this region.}
 \item{fraction}{Fraction of seed contrast used as the threshold, between 0 and 1.}
 
 \item{polygons}{Optional named manual overrides. A central_fungus outline is
-required for confrontations; if absent it is collected interactively.}
+required for confrontations; if absent it is proposed by central_auto or
+optionally collected interactively when central_auto=FALSE.}
 
 \item{exclusions}{List of x/y polygons marking artifacts. They are excluded
 from seed/background estimation and detection. This does not reconstruct
@@ -58,6 +63,16 @@ hidden tissue or modify the photograph.}
 enclosing the target seed, including its interior. seed_component uses only
 the connected candidate containing the seed. Both require visual review;
 use a manual outline for open rims, mixed organisms or uncertain boundaries.}
+
+\item{central_auto}{Propose central fungal extent automatically (default).
+FALSE retains the optional interactive manual central outline.}
+
+\item{central_seed}{Optional central x/y seed; default is the dish centre.}
+
+\item{central_radius_px}{Central search radius; default 0.75 times dish radius.}
+
+\item{central_fraction}{Central seed-contrast fraction, default 0.1. This is
+a lightness threshold proposal, not a validated biological hyphal edge.}
 
 \item{x}{Boundary proposal to display.}
 
@@ -79,7 +94,8 @@ Local brightness is used only to propose geometry. The original photograph
 is retained for measurement; existing explicit calibration settings still
 apply when running recovery. Automatic mode chooses bright/dark from the
 seed and surrounding agar; it does not establish biological identity.
-The central fungus is outlined independently, including its visible fringe,
-and is not inferred from the bright plug. Mask contact with the search limit
+Central fungal extent is proposed independently from local lightness contrast;
+inspect the visible fringe because a plug-based seed can miss differently
+coloured peripheral tissue. Supplied manual boundaries take precedence. Mask contact with the search limit
 is rejected. A radius is a search window, never a forced circular boundary.
 }

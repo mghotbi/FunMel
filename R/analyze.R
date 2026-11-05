@@ -107,8 +107,13 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
                             max_clipped_fraction = max_clipped_fraction,
                             reference = reference, reference_lab = reference_lab)
   if(!is.null(annotation$polygons)) {
-    step("Applying reviewed tissue boundaries")
+    step(if(!is.null(annotation$guidance)) "Applying proposed tissue boundaries; inspect QC" else "Applying reviewed tissue boundaries")
     plate <- .fm_apply_polygons(plate,layout,annotation$polygons)
+    if(!is.null(annotation$guidance$diagnostics) && any(annotation$guidance$diagnostics$method %in%
+      c("seeded_lightness","central_lightness_proposal"))) {
+      plate$objects$boundary_source <- "guided_polygon"
+      plate$classes$source <- "guided boundary proposals"
+    }
   } else {
   step("Classifying target colonies, central core and hyphal growth")
   plate <- classify_pixels(plate, layout, classifier = classifier)
