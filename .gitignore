@@ -23,3 +23,5 @@ __MACOSX/
 !tests/testthat/fixtures/*.zip
 inst/doc/
 tc/
+/doc/
+/Meta/

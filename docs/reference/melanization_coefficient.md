@@ -20,7 +20,7 @@ melanization_coefficient(
   response = "MI_mean",
   by = NULL,
   exclude_ids = c("centre", "center"),
-  na_action = c("error", "omit"),
+  na_action = c("omit", "error"),
   set = "set_id",
   require_qc = FALSE,
   weighting = c("colonies", "plates")
@@ -68,10 +68,10 @@ melanization_coefficient(
 
 - na_action:
 
-  Either error (default) for undetected/nonfinite target colonies or
-  omit, which warns and reports excluded counts. A plate with no
-  eligible target measurements remains unavailable, not silently
-  dropped.
+  Either omit (default), which warns and reports excluded
+  undetected/nonfinite target colonies, or error to require complete
+  targets. A plate with no eligible target measurements remains
+  unavailable, not silently dropped.
 
 - set:
 
@@ -115,6 +115,8 @@ melanization_coefficient(d)$coefficients  # 60 / 40 = 1.5
 #> 1                      1.5       20                  1                1
 #>   qc_review_status  control_replication n_treatment_colonies n_control_colonies
 #> 1      unconfirmed single_control_plate                    4                  4
-#>   n_excluded_target_colonies status                         interpretation
-#> 1                          0     ok Higher treatment image-darkness index.
+#>   n_excluded_target_colonies weighting status
+#> 1                          0  colonies     ok
+#>                           interpretation
+#> 1 Higher treatment image-darkness index.
 ```

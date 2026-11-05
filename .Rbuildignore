@@ -24,3 +24,5 @@
 ^release_validation$
 ^README_additions\.md$
 ^tc$
+^doc$
+^Meta$

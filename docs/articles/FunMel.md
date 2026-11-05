@@ -59,7 +59,7 @@ photos <- system.file("extdata", "14-days", package="FunMel")
 project_dir <- tempfile("FunMel_real_example_")
 project <- prepare_experiment(input=photos, project_dir=project_dir)
 project$project_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp2H3s5W/FunMel_real_example_181884a3c0c6b"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmprG6SUR/FunMel_real_example_bee6d53c3ac"
 ```
 
 [`tempfile()`](https://rdrr.io/r/base/tempfile.html) supplies a new
@@ -88,7 +88,7 @@ result$failed
 #> [1] file  error
 #> <0 rows> (or 0-length row.names)
 project$qc_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp2H3s5W/FunMel_real_example_181884a3c0c6b/qc"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmprG6SUR/FunMel_real_example_bee6d53c3ac/qc"
 ```
 
 The expected status is `"complete"` with zero failed photographs. Open
@@ -179,7 +179,7 @@ interpretation and limitations.
 ``` r
 
 project$project_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp2H3s5W/FunMel_real_example_181884a3c0c6b"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmprG6SUR/FunMel_real_example_bee6d53c3ac"
 ```
 
 This folder contains colony, spot, profile and plate CSV tables; matched
@@ -214,8 +214,12 @@ treatment/control assignments within `set_id`; otherwise measurements
 are saved with `awaiting_design`. For exploration without treatment
 names, use the [set-only measurement
 plot](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#explore-measurements-by-set-without-treatment-names).
-Missing target MI instead produces `awaiting_measurement_review` and
-identifies the affected plate/colony. Use the [real-data troubleshooting
+A missing target MI is reported with a warning and excluded from
+comparisons by default; the remaining measurable colonies are used.
+Failed rows remain in `colonies.csv` and are listed in
+`excluded_colonies.csv`. A plate with no usable targets, or any missing
+target under `na_action="error"`, produces
+`awaiting_measurement_review`. Use the [real-data troubleshooting
 guide](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#when-coefficient-tables-are-empty)
 for diagnostics, control assignment and the correct reanalysis
 procedure. Every custom metadata column is retained.

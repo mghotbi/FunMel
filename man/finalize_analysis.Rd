@@ -4,7 +4,13 @@
 \alias{finalize_analysis}
 \title{Finalize saved measurements after reviewing metadata and image masks}
 \usage{
-finalize_analysis(result, metadata, ..., require_qc = FALSE)
+finalize_analysis(
+  result,
+  metadata,
+  ...,
+  require_qc = FALSE,
+  na_action = c("omit", "error")
+)
 }
 \arguments{
 \item{result}{Batch result returned by analyze_plates(), possibly read from RDS.}
@@ -17,11 +23,15 @@ columns are retained; review flags do not gate the standard workflow.}
 \item{require_qc}{Default FALSE warns and continues with unconfirmed QC.
 TRUE requires every qc_pass flag to be logical TRUE. Review flags are never
 automatically changed to TRUE; calculated results retain their QC status.}
+
+\item{na_action}{Omit missing/undetected targets with a warning (default), or
+error to withhold comparisons until all target MI values are available.}
 }
 \value{
 Updated batch result. A valid matching design adds coefficients and
 assessment. Missing design assignments give comparison_status awaiting_design;
-missing target MI gives awaiting_measurement_review. Measurements remain
+a plate without usable target MI (or missing MI in strict mode) gives
+awaiting_measurement_review. Measurements remain
 available with metadata_issues, measurement_issues, layout_assignments and
 run_summary diagnostics. No missing MI is imputed or silently excluded.
 }

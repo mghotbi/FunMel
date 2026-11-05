@@ -174,8 +174,11 @@ for controls. Matched coefficients need real treatment/control assignments
 within `set_id`; otherwise measurements are saved with `awaiting_design`.
 For exploration without treatment names, use the
 [set-only measurement plot](Real-14-day.html#explore-measurements-by-set-without-treatment-names).
-Missing target MI instead produces `awaiting_measurement_review` and identifies
-the affected plate/colony. Use the [real-data troubleshooting guide](Real-14-day.html#when-coefficient-tables-are-empty)
+A missing target MI is reported with a warning and excluded from comparisons
+by default; the remaining measurable colonies are used. Failed rows remain in
+`colonies.csv` and are listed in `excluded_colonies.csv`. A plate with no usable
+targets, or any missing target under `na_action="error"`, produces
+`awaiting_measurement_review`. Use the [real-data troubleshooting guide](Real-14-day.html#when-coefficient-tables-are-empty)
 for diagnostics, control assignment and the correct reanalysis procedure.
 Every custom metadata column is retained.
 

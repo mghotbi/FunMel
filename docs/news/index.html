@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,13 @@
       <small>Source: <a href="https://github.com/mghotbi/FunMel/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.22" id="funmel-0422">FunMel 0.4.22<a class="anchor" aria-label="anchor" href="#funmel-0422"></a></h2>
+<ul><li>Continue matched comparisons with remaining measurable target colonies by default, warning with affected plate/colony IDs and actual usable counts.</li>
+<li>Retain failed target rows and export excluded_colonies.csv; report actual treatment/control colony counts and exclusions in coefficient/figure tables.</li>
+<li>Keep strict complete-target analysis available with na_action=“error”. Plates with no usable targets and whole-image failures are not silently dropped.</li>
+<li>Explain incomplete colonies and possible selective-exclusion bias in tutorials.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.21" id="funmel-0421">FunMel 0.4.21<a class="anchor" aria-label="anchor" href="#funmel-0421"></a></h2>
 <ul><li>Calculate the descriptive melanization coefficient from equally weighted target-colony MI values within each treatment and its own matching controls. Balanced four-colony plates retain the same numerical result. An explicit <code>weighting="plates"</code> option retains equal-plate descriptive averaging.</li>

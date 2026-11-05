@@ -36,13 +36,13 @@ test_that("missing MI and incomplete spots remain distinct from image failures",
   expect_equal(z$run_summary$colonies_with_incomplete_spots,2)
   expect_identical(z$measurement_qc_status,"needs_review")
   expect_equal(z$colonies,r$colonies)
-  z<-suppressWarnings(finalize_analysis(r,f$meta))
+  z<-suppressWarnings(finalize_analysis(r,f$meta,na_action="error"))
   expect_identical(z$comparison_status,"awaiting_measurement_review")
   expect_identical(z$assessment$status,"awaiting_measurement_review")
   expect_match(z$coefficient_error,"T/BL")
   expect_equal(nrow(z$melanization_coefficient),0)
   expect_message(expect_null(plot_treatment_comparison(z)),"T/BL")
-  expect_message(expect_null(plot_treatment_comparison(r)),"T/BL")
+  expect_message(expect_null(plot_treatment_comparison(r,na_action="error")),"T/BL")
 })
 
 test_that("incomplete spots do not invalidate otherwise complete whole-colony MI", {

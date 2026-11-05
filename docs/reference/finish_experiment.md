@@ -10,7 +10,12 @@ explicitly for a prespecified, consistently applied spot-based analysis.
 ## Usage
 
 ``` r
-finish_experiment(project, ..., require_qc = FALSE)
+finish_experiment(
+  project,
+  ...,
+  require_qc = FALSE,
+  na_action = c("omit", "error")
+)
 ```
 
 ## Arguments
@@ -29,12 +34,17 @@ finish_experiment(project, ..., require_qc = FALSE)
   Default FALSE warns and continues if image QC is unconfirmed. Set TRUE
   to require qc_pass=TRUE before finalization and plotting.
 
+- na_action:
+
+  Omit missing/undetected targets with an explicit warning (default), or
+  error to require every target MI before comparison. A plate with no
+  usable targets is not silently dropped.
+
 ## Value
 
 Result saved as reviewed_analysis.rds. If the matching design is
 incomplete, saves measurement-only outputs and comparison_status.csv; no
 comparison figure is generated. Complete the matching labels and finish
 again without remeasuring, provided the recorded layouts remain correct.
-Missing target MI instead gives awaiting_measurement_review and saves
-diagnostic tables without computing coefficients or inventing
-measurements.
+A plate with no usable target MI, or missing MI under strict error mode,
+gives awaiting_measurement_review without inventing measurements.

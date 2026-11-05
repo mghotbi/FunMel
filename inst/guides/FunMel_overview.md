@@ -64,3 +64,9 @@ retained as missing values. An explicit per-image layout or the documented funga
 fallback controls segmentation. Matching labels are needed only for own-control
 coefficients and treatment comparisons. Incomplete designs save measurement-only
 results with an explicit status; they do not produce inferred controls or p-values.
+
+Missing/undetected target MI values are omitted from comparisons with an explicit
+warning by default. The original rows, affected IDs and actual counts are
+retained in outputs. A plate with no usable targets remains unavailable.
+Use `na_action="error"` for complete-target analysis. Inspect exclusions because
+selective detection failure can bias the retained-colony comparison.

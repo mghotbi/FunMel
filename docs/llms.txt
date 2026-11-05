@@ -145,6 +145,31 @@ four valid colonies per plate this equals averaging plate means first.
 Plates remain independent replicates for statistical inference. Missing
 targets require review.
 
+## When one target colony cannot be measured
+
+Finalization warns and continues with the remaining measurable target
+colonies:
+
+``` r
+
+reviewed <- finish_experiment(project)
+reviewed$excluded_colonies
+reviewed$coefficient_plate_means
+```
+
+If three of four targets have usable MI, their three values contribute
+to the matched coefficient. The failed row stays in `colonies.csv`; it
+is listed in `excluded_colonies.csv` and `measurement_issues.csv`, and
+actual used/excluded counts are reported. No missing MI is replaced with
+zero or copied from another colony. A plate with no usable targets
+remains unavailable. Whole-image failures and missing control
+assignments must still be resolved.
+
+Inspect the named QC images: failures associated with colony colour or
+size can bias the remaining-colony comparison. For complete-target
+analysis use `finish_experiment(project, na_action="error")`. Details
+are in the real-data vignette’s **Incomplete target colonies** section.
+
 # Package index
 
 ## All functions

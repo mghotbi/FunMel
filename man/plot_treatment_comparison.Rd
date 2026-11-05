@@ -15,7 +15,8 @@ plot_treatment_comparison(
   height = NULL,
   palette = NULL,
   require_qc = FALSE,
-  caption = c("none", "brief", "full")
+  caption = c("none", "brief", "full"),
+  na_action = NULL
 )
 }
 \arguments{
@@ -46,6 +47,9 @@ every included plate to have qc_pass=TRUE.}
 \item{caption}{Text beneath the figure: none (default), brief, or full. The
 full explanation remains in the FunMel_caption attribute and is exported
 separately as _caption.txt. QC warnings and statistical safeguards remain.}
+
+\item{na_action}{NULL inherits the finalized result policy, otherwise omit
+(default for raw tables) or error. Excluded targets warn and are counted.}
 }
 \value{
 A ggplot object, invisibly when exported. Colours and typography can
@@ -66,5 +70,6 @@ Controls shown on multiple rows within a set are shared, not new replicates.
 A project or finalized result awaiting matching assignments returns
 invisible NULL with an informative message; no comparison file is created.
 Saved results awaiting target-measurement review also return invisible NULL
-with the affected plate/colony IDs. Complete target measurements are required.
+with affected plate/colony IDs. Individual failed targets may instead be
+omitted with warnings; a plate with no usable targets remains unavailable.
 }

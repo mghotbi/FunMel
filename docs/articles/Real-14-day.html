@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -807,9 +807,11 @@ statistical tests. With unequal measured colony counts, the default
 follows the mean of all target colonies;
 <code>melanization_coefficient(..., weighting="plates")</code> is an
 explicit alternative that gives each plate equal descriptive weight.
-Missing target MI values stop direct coefficient calculation by default;
-do not silently drop a failed colony to obtain a ratio. Document any
-deliberate exclusion and report the resulting colony counts.</p>
+Missing or undetected target MI values are excluded with a warning by
+default; original rows and exclusion diagnostics are retained. Actual
+colony counts are reported. Use <code>na_action="error"</code> to
+require every target measurement. A plate with no usable targets remains
+unavailable.</p>
 <p>For this teaching calibration, A60_2 is approximately
 <strong>1.628</strong> and B20_2 approximately <strong>1.302</strong>.
 Verify the saved arithmetic without pooling controls:</p>
@@ -1653,6 +1655,41 @@ rather than treating it as zero.</p>
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">result14</span><span class="op">$</span><span class="va">run_summary</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
+<col width="8%">
+<col width="7%">
+<col width="9%">
+<col width="13%">
+<col width="9%">
+<col width="16%">
+<col width="12%">
+<col width="12%">
+<col width="9%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">images_processed</th>
+<th align="right">image_failures</th>
+<th align="right">target_colony_rows</th>
+<th align="right">finite_detected_colony_MI</th>
+<th align="right">missing_colony_MI</th>
+<th align="right">colonies_with_incomplete_spots</th>
+<th align="left">image_processing_status</th>
+<th align="left">measurement_qc_status</th>
+<th align="left">comparison_status</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td align="right">8</td>
+<td align="right">0</td>
+<td align="right">32</td>
+<td align="right">32</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">complete</td>
+<td align="left">no_missing_measurements</td>
+<td align="left">not_finalized</td>
+</tr></tbody>
+</table>
+<table class="table">
+<colgroup>
 <col width="50%">
 <col width="50%">
 </colgroup>
@@ -1677,11 +1714,15 @@ steps</td>
 spots</td>
 </tr>
 <tr class="even">
+<td><code>excluded_colonies.csv</code></td>
+<td>Unusable target MI rows excluded under the omit policy</td>
+</tr>
+<tr class="odd">
 <td><code>layout_assignments.csv</code></td>
 <td>The layout actually used, and whether it came from metadata or a
 default</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>run_summary.csv</code></td>
 <td>Image failures, finite target MI counts, incomplete spots and
 comparison status</td>
@@ -1692,6 +1733,44 @@ comparison status</td>
 those checks; it does not establish biological validation. Diagnostic
 reports are separate from metadata: they do not overwrite custom
 annotations or approve any plate.</p>
+<div class="section level3">
+<h3 id="incomplete-target-colonies">Incomplete target colonies<a class="anchor" aria-label="anchor" href="#incomplete-target-colonies"></a>
+</h3>
+<p>A single target failing detection or having no usable whole-colony MI
+does not have to stop the entire analysis. By default, finalization
+warns, names the plate/colony and uses the remaining finite, detected
+target MI values. For example, if three of four target colonies on a
+plate are measurable, the plate mean uses those three. The set-specific
+treatment/control coefficient uses all remaining measurable
+target-colony MI values, each with equal weight. It does not treat an
+undetected colony as zero, infer its colour from neighbours, or count
+the central fungus as a replacement target.</p>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reviewed14</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project14</span><span class="op">)</span> <span class="co"># Default: warn and omit unusable targets.</span></span>
+<span><span class="va">reviewed14</span><span class="op">$</span><span class="va">excluded_colonies</span>              <span class="co"># Affected plate and colony IDs.</span></span>
+<span><span class="va">reviewed14</span><span class="op">$</span><span class="va">coefficient_plate_means</span>         <span class="co"># Actual used/excluded counts per plate.</span></span>
+<span><span class="va">reviewed14</span><span class="op">$</span><span class="va">melanization_coefficient</span>        <span class="co"># Actual counts within each own-control set.</span></span>
+<span></span>
+<span><span class="co"># Optional stricter policy: withhold comparisons until every target MI is usable.</span></span>
+<span><span class="va">strict14</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project14</span>, na_action<span class="op">=</span><span class="st">"error"</span><span class="op">)</span></span></code></pre></div>
+<p>Every expected target row stays in <code>colonies.csv</code>.
+<code>excluded_colonies.csv</code> records unusable target measurements
+excluded under the default policy; <code>measurement_issues.csv</code>
+also retains missing-MI and incomplete-spot diagnostics. Coefficient and
+exported figure statistics include actual target-colony counts and the
+number excluded. The comparison figure retains independent plate points.
+A plate with no usable targets is not silently removed; its comparison
+remains unavailable. Whole-image failures still require resolution, and
+controls are never borrowed from another matching set.</p>
+<p>Inspect the QC for every exclusion. If detection fails preferentially
+for lighter, darker, smaller or damaged colonies, the retained colonies
+may not represent the full plate. Recover the boundary or remeasure when
+possible, and report exclusions when interpreting or publishing results.
+Statistical tests continue to account for independent plates; fewer
+targets do not create extra replicates. A failed optional spot summary
+does not exclude an otherwise usable whole-colony
+<code>MI_mean</code>.</p>
+</div>
 <div class="section level3">
 <h3 id="understand-the-status-before-continuing">Understand the status before continuing<a class="anchor" aria-label="anchor" href="#understand-the-status-before-continuing"></a>
 </h3>
@@ -1708,10 +1787,10 @@ simple codes; real controls must be identified within each set. Other
 annotations may remain blank.</li>
 <li>
 <code>comparison_status="awaiting_measurement_review"</code> means a
-target colony is undetected or has nonfinite MI. Check the named QC
-image and correct its input or layout before reanalysis. The package
-saves measurements and withholds comparisons rather than inventing or
-silently omitting the missing value.</li>
+plate has no usable target MI, or strict <code>na_action="error"</code>
+encounters a missing target. Under the default omit policy, individual
+missing targets warn and the remaining valid targets are used. Check the
+named QC images; missing values are never invented.</li>
 <li>Incomplete spots are reported separately. A colony with one of five
 requested spots can still have a valid whole-colony MI, but its
 requested spot summary is unavailable. Inspect masks and scale; use
@@ -1736,7 +1815,7 @@ control.</p>
 <p>For a design with <strong>one experimental treatment per
 set</strong>, users who want to use set names as treatment codes can
 select their actual controls explicitly:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_experiment.html">load_experiment</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Open the existing project.rds.</span></span>
 <span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">project</span><span class="op">$</span><span class="va">metadata_file</span>, check.names<span class="op">=</span><span class="cn">FALSE</span>,</span>
 <span>                     stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
@@ -1771,7 +1850,7 @@ it reuses measurements.</p>
 correcting those controls to <code>none</code> changes segmentation.
 Save the corrected metadata and <strong>rerun image analysis</strong>,
 inspect the new QC images, then finalize:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Replace 90 with the verified dish diameter; keep the intended sampling settings.</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_experiment.html">run_experiment</a></span><span class="op">(</span><span class="va">project</span>, dish_diameter_mm<span class="op">=</span><span class="fl">90</span>, max_dim<span class="op">=</span><span class="fl">1200</span>,</span>
 <span>                         n_spots<span class="op">=</span><span class="fl">5</span>, spot_radius_mm<span class="op">=</span><span class="fl">0.4</span><span class="op">)</span></span>
@@ -1779,7 +1858,7 @@ inspect the new QC images, then finalize:</p>
 <span><span class="va">result</span><span class="op">$</span><span class="va">run_summary</span></span>
 <span><span class="va">result</span><span class="op">$</span><span class="va">measurement_issues</span></span>
 <span><span class="va">project</span><span class="op">$</span><span class="va">qc_dir</span></span>
-<span><span class="co"># Resolve genuine failed/missing target measurements before interpreting comparisons.</span></span>
+<span><span class="co"># Resolve failed images and inspect excluded target colonies before interpreting comparisons.</span></span>
 <span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
 <span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_treatment_comparison.html">plot_treatment_comparison</a></span><span class="op">(</span><span class="va">reviewed</span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></code></pre></div>

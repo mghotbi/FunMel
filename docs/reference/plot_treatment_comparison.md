@@ -22,7 +22,8 @@ plot_treatment_comparison(
   height = NULL,
   palette = NULL,
   require_qc = FALSE,
-  caption = c("none", "brief", "full")
+  caption = c("none", "brief", "full"),
+  na_action = NULL
 )
 ```
 
@@ -77,6 +78,11 @@ plot_treatment_comparison(
   separately as \_caption.txt. QC warnings and statistical safeguards
   remain.
 
+- na_action:
+
+  NULL inherits the finalized result policy, otherwise omit (default for
+  raw tables) or error. Excluded targets warn and are counted.
+
 ## Value
 
 A ggplot object, invisibly when exported. Colours and typography can be
@@ -91,5 +97,6 @@ companion table.
 A project or finalized result awaiting matching assignments returns
 invisible NULL with an informative message; no comparison file is
 created. Saved results awaiting target-measurement review also return
-invisible NULL with the affected plate/colony IDs. Complete target
-measurements are required.
+invisible NULL with affected plate/colony IDs. Individual failed targets
+may instead be omitted with warnings; a plate with no usable targets
+remains unavailable.

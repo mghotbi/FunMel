@@ -24,7 +24,7 @@ test_that("undefined ratios and missing targets are explicit", {
   expect_warning(r<-melanization_coefficient(subset(mc_data(),treatment=="fungus")),"unavailable")
   expect_equal(r$coefficients$status,"missing_control")
   d<-mc_data();d$detected[1]<-FALSE
-  expect_error(melanization_coefficient(d),"Undetected")
+  expect_error(melanization_coefficient(d,na_action="error"),"Undetected")
   expect_warning(r<-melanization_coefficient(d,na_action="omit"),"excluded")
   expect_equal(r$coefficients$n_excluded_target_colonies,1)
   expect_equal(r$coefficients$MI_control_mean,mean(c(50,40,40)))

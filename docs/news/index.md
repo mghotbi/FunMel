@@ -1,5 +1,19 @@
 # Changelog
 
+## FunMel 0.4.22
+
+- Continue matched comparisons with remaining measurable target colonies
+  by default, warning with affected plate/colony IDs and actual usable
+  counts.
+- Retain failed target rows and export excluded_colonies.csv; report
+  actual treatment/control colony counts and exclusions in
+  coefficient/figure tables.
+- Keep strict complete-target analysis available with na_action=“error”.
+  Plates with no usable targets and whole-image failures are not
+  silently dropped.
+- Explain incomplete colonies and possible selective-exclusion bias in
+  tutorials.
+
 ## FunMel 0.4.21
 
 - Calculate the descriptive melanization coefficient from equally

@@ -4,7 +4,12 @@
 \alias{finish_experiment}
 \title{Finalize a prepared experiment after plate review}
 \usage{
-finish_experiment(project, ..., require_qc = FALSE)
+finish_experiment(
+  project,
+  ...,
+  require_qc = FALSE,
+  na_action = c("omit", "error")
+)
 }
 \arguments{
 \item{project}{A funmel_project, its current folder, project.rds, or a saved
@@ -14,14 +19,18 @@ analysis beside project.rds. Use load_experiment() after moving a project.}
 
 \item{require_qc}{Default FALSE warns and continues if image QC is unconfirmed.
 Set TRUE to require qc_pass=TRUE before finalization and plotting.}
+
+\item{na_action}{Omit missing/undetected targets with an explicit warning
+(default), or error to require every target MI before comparison. A plate
+with no usable targets is not silently dropped.}
 }
 \value{
 Result saved as reviewed_analysis.rds. If the matching design is
 incomplete, saves measurement-only outputs and comparison_status.csv;
 no comparison figure is generated. Complete the matching labels and finish
 again without remeasuring, provided the recorded layouts remain correct.
-Missing target MI instead gives awaiting_measurement_review and saves
-diagnostic tables without computing coefficients or inventing measurements.
+A plate with no usable target MI, or missing MI under strict error mode,
+gives awaiting_measurement_review without inventing measurements.
 }
 \description{
 Loads saved measurements and metadata without a manual approval gate, and

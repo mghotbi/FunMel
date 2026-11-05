@@ -54,7 +54,7 @@ measurement_issue_table <- function(result) {
       action=action,stringsAsFactors=FALSE))
   }
   add(which(!valid),"MI_mean","missing_target_measurement",
-      "Inspect this colony in QC; correct its image/layout and rerun. No missing MI is imputed or silently omitted.")
+      "Inspect this colony in QC; correct its image/layout and rerun. No missing MI is imputed. Omit mode excludes this target from comparisons with a warning; strict mode withholds comparisons.")
   if(all(c("n_spots_requested","n_spots_measured") %in% names(co))) {
     incomplete <- valid & is.finite(co$n_spots_requested) & co$n_spots_requested>0 &
       (!is.finite(co$n_spots_measured) | co$n_spots_measured<co$n_spots_requested)
@@ -65,10 +65,23 @@ measurement_issue_table <- function(result) {
   out
 }
 
-missing_target_measurement_issue <- function(result) {
+missing_target_measurement_issue <- function(result,na_action=c("omit","error")) {
+  na_action <- match.arg(na_action)
   x <- measurement_issue_table(result)
   x <- x[x$issue=="missing_target_measurement",,drop=FALSE]
   if(!nrow(x)) return(NULL)
+  if(na_action=="omit") {
+    co <- result$colonies
+    target <- !as.character(co$colony_id) %in% c("centre","center")
+    if("is_target" %in% names(co)) target <- target & !is.na(co$is_target) & co$is_target
+    co <- co[target,,drop=FALSE]
+    valid <- is.finite(co$MI_mean)
+    if("detected" %in% names(co)) valid <- valid & !is.na(co$detected) & co$detected
+    empty <- names(which(tapply(valid,as.character(co$plate_id),sum)==0L))
+    if(!length(empty)) return(NULL)
+    return(paste0("No usable target MI remains on plate(s): ",paste(empty,collapse=", "),
+      ". Inspect QC and recover or remeasure these plates. Plates are not silently dropped or assigned zero MI."))
+  }
   examples <- paste(utils::head(paste0(x$plate_id,"/",x$colony_id),5L),collapse=", ")
   paste0(nrow(x)," target colony measurement(s) are missing or undetected: ",examples,
     ". Inspect measurement_issues.csv and QC; correct the image/layout and rerun before matched comparisons. No target values were imputed or silently excluded.")
@@ -77,6 +90,10 @@ missing_target_measurement_issue <- function(result) {
 add_workflow_diagnostics <- function(result,metadata) {
   result$metadata_issues <- metadata_design_issues(metadata)
   result$measurement_issues <- measurement_issue_table(result)
+  missing <- result$measurement_issues
+  result$excluded_colonies <- missing[missing$issue=="missing_target_measurement",,drop=FALSE]
+  if(!is.null(result$missing_colony_action) && result$missing_colony_action=="error")
+    result$excluded_colonies <- result$excluded_colonies[FALSE,,drop=FALSE]
   result$measurement_qc_status <- if(nrow(result$measurement_issues)) "needs_review" else "no_missing_measurements"
   if(is.data.frame(result$analysis_layout) && nrow(result$analysis_layout)) {
     x <- result$analysis_layout[result$analysis_layout$plate_id %in% metadata$plate_id,,drop=FALSE]
@@ -121,6 +138,7 @@ report_workflow_diagnostics <- function(result) {
     s$colonies_with_incomplete_spots," detected colonies have incomplete spot sampling. ",
     "Image-processing completion does not imply complete colony measurements or biological validation.")
   if(nrow(result$measurement_issues)) message("Inspect measurement_issues.csv and the named colony QC before interpreting results.")
+  if(s$missing_colony_MI>0L) message("Missing targets remain recorded. By default finalization warns and compares remaining finite detected target MIs; a plate with none remains unavailable. Use finish_experiment(..., na_action='error') to require complete targets.")
   if(nrow(result$metadata_issues)) message("Matching-design issues affect ",
     length(unique(result$metadata_issues$plate_id))," plate(s); see metadata_issues.csv for fields, plate IDs and next steps. ",
     "Colony MI values remain in colonies.csv; coefficient tables are unavailable until the matching design is valid.")

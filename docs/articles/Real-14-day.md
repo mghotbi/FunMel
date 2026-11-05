@@ -361,10 +361,11 @@ matching context, never pooled across unrelated sets. Independent plates
 remain the replicates for statistical tests. With unequal measured
 colony counts, the default follows the mean of all target colonies;
 `melanization_coefficient(..., weighting="plates")` is an explicit
-alternative that gives each plate equal descriptive weight. Missing
-target MI values stop direct coefficient calculation by default; do not
-silently drop a failed colony to obtain a ratio. Document any deliberate
-exclusion and report the resulting colony counts.
+alternative that gives each plate equal descriptive weight. Missing or
+undetected target MI values are excluded with a warning by default;
+original rows and exclusion diagnostics are retained. Actual colony
+counts are reported. Use `na_action="error"` to require every target
+measurement. A plate with no usable targets remains unavailable.
 
 For this teaching calibration, A60_2 is approximately **1.628** and
 B20_2 approximately **1.302**. Verify the saved arithmetic without
@@ -1083,11 +1084,16 @@ recorded reason rather than treating it as zero.
 knitr::kable(result14$run_summary, row.names=FALSE)
 ```
 
+| images_processed | image_failures | target_colony_rows | finite_detected_colony_MI | missing_colony_MI | colonies_with_incomplete_spots | image_processing_status | measurement_qc_status | comparison_status |
+|---:|---:|---:|---:|---:|---:|:---|:---|:---|
+| 8 | 0 | 32 | 32 | 0 | 0 | complete | no_missing_measurements | not_finalized |
+
 | File | What to check |
 |----|----|
 | `comparison_status.csv` | Why comparisons are withheld or whether finalization is complete |
 | `metadata_issues.csv` | Actual plate IDs, missing/inconsistent design fields and next steps |
 | `measurement_issues.csv` | Plate and colony IDs with missing MI or incomplete requested spots |
+| `excluded_colonies.csv` | Unusable target MI rows excluded under the omit policy |
 | `layout_assignments.csv` | The layout actually used, and whether it came from metadata or a default |
 | `run_summary.csv` | Image failures, finite target MI counts, incomplete spots and comparison status |
 
@@ -1095,6 +1101,47 @@ An empty issue table means that no issue of that type was found by those
 checks; it does not establish biological validation. Diagnostic reports
 are separate from metadata: they do not overwrite custom annotations or
 approve any plate.
+
+### Incomplete target colonies
+
+A single target failing detection or having no usable whole-colony MI
+does not have to stop the entire analysis. By default, finalization
+warns, names the plate/colony and uses the remaining finite, detected
+target MI values. For example, if three of four target colonies on a
+plate are measurable, the plate mean uses those three. The set-specific
+treatment/control coefficient uses all remaining measurable
+target-colony MI values, each with equal weight. It does not treat an
+undetected colony as zero, infer its colour from neighbours, or count
+the central fungus as a replacement target.
+
+``` r
+
+reviewed14 <- finish_experiment(project14) # Default: warn and omit unusable targets.
+reviewed14$excluded_colonies              # Affected plate and colony IDs.
+reviewed14$coefficient_plate_means         # Actual used/excluded counts per plate.
+reviewed14$melanization_coefficient        # Actual counts within each own-control set.
+
+# Optional stricter policy: withhold comparisons until every target MI is usable.
+strict14 <- finish_experiment(project14, na_action="error")
+```
+
+Every expected target row stays in `colonies.csv`.
+`excluded_colonies.csv` records unusable target measurements excluded
+under the default policy; `measurement_issues.csv` also retains
+missing-MI and incomplete-spot diagnostics. Coefficient and exported
+figure statistics include actual target-colony counts and the number
+excluded. The comparison figure retains independent plate points. A
+plate with no usable targets is not silently removed; its comparison
+remains unavailable. Whole-image failures still require resolution, and
+controls are never borrowed from another matching set.
+
+Inspect the QC for every exclusion. If detection fails preferentially
+for lighter, darker, smaller or damaged colonies, the retained colonies
+may not represent the full plate. Recover the boundary or remeasure when
+possible, and report exclusions when interpreting or publishing results.
+Statistical tests continue to account for independent plates; fewer
+targets do not create extra replicates. A failed optional spot summary
+does not exclude an otherwise usable whole-colony `MI_mean`.
 
 ### Understand the status before continuing
 
@@ -1106,11 +1153,11 @@ approve any plate.
   assignments are missing or inconsistent. Treatment names may be simple
   codes; real controls must be identified within each set. Other
   annotations may remain blank.
-- `comparison_status="awaiting_measurement_review"` means a target
-  colony is undetected or has nonfinite MI. Check the named QC image and
-  correct its input or layout before reanalysis. The package saves
-  measurements and withholds comparisons rather than inventing or
-  silently omitting the missing value.
+- `comparison_status="awaiting_measurement_review"` means a plate has no
+  usable target MI, or strict `na_action="error"` encounters a missing
+  target. Under the default omit policy, individual missing targets warn
+  and the remaining valid targets are used. Check the named QC images;
+  missing values are never invented.
 - Incomplete spots are reported separately. A colony with one of five
   requested spots can still have a valid whole-colony MI, but its
   requested spot summary is unavailable. Inspect masks and scale; use
@@ -1182,7 +1229,7 @@ result$failed
 result$run_summary
 result$measurement_issues
 project$qc_dir
-# Resolve genuine failed/missing target measurements before interpreting comparisons.
+# Resolve failed images and inspect excluded target colonies before interpreting comparisons.
 reviewed <- finish_experiment(project)
 comparison <- plot_treatment_comparison(reviewed)
 if (!is.null(comparison)) print(comparison)

@@ -22,8 +22,8 @@
 #' @param set Matching-set column, required. Controls are never pooled across sets.
 #' @param exclude_ids Colony identifiers excluded before calculation. Default
 #'   excludes centre and center, used for the central interacting fungus.
-#' @param na_action Either error (default) for undetected/nonfinite target
-#'   colonies or omit, which warns and reports excluded counts. A plate with
+#' @param na_action Either omit (default), which warns and reports excluded
+#'   undetected/nonfinite target colonies, or error to require complete targets. A plate with
 #'   no eligible target measurements remains unavailable, not silently dropped.
 #' @param require_qc Require every included plate to have logical qc_pass=TRUE.
 #'   Default FALSE warns for unconfirmed recorded QC and continues without
@@ -49,7 +49,7 @@ melanization_coefficient <- function(colonies, control="control",
                                     group="treatment", plate="plate_id",
                                     response="MI_mean", by=NULL,
                                     exclude_ids=c("centre", "center"),
-                                    na_action=c("error", "omit"), set="set_id", require_qc=FALSE,
+                                    na_action=c("omit", "error"), set="set_id", require_qc=FALSE,
                                     weighting=c("colonies", "plates")) {
   na_action <- match.arg(na_action)
   weighting <- match.arg(weighting)
@@ -90,7 +90,15 @@ melanization_coefficient <- function(colonies, control="control",
   if ("detected" %in% names(df)) valid <- valid & !is.na(df$detected) & df$detected==TRUE
   if (any(!valid)) {
     if (na_action=="error") stop("Undetected or nonfinite target MI values. Inspect QC; use na_action='omit' only with a documented exclusion decision.")
-    warning(sum(!valid)," target colony rows excluded; inspect plate_means for incomplete plates.")
+    affected <- unique(as.character(df[[plate]][!valid]))
+    counts <- vapply(affected,function(id) {
+      ix <- as.character(df[[plate]])==id
+      paste0(id,": ",sum(valid[ix]),"/",sum(ix)," usable targets")
+    },character(1))
+    warning(sum(!valid)," target colony rows excluded from comparisons: ",
+      paste(paste0(df[[plate]][!valid],"/",df$colony_id[!valid]),collapse=", "),
+      ". ",paste(counts,collapse="; "),
+      ". Original rows are retained; no MI was imputed. Inspect QC: selective detection failure can bias the comparison.",call.=FALSE)
   }
   rows <- lapply(groups,function(idx) {
     z <- df[idx[valid[idx]],response]
@@ -143,7 +151,7 @@ melanization_coefficient <- function(colonies, control="control",
   if(!length(contrasts)) stop("No non-control treatment available for comparison.")
   out <- do.call(rbind,contrasts); rownames(out) <- NULL
   if(any(out$status!="ok")) warning("Some coefficients are unavailable; inspect the status column.")
-  list(qc_review=qc_review,coefficients=out,per_plate_coefficients=if(length(per_plate)) do.call(rbind,per_plate) else data.frame(),plate_means=pm,target_data=df[valid,,drop=FALSE],
+  list(excluded_colonies=df[!valid,,drop=FALSE],qc_review=qc_review,coefficients=out,per_plate_coefficients=if(length(per_plate)) do.call(rbind,per_plate) else data.frame(),plate_means=pm,target_data=df[valid,,drop=FALSE],
        settings=list(control=control,group=group,plate=plate,response=response,by=by,set=set,
                      exclude_ids=exclude_ids,na_action=na_action,require_qc=require_qc,
                      weighting=weighting,

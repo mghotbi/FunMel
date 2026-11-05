@@ -9,7 +9,13 @@ biological validation.
 ## Usage
 
 ``` r
-finalize_analysis(result, metadata, ..., require_qc = FALSE)
+finalize_analysis(
+  result,
+  metadata,
+  ...,
+  require_qc = FALSE,
+  na_action = c("omit", "error")
+)
 ```
 
 ## Arguments
@@ -34,11 +40,17 @@ finalize_analysis(result, metadata, ..., require_qc = FALSE)
   automatically changed to TRUE; calculated results retain their QC
   status.
 
+- na_action:
+
+  Omit missing/undetected targets with a warning (default), or error to
+  withhold comparisons until all target MI values are available.
+
 ## Value
 
 Updated batch result. A valid matching design adds coefficients and
 assessment. Missing design assignments give comparison_status
-awaiting_design; missing target MI gives awaiting_measurement_review.
-Measurements remain available with metadata_issues, measurement_issues,
-layout_assignments and run_summary diagnostics. No missing MI is imputed
-or silently excluded.
+awaiting_design; a plate without usable target MI (or missing MI in
+strict mode) gives awaiting_measurement_review. Measurements remain
+available with metadata_issues, measurement_issues, layout_assignments
+and run_summary diagnostics. No missing MI is imputed or silently
+excluded.

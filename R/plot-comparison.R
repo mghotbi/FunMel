@@ -27,7 +27,10 @@
 #' @details A project or finalized result awaiting matching assignments returns
 #'   invisible NULL with an informative message; no comparison file is created.
 #'   Saved results awaiting target-measurement review also return invisible NULL
-#'   with the affected plate/colony IDs. Complete target measurements are required.
+#'   with affected plate/colony IDs. Individual failed targets may instead be
+#'   omitted with warnings; a plate with no usable targets remains unavailable.
+#' @param na_action NULL inherits the finalized result policy, otherwise omit
+#'   (default for raw tables) or error. Excluded targets warn and are counted.
 #' @return A ggplot object, invisibly when exported. Colours and typography can
 #'   be edited using standard ggplot2 methods. Match the target journal's size
 #'   and caption requirements before submission. The attribute
@@ -38,8 +41,9 @@
 plot_treatment_comparison <- function(colonies, control="control", by=NULL,
                                      preview=FALSE, labels=NULL, file=NULL,
                                      width=7.2, height=NULL, palette=NULL,require_qc=FALSE,
-                                     caption=c("none","brief","full")) {
+                                     caption=c("none","brief","full"),na_action=NULL) {
   caption <- match.arg(caption)
+  requested_na_action <- na_action
   if(inherits(colonies,"funmel_project") || is.character(colonies)) {
     input <- colonies
     colonies <- read_experiment(input)
@@ -59,6 +63,9 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
       }
     }
   }
+  if(is.null(requested_na_action)) requested_na_action <-
+    if(is.list(colonies) && !is.null(colonies$missing_colony_action)) colonies$missing_colony_action else "omit"
+  na_action <- match.arg(requested_na_action,c("omit","error"))
   if(is.list(colonies) && !is.data.frame(colonies) &&
      !is.null(colonies$comparison_status) &&
      colonies$comparison_status %in% c("awaiting_design","awaiting_measurement_review")) {
@@ -71,7 +78,7 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
     return(invisible(NULL))
   }
   if(is.list(colonies) && !is.data.frame(colonies)) {
-    issue <- missing_target_measurement_issue(colonies)
+    issue <- missing_target_measurement_issue(colonies,na_action)
     if(!is.null(issue)) {
       if(isTRUE(require_qc)) check_qc_review(if(!is.null(colonies$metadata)) colonies$metadata else colonies$colonies,require_qc=TRUE)
       message("Comparison figure not generated: ",issue)
@@ -84,7 +91,7 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
     colonies<-colonies$colonies
   }
   if(!is.data.frame(colonies)) stop("Supply a colony table or batch result.")
-  mc<-melanization_coefficient(colonies,control=control,by=by,require_qc=require_qc)
+  mc<-melanization_coefficient(colonies,control=control,by=by,require_qc=require_qc,na_action=na_action)
   cf<-mc$coefficients
   if(any(cf$status!="ok")) stop("Resolve unavailable coefficients before plotting.")
   cf<-cf[order(as.character(cf$treatment),as.character(cf$set_id)),,drop=FALSE]
@@ -158,6 +165,8 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
     "\nMC SD describes treatment spread conditional on its own set's control mean; shared-control uncertainty is not included.",
     if(any(cf$n_control_plates<2)) "\nSingle-control SD is unavailable. No p-values or significance tests are shown." else
       "\nDescriptive summaries only; no p-values or significance tests are shown.")
+  if(any(cf$n_excluded_target_colonies>0L)) full_caption<-paste0(full_caption,
+    "\nMissing/undetected targets were excluded with warnings; inspect excluded_colonies.csv and counts in the statistics table. Selective detection failure can bias results.")
   full_caption<-paste(vapply(strsplit(full_caption,"\n",fixed=TRUE)[[1]],function(z) paste(strwrap(z,width=112),collapse="\n"),character(1)),collapse="\n")
   figure_caption <- switch(caption,none=NULL,brief="Points: independent plates; bars and +/- values: one between-plate SD. Descriptive comparison.",full=full_caption)
   countlabels<-paste0(rowlabel,"\n",cf$n_treatment_plates," treatment / ",cf$n_control_plates," control plates")

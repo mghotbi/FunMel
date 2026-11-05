@@ -19,7 +19,7 @@ indicates a lighter treatment mean. No significance test or CI is implied."><met
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,7 +67,7 @@ indicates a lighter treatment mean. No significance test or CI is implied.</p>
 <span>  response <span class="op">=</span> <span class="st">"MI_mean"</span>,</span>
 <span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exclude_ids <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"centre"</span>, <span class="st">"center"</span><span class="op">)</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"omit"</span><span class="op">)</span>,</span>
+<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
 <span>  set <span class="op">=</span> <span class="st">"set_id"</span>,</span>
 <span>  require_qc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  weighting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"colonies"</span>, <span class="st">"plates"</span><span class="op">)</span></span>
@@ -113,8 +113,8 @@ excludes centre and center, used for the central interacting fungus.</p></dd>
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
-<dd><p>Either error (default) for undetected/nonfinite target
-colonies or omit, which warns and reports excluded counts. A plate with
+<dd><p>Either omit (default), which warns and reports excluded
+undetected/nonfinite target colonies, or error to require complete targets. A plate with
 no eligible target measurements remains unavailable, not silently dropped.</p></dd>
 
 
@@ -158,8 +158,10 @@ One plate per group permits a descriptive ratio, not biological inference.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                      1.5       20                  1                1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   qc_review_status  control_replication n_treatment_colonies n_control_colonies</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      unconfirmed single_control_plate                    4                  4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n_excluded_target_colonies status                         interpretation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                          0     ok Higher treatment image-darkness index.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n_excluded_target_colonies weighting status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                          0  colonies     ok</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           interpretation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Higher treatment image-darkness index.</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -13,13 +13,14 @@ assess_experiment(
   p_adjust = "holm",
   pool_contexts = FALSE,
   comparison_scope = c("matched_effects", "common_sets"),
-  require_qc = FALSE
+  require_qc = FALSE,
+  na_action = c("omit", "error")
 )
 }
 \arguments{
 \item{colonies}{Target colony table or batch result, with plate_id, set_id,
 treatment, colony_id and MI_mean. Raw pipeline results may include the
-central partner, which is excluded. Missing target values are errors.}
+central partner, which is excluded. Missing target values follow na_action.}
 
 \item{control}{Label identifying control plates.}
 
@@ -45,6 +46,9 @@ Different set coverage is flagged and needs a comparability justification.}
 
 \item{require_qc}{Require recorded QC approval for every plate. Default FALSE
 warns on unconfirmed QC and retains its status in qc_review.}
+
+\item{na_action}{Omit missing/undetected targets with a warning (default), or
+error to require complete targets. A plate without usable MI is unavailable.}
 }
 \value{
 List with coefficients, overall_coefficients, plate_means,

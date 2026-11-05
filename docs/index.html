@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -156,6 +156,17 @@
 </h2>
 <p>Use one outer tissue boundary for each <em>Z. tritici</em> colony and include its interior. A pale margin and darker centre are parts of the same target, not separate colonies. If the QC shows only a ring or the inner core, use the <a href="https://mghotbi.github.io/FunMel/articles/Real-14-day.html#concentric-target-colonies">real-data recovery procedure</a>. Keep agar, reflections and central fungal tissue outside the target outline.</p>
 <p>The default melanization coefficient is <strong>mean treatment target-colony MI / mean own-set control target-colony MI</strong>. Each colony has equal weight; pixel counts and sampled spots do not determine its weight. With four valid colonies per plate this equals averaging plate means first. Plates remain independent replicates for statistical inference. Missing targets require review.</p>
+</div>
+<div class="section level2">
+<h2 id="when-one-target-colony-cannot-be-measured">When one target colony cannot be measured<a class="anchor" aria-label="anchor" href="#when-one-target-colony-cannot-be-measured"></a>
+</h2>
+<p>Finalization warns and continues with the remaining measurable target colonies:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
+<span><span class="va">reviewed</span><span class="op">$</span><span class="va">excluded_colonies</span></span>
+<span><span class="va">reviewed</span><span class="op">$</span><span class="va">coefficient_plate_means</span></span></code></pre></div>
+<p>If three of four targets have usable MI, their three values contribute to the matched coefficient. The failed row stays in <code>colonies.csv</code>; it is listed in <code>excluded_colonies.csv</code> and <code>measurement_issues.csv</code>, and actual used/excluded counts are reported. No missing MI is replaced with zero or copied from another colony. A plate with no usable targets remains unavailable. Whole-image failures and missing control assignments must still be resolved.</p>
+<p>Inspect the named QC images: failures associated with colony colour or size can bias the remaining-colony comparison. For complete-target analysis use <code>finish_experiment(project, na_action="error")</code>. Details are in the real-data vignette’s <strong>Incomplete target colonies</strong> section.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

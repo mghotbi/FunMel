@@ -220,21 +220,25 @@ run_experiment <- function(project, n_spots = NULL, spot_radius_mm = 0.5,
 #' @param ... Additional assess_experiment() settings.
 #' @param require_qc Default FALSE warns and continues if image QC is unconfirmed.
 #'   Set TRUE to require qc_pass=TRUE before finalization and plotting.
+#' @param na_action Omit missing/undetected targets with an explicit warning
+#'   (default), or error to require every target MI before comparison. A plate
+#'   with no usable targets is not silently dropped.
 #' @return Result saved as reviewed_analysis.rds. If the matching design is
 #'   incomplete, saves measurement-only outputs and comparison_status.csv;
 #'   no comparison figure is generated. Complete the matching labels and finish
 #'   again without remeasuring, provided the recorded layouts remain correct.
-#'   Missing target MI instead gives awaiting_measurement_review and saves
-#'   diagnostic tables without computing coefficients or inventing measurements.
+#'   A plate with no usable target MI, or missing MI under strict error mode,
+#'   gives awaiting_measurement_review without inventing measurements.
 #' @export
-finish_experiment <- function(project, ..., require_qc=FALSE) {
+finish_experiment <- function(project, ..., require_qc=FALSE,na_action=c("omit","error")) {
+  na_action <- match.arg(na_action)
   project <- as_funmel_project(project)
   result <- read_experiment(project)
   meta <- read_project_metadata(project)
   if(nrow(result$failed)) stop("Resolve all failed photographs before finalization.")
   design_issue <- comparison_metadata_issue(meta)
-  if(!is.null(design_issue) || !is.null(missing_target_measurement_issue(result))) {
-    reviewed <- finalize_analysis(result,meta,...,require_qc=require_qc)
+  if(!is.null(design_issue) || !is.null(missing_target_measurement_issue(result,na_action))) {
+    reviewed <- finalize_analysis(result,meta,...,require_qc=require_qc,na_action=na_action)
     archive_comparison_exports(project$project_dir)
     saveRDS(reviewed,project$reviewed_file)
     write_experiment_tables(reviewed,project$project_dir)
@@ -247,13 +251,13 @@ finish_experiment <- function(project, ..., require_qc=FALSE) {
   context <- recorded_context_columns(meta)
   contexts <- if(length(context)) unique(meta[context]) else data.frame(.context="all")
   if(nrow(contexts)==1L) {
-    reviewed <- finalize_analysis(result,meta,...,require_qc=require_qc)
+    reviewed <- finalize_analysis(result,meta,...,require_qc=require_qc,na_action=na_action)
     saveRDS(reviewed,project$reviewed_file)
     write_experiment_tables(reviewed,project$project_dir)
-    plot_treatment_comparison(reviewed,require_qc=require_qc,file=file.path(project$project_dir,"treatment_comparison"))
+    plot_treatment_comparison(reviewed,require_qc=require_qc,na_action=na_action,file=file.path(project$project_dir,"treatment_comparison"))
   } else {
     # Different days/strains/media are separate analyses, never silently pooled.
-    reviewed <- result; reviewed$context_results <- list()
+    reviewed <- result; reviewed$missing_colony_action <- na_action; reviewed$context_results <- list()
     contexts$output_folder <- sprintf("context_%03d",seq_len(nrow(contexts)))
     for(k in seq_len(nrow(contexts))) {
       sel <- rep(TRUE,nrow(meta))
@@ -262,7 +266,7 @@ finish_experiment <- function(project, ..., require_qc=FALSE) {
       sub <- result
       for(nm in c("colonies","profiles","plates","spots")) if(nrow(sub[[nm]]))
         sub[[nm]] <- sub[[nm]][sub[[nm]]$plate_id %in% submeta$plate_id,,drop=FALSE]
-      ans <- finalize_analysis(sub,submeta,...,require_qc=require_qc)
+      ans <- finalize_analysis(sub,submeta,...,require_qc=require_qc,na_action=na_action)
       path <- file.path(project$project_dir,contexts$output_folder[k]);dir.create(path,showWarnings=FALSE)
       write_experiment_tables(ans,path);saveRDS(ans,file.path(path,"reviewed_analysis.rds"))
       plot_treatment_comparison(ans,require_qc=require_qc,file=file.path(path,"treatment_comparison"))
@@ -326,7 +330,7 @@ write_experiment_tables <- function(result, path) {
       require_qc=isTRUE(qr$require_qc),pending_plate_ids=paste(qr$pending_plate_ids,collapse=";")),
       file.path(path,"qc_review_status.csv"),row.names=FALSE)
   }
-  for(nm in intersect(c("metadata_issues","measurement_issues","layout_assignments","run_summary"),names(result)))
+  for(nm in intersect(c("metadata_issues","measurement_issues","excluded_colonies","layout_assignments","run_summary"),names(result)))
     utils::write.csv(result[[nm]],file.path(path,paste0(nm,".csv")),row.names=FALSE)
   if(!is.null(result$metadata)) utils::write.csv(result$metadata,file.path(path,"metadata_used.csv"),row.names=FALSE)
   for(nm in intersect(c("colonies","profiles","spots","plates","failed","melanization_coefficient",

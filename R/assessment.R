@@ -16,7 +16,7 @@
 #'
 #' @param colonies Target colony table or batch result, with plate_id, set_id,
 #'   treatment, colony_id and MI_mean. Raw pipeline results may include the
-#'   central partner, which is excluded. Missing target values are errors.
+#'   central partner, which is excluded. Missing target values follow na_action.
 #' @param control Label identifying control plates.
 #' @param by Optional extra control-matching columns. A set cannot span different
 #'   matching values. To pool multiple strains/days, explicitly justify that
@@ -34,6 +34,8 @@
 #'   Applied separately to within_sets, overall_effects and treatment_comparisons.
 #' @param require_qc Require recorded QC approval for every plate. Default FALSE
 #'   warns on unconfirmed QC and retains its status in qc_review.
+#' @param na_action Omit missing/undetected targets with a warning (default), or
+#'   error to require complete targets. A plate without usable MI is unavailable.
 #' @return List with coefficients, overall_coefficients, plate_means,
 #'   within_sets, overall_effects, treatment_comparisons, model, diagnostics,
 #'   and status. Mixed-model contrasts use Satterthwaite degrees of freedom.
@@ -50,14 +52,16 @@
 assess_experiment <- function(colonies, control="control", by=NULL,
                               method=c("mixed","plate_means"),level=.95,
                               p_adjust="holm",pool_contexts=FALSE,
-                              comparison_scope=c("matched_effects","common_sets"),require_qc=FALSE) {
+                              comparison_scope=c("matched_effects","common_sets"),require_qc=FALSE,
+                              na_action=c("omit","error")) {
+  na_action <- match.arg(na_action)
   method <- match.arg(method)
   comparison_scope <- match.arg(comparison_scope)
   if(length(level)!=1L || !is.finite(level) || level<=0 || level>=1) stop("level must be between 0 and 1.")
   if(!p_adjust %in% stats::p.adjust.methods) stop("Unknown p_adjust method.")
   if(is.list(colonies) && !is.data.frame(colonies) && !is.null(colonies$failed) && nrow(colonies$failed))
     stop("Some plates failed. Resolve failures before final assessment.")
-  mc <- melanization_coefficient(colonies,control=control,by=by,require_qc=require_qc)
+  mc <- melanization_coefficient(colonies,control=control,by=by,require_qc=require_qc,na_action=na_action)
   if(any(mc$coefficients$status!="ok")) stop("Resolve unavailable within-set coefficients before final assessment.")
   df <- mc$target_data; pm <- mc$plate_means
   if(!is.logical(pool_contexts) || length(pool_contexts)!=1L || is.na(pool_contexts)) stop("pool_contexts must be TRUE or FALSE.")

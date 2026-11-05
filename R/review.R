@@ -11,14 +11,19 @@
 #' @param require_qc Default FALSE warns and continues with unconfirmed QC.
 #'   TRUE requires every qc_pass flag to be logical TRUE. Review flags are never
 #'   automatically changed to TRUE; calculated results retain their QC status.
+#' @param na_action Omit missing/undetected targets with a warning (default), or
+#'   error to withhold comparisons until all target MI values are available.
 #' @return Updated batch result. A valid matching design adds coefficients and
 #'   assessment. Missing design assignments give comparison_status awaiting_design;
-#'   missing target MI gives awaiting_measurement_review. Measurements remain
+#'   a plate without usable target MI (or missing MI in strict mode) gives
+#'   awaiting_measurement_review. Measurements remain
 #'   available with metadata_issues, measurement_issues, layout_assignments and
 #'   run_summary diagnostics. No missing MI is imputed or silently excluded.
 #' @export
-finalize_analysis <- function(result, metadata, ..., require_qc=FALSE) {
+finalize_analysis <- function(result, metadata, ..., require_qc=FALSE,na_action=c("omit","error")) {
+  na_action <- match.arg(na_action)
   if(!is.list(result) || is.null(result$colonies) || !nrow(result$colonies)) stop("Supply a completed batch result.")
+  result$missing_colony_action <- na_action
   if(!is.null(result$failed) && nrow(result$failed)) stop("Resolve failed plates before finalizing.")
   validate_metadata(metadata,stage="measurement")
   message("Review reminder: verify treatment/control assignments, matching sets, image masks and calibration before interpreting results. No metadata approval-flag edits are required.")
@@ -29,7 +34,7 @@ finalize_analysis <- function(result, metadata, ..., require_qc=FALSE) {
   issue <- comparison_metadata_issue(metadata)
   pending_status <- "awaiting_design"
   if(is.null(issue)) {
-    issue <- missing_target_measurement_issue(result)
+    issue <- missing_target_measurement_issue(result,na_action)
     pending_status <- "awaiting_measurement_review"
   }
   if(!is.null(issue)) {
@@ -46,7 +51,7 @@ finalize_analysis <- function(result, metadata, ..., require_qc=FALSE) {
     return(result)
   }
   result$comparison_status <- "complete"
-  result$assessment <- assess_experiment(result,...,require_qc=require_qc)
+  result$assessment <- assess_experiment(result,...,require_qc=require_qc,na_action=na_action)
   result$melanization_coefficient <- result$assessment$coefficients
   result$coefficient_plate_means <- result$assessment$plate_means
   result$per_plate_coefficients <- result$assessment$per_plate_coefficients

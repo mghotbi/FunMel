@@ -12,7 +12,7 @@ melanization_coefficient(
   response = "MI_mean",
   by = NULL,
   exclude_ids = c("centre", "center"),
-  na_action = c("error", "omit"),
+  na_action = c("omit", "error"),
   set = "set_id",
   require_qc = FALSE,
   weighting = c("colonies", "plates")
@@ -39,8 +39,8 @@ identity when controls do not share it. Missing matching values are errors.}
 \item{exclude_ids}{Colony identifiers excluded before calculation. Default
 excludes centre and center, used for the central interacting fungus.}
 
-\item{na_action}{Either error (default) for undetected/nonfinite target
-colonies or omit, which warns and reports excluded counts. A plate with
+\item{na_action}{Either omit (default), which warns and reports excluded
+undetected/nonfinite target colonies, or error to require complete targets. A plate with
 no eligible target measurements remains unavailable, not silently dropped.}
 
 \item{set}{Matching-set column, required. Controls are never pooled across sets.}

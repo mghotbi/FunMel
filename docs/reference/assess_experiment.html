@@ -15,7 +15,7 @@ a control denominator."><meta property="og:image" content="https://mghotbi.githu
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,8 @@ a control denominator.</p>
 <span>  p_adjust <span class="op">=</span> <span class="st">"holm"</span>,</span>
 <span>  pool_contexts <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  comparison_scope <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matched_effects"</span>, <span class="st">"common_sets"</span><span class="op">)</span>,</span>
-<span>  require_qc <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  require_qc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -73,7 +74,7 @@ a control denominator.</p>
 <dl><dt id="arg-colonies">colonies<a class="anchor" aria-label="anchor" href="#arg-colonies"></a></dt>
 <dd><p>Target colony table or batch result, with plate_id, set_id,
 treatment, colony_id and MI_mean. Raw pipeline results may include the
-central partner, which is excluded. Missing target values are errors.</p></dd>
+central partner, which is excluded. Missing target values follow na_action.</p></dd>
 
 
 <dt id="arg-control">control<a class="anchor" aria-label="anchor" href="#arg-control"></a></dt>
@@ -115,6 +116,11 @@ Different set coverage is flagged and needs a comparability justification.</p></
 <dt id="arg-require-qc">require_qc<a class="anchor" aria-label="anchor" href="#arg-require-qc"></a></dt>
 <dd><p>Require recorded QC approval for every plate. Default FALSE
 warns on unconfirmed QC and retains its status in qc_review.</p></dd>
+
+
+<dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
+<dd><p>Omit missing/undetected targets with a warning (default), or
+error to require complete targets. A plate without usable MI is unavailable.</p></dd>
 
 </dl></div>
     <div class="section level2">
