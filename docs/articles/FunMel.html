@@ -132,7 +132,7 @@ needed for this example.</p>
 <span><span class="va">project_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"FunMel_real_example_"</span><span class="op">)</span></span>
 <span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_experiment.html">prepare_experiment</a></span><span class="op">(</span>input<span class="op">=</span><span class="va">photos</span>, project_dir<span class="op">=</span><span class="va">project_dir</span><span class="op">)</span></span>
 <span><span class="va">project</span><span class="op">$</span><span class="va">project_dir</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmprG6SUR/FunMel_real_example_bee6d53c3ac"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpASaiIg/FunMel_real_example_fcb63405c1e"</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile()</a></code> supplies a new temporary folder name, so
 repeating the example creates a separate project without overwriting
 earlier work. Keep the printed folder location: all outputs will be
@@ -157,7 +157,7 @@ colonies on each plate and requests five circular spots per colony.</p>
 <span><span class="co">#&gt; [1] file  error</span></span>
 <span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
 <span><span class="va">project</span><span class="op">$</span><span class="va">qc_dir</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmprG6SUR/FunMel_real_example_bee6d53c3ac/qc"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpASaiIg/FunMel_real_example_fcb63405c1e/qc"</span></span></code></pre></div>
 <p>The expected status is <code>"complete"</code> with zero failed
 photographs. Open the printed QC folder and inspect the target-colony
 masks, central fungal tissue and hyphae, sampling spots, scale and
@@ -333,7 +333,7 @@ tutorial</a> for interpretation and limitations.</p>
 </h2>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">project</span><span class="op">$</span><span class="va">project_dir</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmprG6SUR/FunMel_real_example_bee6d53c3ac"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/RtmpASaiIg/FunMel_real_example_fcb63405c1e"</span></span></code></pre></div>
 <p>This folder contains colony, spot, profile and plate CSV tables;
 matched coefficients; saved R analyses; QC images; and the final
 <code>treatment_comparison.pdf</code>, <code>.svg</code> and
