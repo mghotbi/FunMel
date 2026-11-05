@@ -2,10 +2,10 @@
 
 First computes each set-specific arithmetic MI ratio using
 [`melanization_coefficient()`](https://mghotbi.github.io/FunMel/reference/melanization_coefficient.md).
-Final descriptive coefficients average these ratios equally across sets
-for each treatment. They are not ratios against a pooled control.
-Inferential contrasts use raw colony MI, not ratios sharing a control
-denominator.
+Final descriptive coefficients average these target-colony ratios
+equally across sets for each treatment. They are not ratios against a
+pooled control. Inferential contrasts use raw colony MI, not ratios
+sharing a control denominator.
 
 ## Usage
 

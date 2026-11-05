@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.20</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -143,13 +143,19 @@
 <h2 id="interpretation">Interpretation<a class="anchor" aria-label="anchor" href="#interpretation"></a>
 </h2>
 <p>Melanization index is <code>MI = 100 - CIELAB L*</code>: an image-darkness proxy, not a direct measurement of melanin concentration. Central hyphal growth is not an inhibition zone. Inspect masks, calibration and lighting before interpreting results.</p>
-<p>Independent plates are the experimental units; colonies and spots are subsamples. Matched coefficients divide treatment plate means by their own set’s control mean. One control per set supports descriptive ratios, not replicated-control significance tests. The tutorials explain statistical requirements, figure contents and limitations in detail.</p>
+<p>Independent plates are the experimental units; colonies and spots are subsamples. Matched coefficients divide the mean target-colony MI under treatment by the mean target-colony MI in the same set’s controls. One control per set supports descriptive ratios, not replicated-control significance tests. The tutorials explain statistical requirements, figure contents and limitations in detail.</p>
 </div>
 <div class="section level2">
 <h2 id="recovering-an-incorrect-mask">Recovering an incorrect mask<a class="anchor" aria-label="anchor" href="#recovering-an-incorrect-mask"></a>
 </h2>
 <p>Inspect the QC image before using a measurement. <code><a href="reference/retry_funmel_dish.html">retry_funmel_dish()</a></code> corrects an outer dish circle with three clicks; <code><a href="reference/retry_funmel_dish.html">recover_funmel_plate()</a></code> additionally collects reviewed target and central-fungus outlines. Both save a new recovery folder. Reapply saved annotations by exact plate ID when rerunning a project; see <a href="https://mghotbi.github.io/FunMel/articles/Real-14-day.html#recovering-a-failed-dish-fit-or-tissue-mask">the real-data recovery guide</a>. No external recovery script is required.</p>
 <p>Target diameter is <code>eq_diameter_mm</code> in <code>colonies.csv</code>. Central fungal diameter is <code>central_diameter_mm</code> in <code>plates.csv</code>. Both are diameters of circles with the same segmented area, not maximum caliper/Feret diameters. Physical units require verified calibration and reviewed boundaries.</p>
+</div>
+<div class="section level2">
+<h2 id="concentric-or-differently-coloured-target-colonies">Concentric or differently coloured target colonies<a class="anchor" aria-label="anchor" href="#concentric-or-differently-coloured-target-colonies"></a>
+</h2>
+<p>Use one outer tissue boundary for each <em>Z. tritici</em> colony and include its interior. A pale margin and darker centre are parts of the same target, not separate colonies. If the QC shows only a ring or the inner core, use the <a href="https://mghotbi.github.io/FunMel/articles/Real-14-day.html#concentric-target-colonies">real-data recovery procedure</a>. Keep agar, reflections and central fungal tissue outside the target outline.</p>
+<p>The default melanization coefficient is <strong>mean treatment target-colony MI / mean own-set control target-colony MI</strong>. Each colony has equal weight; pixel counts and sampled spots do not determine its weight. With four valid colonies per plate this equals averaging plate means first. Plates remain independent replicates for statistical inference. Missing targets require review.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

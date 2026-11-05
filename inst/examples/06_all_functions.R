@@ -119,3 +119,15 @@ if(interactive() && isTRUE(getOption("FunMel.recover",FALSE))) {
   # If tissue masks still fail QC, review the actual boundaries:
   fixed <- recover_funmel_plate(photograph,dish_diameter_mm=dish_mm,centre="fungus")
 }
+
+# 10. Optional centre-guided boundary proposals; no measurement until review.
+# Enable explicitly: options(FunMel.suggest=TRUE).
+if(interactive() && isTRUE(getOption("FunMel.suggest",FALSE))) {
+  photograph <- file.choose()
+  dish_mm <- as.numeric(readline("Measured outer dish diameter in mm: "))
+  proposal <- suggest_funmel_polygons(photograph,dish_diameter_mm=dish_mm,
+    centre="fungus",polarity="auto")
+  plot(proposal)
+  print(proposal$guidance$diagnostics)
+  # Review every outline; see the guided-recovery guide before measuring.
+}

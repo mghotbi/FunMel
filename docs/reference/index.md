@@ -139,6 +139,10 @@
 
   Convert sRGB values to CIE 1976 L*a*b\*
 
+- [`suggest_funmel_polygons()`](https://mghotbi.github.io/FunMel/reference/suggest_funmel_polygons.md)
+  [`plot(`*`<funmel_boundary_proposal>`*`)`](https://mghotbi.github.io/FunMel/reference/suggest_funmel_polygons.md)
+  : Propose boundaries for difficult bright or dark colonies
+
 - [`train_classifier()`](https://mghotbi.github.io/FunMel/reference/train_classifier.md)
   : Train a supervised pixel classifier
 

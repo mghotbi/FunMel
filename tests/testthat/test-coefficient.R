@@ -1,12 +1,13 @@
 mc_data <- function() data.frame(plate_id=rep(c("C1","C2","T1","T2"),each=2),
   set_id="S1",treatment=rep(c("control","control","fungus","fungus"),each=2),
   colony_id=rep(c("TL","TR"),4),MI_mean=c(30,50,40,40,50,70,60,60),detected=TRUE)
-test_that("coefficient equals ratio of equally weighted plate means", {
+test_that("coefficient averages target colonies by default and supports plate weighting", {
   d <- mc_data(); r <- melanization_coefficient(d)
   expect_equal(r$coefficients$melanization_coefficient,1.5)
   expect_equal(r$coefficients$n_control_plates,2)
   d <- d[-1,] # C1=50, C2=40; pooled colony mean is 43.33, plate mean is 45
-  expect_equal(melanization_coefficient(d)$coefficients$melanization_coefficient,60/45)
+  expect_equal(melanization_coefficient(d)$coefficients$melanization_coefficient,60/mean(c(50,40,40)))
+  expect_equal(melanization_coefficient(d,weighting="plates")$coefficients$melanization_coefficient,60/45)
 })
 test_that("central partner excluded and strata matched", {
   d <- mc_data(); extra <- d[1,,drop=FALSE]; extra$plate_id <- "T1";extra$treatment <- "fungus"
@@ -26,7 +27,7 @@ test_that("undefined ratios and missing targets are explicit", {
   expect_error(melanization_coefficient(d),"Undetected")
   expect_warning(r<-melanization_coefficient(d,na_action="omit"),"excluded")
   expect_equal(r$coefficients$n_excluded_target_colonies,1)
-  expect_equal(r$coefficients$MI_control_mean,45)
+  expect_equal(r$coefficients$MI_control_mean,mean(c(50,40,40)))
   d$MI_mean[3:4]<-NA
   expect_warning(r<-suppressWarnings(melanization_coefficient(d,na_action="omit")),NA)
   expect_equal(r$coefficients$status,"plate_without_usable_MI")
@@ -41,4 +42,19 @@ test_that("one plate per group gives a descriptive ratio", {
   expect_equal(melanization_coefficient(d)$coefficients$melanization_coefficient,1.5)
   expect_warning(r<-compare_melanization(d),"independent plates")
   expect_equal(r$status,"insufficient_plate_replication")
+})
+
+test_that("pooled target means respect sets and ignore area and spot counts", {
+  d <- mc_data();d <- d[-1,]
+  d$area_mm2 <- seq_len(nrow(d))*100
+  d$n_spots <- seq_len(nrow(d))
+  second <- d;second$set_id <- 'S2';second$plate_id <- paste0('s2_',second$plate_id)
+  second$MI_mean[second$treatment=='control'] <- 20
+  second$MI_mean[second$treatment!='control'] <- 80
+  r <- melanization_coefficient(rbind(d,second))
+  expect_equal(r$coefficients$melanization_coefficient,c(60/mean(c(50,40,40)),4))
+  expect_equal(r$coefficients$weighting,c('colonies','colonies'))
+  expect_equal(r$coefficients$n_control_colonies,c(3,3))
+  expect_equal(r$settings$weighting,'colonies')
+  expect_error(melanization_coefficient(d,weighting='pixels'),'arg')
 })

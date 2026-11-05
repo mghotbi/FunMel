@@ -346,13 +346,25 @@ reviewed14$assessment$status
 
 \[1\] “insufficient_plate_replication”
 
-A plate’s MI is the equally weighted mean of its target-colony `MI_mean`
-values. Within each set, the coefficient is:
+The coefficient gives equal weight to each measured target colony:
 
 ``` math
-\mathrm{MC}_{s,t}=\frac{\operatorname{mean}(\mathrm{MI}_{\text{treatment plates},s,t})}
-{\operatorname{mean}(\mathrm{MI}_{\text{control plates},s})}.
+\mathrm{MC}_{s,t}=\frac{\operatorname{mean}(\mathrm{MI}_{\text{treatment target colonies},s,t})}
+{\operatorname{mean}(\mathrm{MI}_{\text{control target colonies},s})}.
 ```
+
+Here each plate has four target colonies, so this equals taking the mean
+of plate means first. Each colony contributes its own `MI_mean`,
+regardless of its area or number of sampled spots. The central fungus is
+excluded. Controls are matched within `set_id` and any additional
+matching context, never pooled across unrelated sets. Independent plates
+remain the replicates for statistical tests. With unequal measured
+colony counts, the default follows the mean of all target colonies;
+`melanization_coefficient(..., weighting="plates")` is an explicit
+alternative that gives each plate equal descriptive weight. Missing
+target MI values stop direct coefficient calculation by default; do not
+silently drop a failed colony to obtain a ratio. Document any deliberate
+exclusion and report the resulting colony counts.
 
 For this teaching calibration, A60_2 is approximately **1.628** and
 B20_2 approximately **1.302**. Verify the saved arithmetic without
@@ -453,6 +465,85 @@ PDF and SVG retain vector text and geometry; PNG is 600 dpi. Check the
 target journal’s final dimensions, font sizes and caption requirements.
 Changing display labels does not change metadata or statistical
 matching.
+
+## Concentric target colonies
+
+Some target colonies have a pale outer margin, a darker interior or
+several concentric colour bands. These bands do not establish separate
+organisms. Use experimental identity and the original photograph to
+identify each target. For a continuous *Z. tritici* colony, **outline
+its outermost visible tissue edge once and include the enclosed target
+tissue**. Do not measure just the bright ring or just the dark core, and
+do not count nested rings as additional colonies. The central fungus and
+its hyphal fringe are outlined separately.
+
+Check the QC overlay before interpreting MI. A ring-shaped mask with an
+empty centre, a mask confined to the core, or a boundary extending onto
+agar needs correction. The whole-colony measurement uses eligible
+interior pixels within the reviewed outline; the existing thin
+outer-edge exclusion (default 0.1 mm) and highlight filter still apply.
+They do not exclude internal colour bands. Size uses the complete target
+footprint, whereas `n_pixels` counts eligible colour-measurement pixels.
+Spot means are additional readouts, not replacements for the
+whole-colony `MI_mean` in the default coefficient.
+
+### Correct an unusual colony
+
+Use the manual recovery procedure below when the outer tissue boundary
+is clear but automatic detection selects the wrong band. It collects one
+outline for each target and one for the whole central fungus. This is
+the reliable fallback for a closed light rim around a differently
+coloured interior.
+
+An optional guided proposal can reduce outlining:
+
+``` r
+
+photo <- file.choose() # Select an ORIGINAL JPG, not a ZIP or QC overlay.
+# Set dish_mm to the measured outer dish diameter before running this block.
+proposal <- suggest_funmel_polygons(
+  photo, dish_diameter_mm=dish_mm, centre="fungus", max_dim=1200,
+  boundary="outer_extent"
+)
+plot(proposal)
+```
+
+Click three outer dish-rim points and one point inside each target when
+requested. For confrontations, outline the whole visible central fungus
+too. The outer-extent proposal uses the outermost closed candidate
+enclosing the selected target centre and fills its interior. It is a
+geometric proposal, not an automatic species identification. An open
+ring, low contrast, contact with another organism or an ambiguous
+boundary requires a manual outline. Do not accept an outline merely
+because it is round.
+
+After inspecting every proposed boundary, use the same image and
+settings:
+
+``` r
+
+fixed <- recover_funmel_plate(
+  photo, dish_diameter_mm=dish_mm, centre="fungus", max_dim=1200,
+  dish=proposal$dish, polygons=proposal$polygons,
+  n_spots=5, spot_radius_mm=0.4
+)
+```
+
+Use this only when all required proposed outlines are present and
+correct. Otherwise call
+[`recover_funmel_plate()`](https://mghotbi.github.io/FunMel/reference/retry_funmel_dish.md)
+without `polygons` to draw the actual whole-colony outlines. Apply
+`fixed$annotation` to the matching project plate as shown below, rerun
+measurements and finalization, and inspect the saved QC. Do not alter
+photograph brightness to improve detection: that also changes MI. Guided
+detection changes geometry only; measurement retains the original image
+and the selected calibration/background-correction settings.
+
+If a target encloses visible agar, contains another organism, or
+overlaps the central fungus so its tissue cannot be separated, enclosing
+the entire region is not a valid tissue-specific measurement. Record the
+limitation and resolve or exclude it explicitly; do not invent the
+hidden boundary or missing MI.
 
 ## Recovering a failed dish fit or tissue mask
 
@@ -982,10 +1073,10 @@ biological validation; check masks, layouts, calibration and warnings.
 
 Colony **melanization index (MI)** and the matched **melanization
 coefficient (MC)** are different outputs. MI is stored in `colonies.csv`
-(and individual spot MI in `spots.csv`). MC divides treatment plate
-means by their own set’s control mean. A coefficient CSV with headers
-but no rows means no comparison was computed; inspect its recorded
-reason rather than treating it as zero.
+(and individual spot MI in `spots.csv`). MC divides the mean treatment
+target-colony MI by its own set’s control mean. A coefficient CSV with
+headers but no rows means no comparison was computed; inspect its
+recorded reason rather than treating it as zero.
 
 ``` r
 

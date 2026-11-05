@@ -59,7 +59,7 @@ photos <- system.file("extdata", "14-days", package="FunMel")
 project_dir <- tempfile("FunMel_real_example_")
 project <- prepare_experiment(input=photos, project_dir=project_dir)
 project$project_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp38Xv2Q/FunMel_real_example_1743e7ccd322a"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp2H3s5W/FunMel_real_example_181884a3c0c6b"
 ```
 
 [`tempfile()`](https://rdrr.io/r/base/tempfile.html) supplies a new
@@ -88,7 +88,7 @@ result$failed
 #> [1] file  error
 #> <0 rows> (or 0-length row.names)
 project$qc_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp38Xv2Q/FunMel_real_example_1743e7ccd322a/qc"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp2H3s5W/FunMel_real_example_181884a3c0c6b/qc"
 ```
 
 The expected status is `"complete"` with zero failed photographs. Open
@@ -179,7 +179,7 @@ interpretation and limitations.
 ``` r
 
 project$project_dir
-#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp38Xv2Q/FunMel_real_example_1743e7ccd322a"
+#> [1] "/private/var/folders/f1/f8pqw4_n4y90tlykbbhy3ztm0000gn/T/Rtmp2H3s5W/FunMel_real_example_181884a3c0c6b"
 ```
 
 This folder contains colony, spot, profile and plate CSV tables; matched

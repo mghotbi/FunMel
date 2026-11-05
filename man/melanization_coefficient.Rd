@@ -14,7 +14,8 @@ melanization_coefficient(
   exclude_ids = c("centre", "center"),
   na_action = c("error", "omit"),
   set = "set_id",
-  require_qc = FALSE
+  require_qc = FALSE,
+  weighting = c("colonies", "plates")
 )
 }
 \arguments{
@@ -48,6 +49,11 @@ no eligible target measurements remains unavailable, not silently dropped.}
 Default FALSE warns for unconfirmed recorded QC and continues without
 approving or excluding plates. Plain tables without review flags are
 reported as not_recorded. Finalization warns if review is unrecorded.}
+
+\item{weighting}{Descriptive averaging: colonies (default) gives every
+measured target colony equal weight; plates first averages targets within
+each plate and then gives every plate equal weight. Statistical tests
+still account for independent plates; neither pixels nor spots are replicates.}
 }
 \value{
 List with coefficients (one row per contrast and matching stratum),
@@ -56,9 +62,10 @@ Counts distinguish measured target colonies, excluded target rows and plates.
 One plate per group permits a descriptive ratio, not biological inference.
 }
 \description{
-Computes MC = mean treatment plate MI / mean control plate MI. Each plate
-MI is the arithmetic mean of its target colony MI_mean values. Plates are
-equally weighted, irrespective of pixel counts or numbers of colonies.
+Computes MC = mean treatment target-colony MI / mean matching-control
+target-colony MI. By default each target colony receives equal weight,
+irrespective of its pixel count or number of sampled spots. With four
+measured targets on every plate this equals the ratio of mean plate MIs.
 This is a ratio of descriptive image-darkness indices, not a ratio of
 melanin concentrations. MC > 1 indicates a darker treatment mean; MC < 1
 indicates a lighter treatment mean. No significance test or CI is implied.

@@ -104,10 +104,11 @@ is not an inhibition zone. Inspect masks, calibration and lighting
 before interpreting results.
 
 Independent plates are the experimental units; colonies and spots are
-subsamples. Matched coefficients divide treatment plate means by their
-own set’s control mean. One control per set supports descriptive ratios,
-not replicated-control significance tests. The tutorials explain
-statistical requirements, figure contents and limitations in detail.
+subsamples. Matched coefficients divide the mean target-colony MI under
+treatment by the mean target-colony MI in the same set’s controls. One
+control per set supports descriptive ratios, not replicated-control
+significance tests. The tutorials explain statistical requirements,
+figure contents and limitations in detail.
 
 ## Recovering an incorrect mask
 
@@ -126,3 +127,20 @@ diameter is `central_diameter_mm` in `plates.csv`. Both are diameters of
 circles with the same segmented area, not maximum caliper/Feret
 diameters. Physical units require verified calibration and reviewed
 boundaries.
+
+## Concentric or differently coloured target colonies
+
+Use one outer tissue boundary for each *Z. tritici* colony and include
+its interior. A pale margin and darker centre are parts of the same
+target, not separate colonies. If the QC shows only a ring or the inner
+core, use the [real-data recovery
+procedure](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#concentric-target-colonies).
+Keep agar, reflections and central fungal tissue outside the target
+outline.
+
+The default melanization coefficient is **mean treatment target-colony
+MI / mean own-set control target-colony MI**. Each colony has equal
+weight; pixel counts and sampled spots do not determine its weight. With
+four valid colonies per plate this equals averaging plate means first.
+Plates remain independent replicates for statistical inference. Missing
+targets require review.

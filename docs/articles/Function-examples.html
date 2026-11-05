@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.20</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -435,6 +435,18 @@ values).</td>
 <span>  <span class="va">fixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/retry_funmel_dish.html">retry_funmel_dish</a></span><span class="op">(</span><span class="va">photograph</span>,dish_diameter_mm<span class="op">=</span><span class="va">dish_mm</span>,centre<span class="op">=</span><span class="st">"fungus"</span><span class="op">)</span></span>
 <span>  <span class="co"># If tissue masks still fail QC, review the actual boundaries:</span></span>
 <span>  <span class="va">fixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/retry_funmel_dish.html">recover_funmel_plate</a></span><span class="op">(</span><span class="va">photograph</span>,dish_diameter_mm<span class="op">=</span><span class="va">dish_mm</span>,centre<span class="op">=</span><span class="st">"fungus"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># 10. Optional centre-guided boundary proposals; no measurement until review.</span></span>
+<span><span class="co"># Enable explicitly: options(FunMel.suggest=TRUE).</span></span>
+<span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/Logic.html" class="external-link">isTRUE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"FunMel.suggest"</span>,<span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">photograph</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.choose.html" class="external-link">file.choose</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">dish_mm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readline.html" class="external-link">readline</a></span><span class="op">(</span><span class="st">"Measured outer dish diameter in mm: "</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">proposal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/suggest_funmel_polygons.html">suggest_funmel_polygons</a></span><span class="op">(</span><span class="va">photograph</span>,dish_diameter_mm<span class="op">=</span><span class="va">dish_mm</span>,</span>
+<span>    centre<span class="op">=</span><span class="st">"fungus"</span>,polarity<span class="op">=</span><span class="st">"auto"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">proposal</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">proposal</span><span class="op">$</span><span class="va">guidance</span><span class="op">$</span><span class="va">diagnostics</span><span class="op">)</span></span>
+<span>  <span class="co"># Review every outline; see the guided-recovery guide before measuring.</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="measurement-only-projects">Measurement-only projects<a class="anchor" aria-label="anchor" href="#measurement-only-projects"></a>

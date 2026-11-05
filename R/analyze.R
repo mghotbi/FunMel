@@ -120,6 +120,12 @@ analyze_plate <- function(path, layout = plate_layout(), id = NULL,
   step("Measuring")
   col <- measure_colonies(plate, edge_exclude_mm = edge_exclude_mm, dark_L = dark_L,
                           n_boot = n_boot, block_mm = block_mm)
+  if(!is.null(annotation$guidance$diagnostics)) {
+    g <- annotation$guidance$diagnostics
+    j <- match(col$colony_id,g$colony_id)
+    col$boundary_proposal_method <- g$method[j]
+    col$boundary_proposal_polarity <- g$polarity[j]
+  }
   prof <- colony_profiles(plate, ring_width_mm = ring_width_mm, mode = profile_mode,
                           n_rings = n_rings, n_boot = n_boot, block_mm = block_mm)
   spot_result <- if(is.null(n_spots)) NULL else sample_colony_spots(plate,

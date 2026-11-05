@@ -153,8 +153,8 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
   refs<-data.frame(panel=panel_b,x=1)
   note<-if(preview) "PROVISIONAL: verify metadata, masks and calibration." else "Descriptive matched plate comparison."
   if(mc$qc_review$status!="confirmed") note<-paste0(note," QC UNCONFIRMED: inspect masks and calibration before interpretation.")
-  full_caption<-paste0(note,"\nSquares: control plates; circles: treatment plates; lower diamonds: treatment means.",
-    "\nBars and \u00b1 values: one between-plate SD, not a confidence interval. C = control; T = treatment; MC = T/C.",
+  full_caption<-paste0(note,"\nSquares: control plates; circles: treatment plates; lower diamonds: colony-weighted treatment means.",
+    "\nBars and \u00b1 values: one between-plate SD, not a confidence interval; means weight target colonies equally. C = control; T = treatment; MC = T/C.",
     "\nMC SD describes treatment spread conditional on its own set's control mean; shared-control uncertainty is not included.",
     if(any(cf$n_control_plates<2)) "\nSingle-control SD is unavailable. No p-values or significance tests are shown." else
       "\nDescriptive summaries only; no p-values or significance tests are shown.")

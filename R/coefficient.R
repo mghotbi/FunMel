@@ -1,8 +1,9 @@
 #' Calculate the treatment-to-control melanization coefficient
 #'
-#' Computes MC = mean treatment plate MI / mean control plate MI. Each plate
-#' MI is the arithmetic mean of its target colony MI_mean values. Plates are
-#' equally weighted, irrespective of pixel counts or numbers of colonies.
+#' Computes MC = mean treatment target-colony MI / mean matching-control
+#' target-colony MI. By default each target colony receives equal weight,
+#' irrespective of its pixel count or number of sampled spots. With four
+#' measured targets on every plate this equals the ratio of mean plate MIs.
 #' This is a ratio of descriptive image-darkness indices, not a ratio of
 #' melanin concentrations. MC > 1 indicates a darker treatment mean; MC < 1
 #' indicates a lighter treatment mean. No significance test or CI is implied.
@@ -28,6 +29,10 @@
 #'   Default FALSE warns for unconfirmed recorded QC and continues without
 #'   approving or excluding plates. Plain tables without review flags are
 #'   reported as not_recorded. Finalization warns if review is unrecorded.
+#' @param weighting Descriptive averaging: colonies (default) gives every
+#'   measured target colony equal weight; plates first averages targets within
+#'   each plate and then gives every plate equal weight. Statistical tests
+#'   still account for independent plates; neither pixels nor spots are replicates.
 #' @return List with coefficients (one row per contrast and matching stratum),
 #'   plate_means, and settings. Undefined ratios have NA and an explicit status.
 #'   Counts distinguish measured target colonies, excluded target rows and plates.
@@ -44,8 +49,10 @@ melanization_coefficient <- function(colonies, control="control",
                                     group="treatment", plate="plate_id",
                                     response="MI_mean", by=NULL,
                                     exclude_ids=c("centre", "center"),
-                                    na_action=c("error", "omit"), set="set_id", require_qc=FALSE) {
+                                    na_action=c("error", "omit"), set="set_id", require_qc=FALSE,
+                                    weighting=c("colonies", "plates")) {
   na_action <- match.arg(na_action)
+  weighting <- match.arg(weighting)
   if(length(set)!=1L || is.na(set) || !nzchar(set)) stop("Specify a matching-set column.")
   by <- unique(c(set,by))
   is_batch <- is.list(colonies) && !is.data.frame(colonies) && !is.null(colonies$colonies)
@@ -95,6 +102,11 @@ melanization_coefficient <- function(colonies, control="control",
   pm <- do.call(rbind,rows); rownames(pm) <- NULL
   strata <- if(length(by)) unique(pm[by]) else data.frame(.all=1L)
   contrasts <- list(); per_plate <- list()
+  group_mean <- function(z) {
+    if(!nrow(z) || any(!is.finite(z$MI_plate))) return(NA_real_)
+    if(weighting=="plates") mean(z$MI_plate) else
+      stats::weighted.mean(z$MI_plate,z$n_colonies_used)
+  }
   for (s in seq_len(nrow(strata))) {
     sel <- rep(TRUE,nrow(pm))
     for(nm in by) sel <- sel & pm[[nm]]==strata[[nm]][s]
@@ -102,8 +114,8 @@ melanization_coefficient <- function(colonies, control="control",
     ctr <- sub[as.character(sub[[group]])==control,,drop=FALSE]
     for(trt in setdiff(unique(as.character(sub[[group]])),control)) {
       tx <- sub[as.character(sub[[group]])==trt,,drop=FALSE]
-      cmean <- if(nrow(ctr) && all(is.finite(ctr$MI_plate))) mean(ctr$MI_plate) else NA_real_
-      tmean <- if(all(is.finite(tx$MI_plate))) mean(tx$MI_plate) else NA_real_
+      cmean <- group_mean(ctr)
+      tmean <- group_mean(tx)
       status <- if(!nrow(ctr)) "missing_control" else if(!is.finite(cmean) || !is.finite(tmean))
         "plate_without_usable_MI" else if(cmean<=0) "nonpositive_control_MI" else "ok"
       mc <- if(status=="ok") tmean/cmean else NA_real_
@@ -120,7 +132,7 @@ melanization_coefficient <- function(colonies, control="control",
                         control_replication=if(nrow(ctr)==1L) "single_control_plate" else "replicated_controls",
                         n_treatment_colonies=sum(tx$n_colonies_used),n_control_colonies=sum(ctr$n_colonies_used),
                         n_excluded_target_colonies=sum(tx$n_colonies_excluded)+sum(ctr$n_colonies_excluded),
-                        status=status,interpretation=if(status!="ok") "Ratio unavailable; inspect status." else
+                        weighting=weighting,status=status,interpretation=if(status!="ok") "Ratio unavailable; inspect status." else
                           if(mc>1) "Higher treatment image-darkness index." else if(mc<1)
                             "Lower treatment image-darkness index." else "Equal mean image-darkness index.",
                         stringsAsFactors=FALSE)
@@ -134,6 +146,6 @@ melanization_coefficient <- function(colonies, control="control",
   list(qc_review=qc_review,coefficients=out,per_plate_coefficients=if(length(per_plate)) do.call(rbind,per_plate) else data.frame(),plate_means=pm,target_data=df[valid,,drop=FALSE],
        settings=list(control=control,group=group,plate=plate,response=response,by=by,set=set,
                      exclude_ids=exclude_ids,na_action=na_action,require_qc=require_qc,
-                     weighting="equal colonies within plate; equal plates within group",
+                     weighting=weighting,
                      inference="descriptive ratio; no biological confidence interval or p-value"))
 }

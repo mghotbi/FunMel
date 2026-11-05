@@ -153,9 +153,23 @@
     polygons <- stats::setNames(lapply(ids,function(id)
       .fm_click_polygon(p,paste("Outline",id,"tissue; exclude agar and other colonies"))),ids)
   }
+  guidance <- attr(polygons,"guidance")
+  if(!is.null(guidance)) {
+    .fm_validate_annotation(guidance,path,max_dim,dish_diameter_mm,centre)
+    if(!isTRUE(all.equal(unname(dish),guidance$dish,check.attributes=FALSE)))
+      stop("Proposal dish differs; regenerate proposals with the reviewed circle.")
+    for(i in seq_len(nrow(guidance$diagnostics))) {
+      id <- guidance$diagnostics$colony_id[i]
+      if(!identical(polygons[[id]],guidance$proposed_polygons[[id]])) {
+        guidance$diagnostics$method[i] <- "manual_override"
+        guidance$diagnostics$polarity[i] <- NA_character_
+      }
+    }
+  }
   annotation <- list(image_md5=unname(as.character(tools::md5sum(path))),
     source_file=basename(path),max_dim=max_dim,working_dim=dim(p$rgb)[1:2],
-    dish_diameter_mm=dish_diameter_mm,centre=centre,dish=unname(dish),polygons=polygons)
+    dish_diameter_mm=dish_diameter_mm,centre=centre,dish=unname(dish),polygons=polygons,
+    guidance=guidance)
   res <- analyze_plate(path,layout=plate_layout(centre=centre),
      dish_diameter_mm=dish_diameter_mm,max_dim=max_dim,annotation=annotation,
      n_spots=n_spots,spot_radius_mm=spot_radius_mm,n_boot=n_boot,

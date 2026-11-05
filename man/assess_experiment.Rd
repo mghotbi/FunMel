@@ -57,7 +57,7 @@ per cell are required as a computational guard, not a sufficiency guarantee.
 \description{
 First computes each set-specific arithmetic MI ratio using
 \code{\link[=melanization_coefficient]{melanization_coefficient()}}. Final descriptive coefficients average these
-ratios equally across sets for each treatment. They are not ratios against
+target-colony ratios equally across sets for each treatment. They are not ratios against
 a pooled control. Inferential contrasts use raw colony MI, not ratios sharing
 a control denominator.
 }

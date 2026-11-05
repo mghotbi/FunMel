@@ -1,3 +1,26 @@
+# FunMel 0.4.21
+
+* Calculate the descriptive melanization coefficient from equally weighted
+  target-colony MI values within each treatment and its own matching controls.
+  Balanced four-colony plates retain the same numerical result. An explicit
+  `weighting="plates"` option retains equal-plate descriptive averaging.
+* Guided boundary proposals can use the outermost closed target rim and its
+  enclosed interior. Manual outlines remain available for ambiguous edges.
+* Explain concentric colonies, boundary review, averaging and independent
+  replicate plates in the real-data tutorial and function help.
+
+# FunMel 0.4.20.9000
+
+* Add optional suggest_funmel_polygons() for centre-guided bright/dark target
+  boundary proposals, artifact exclusion polygons and manual overrides.
+* Require visual review before passing proposals to existing manual recovery;
+  proposals themselves do not produce measurements. Low contrast and search
+  boundary contact return diagnostic failures instead of forced circles.
+* Preserve proposal settings and per-target methods in recovery annotations and
+  report proposal methods/polarities in recovered colony tables.
+* Remove stale generated vignette metadata that referenced absent HTML files.
+* Existing automatic segmentation and measurement defaults remain unchanged.
+
 # FunMel 0.4.20
 
 * Retry failed automatic dish fits against dark/light backgrounds, accepting only a geometrically plausible circle with sufficient rim support. Ordinary successful fits are unchanged.

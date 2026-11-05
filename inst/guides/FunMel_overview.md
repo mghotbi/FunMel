@@ -35,7 +35,7 @@ summaries remain distinct from whole-colony MI and do not increase replication.
 | finish_experiment | Apply recorded review, calculate own-set coefficients and export figures |
 | analyze_plate / analyze_plates | Advanced single/batch image analysis |
 | sample_colony_spots | Reproducible circular sampling within usable target masks |
-| melanization_coefficient | Ratios of equally weighted plate MI means within each control set |
+| melanization_coefficient | Ratios of equally weighted target-colony MI means within each control set |
 | assess_experiment | Plate-aware models, matched contrasts and explicit diagnostic status |
 | plot_treatment_comparison | Descriptive plate-level publication exports |
 
@@ -49,8 +49,9 @@ specks and mixed boundary pixels. Broad fungal regions may still be ambiguous
 when organisms touch or have similar appearance. Spatial spot placement uses
 only complete usable circles, with no rim fallback or artificial duplication.
 
-Colonies are equally weighted within plates and plates within their matching
-sets. Controls are never pooled across set IDs. The default mixed assessment
+The descriptive coefficient weights target colonies equally within each treatment
+and its own matching controls. For four measured targets on every plate, this
+equals averaging plate means first. Controls are never pooled across set IDs. The default mixed assessment
 uses lme4/lmerTest on raw MI with independent plate structure and matched
 contrasts. It retains shared-control covariance. Sparse designs and problematic
 fits are explicitly limited to descriptive results. Repeated images of the same
