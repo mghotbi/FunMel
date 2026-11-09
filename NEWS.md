@@ -1,3 +1,11 @@
+# FunMel 0.4.25
+
+* Reject failed circle fits before reading their fields, so automatic dish
+  detection can try alternative backgrounds and report the underlying failure
+  if no acceptable fit is found.
+* Show each requested colony click in the console and announce when guided
+  boundary proposals start.
+
 # FunMel 0.4.24
 
 * Call the internal mask-boundary function directly when drawing recovery QC,

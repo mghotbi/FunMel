@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.24</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.25</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -148,7 +148,7 @@
 <div class="section level2">
 <h2 id="recovering-an-incorrect-mask">Recovering an incorrect mask<a class="anchor" aria-label="anchor" href="#recovering-an-incorrect-mask"></a>
 </h2>
-<p>Inspect the QC image before using a measurement. <code><a href="reference/retry_funmel_dish.html">retry_funmel_dish()</a></code> corrects an outer dish circle with three clicks; <code><a href="reference/retry_funmel_dish.html">recover_funmel_plate()</a></code> additionally collects reviewed target and central-fungus outlines. Both save a new recovery folder. Reapply saved annotations by exact plate ID when rerunning a project; see <a href="https://mghotbi.github.io/FunMel/articles/Real-14-day.html#recovering-a-failed-dish-fit-or-tissue-mask">the real-data recovery guide</a>. No external recovery script is required.</p>
+<p>Inspect the QC image before using a measurement. FunMel tries alternative backgrounds if automatic dish detection fails. If it still cannot fit the rim, <code><a href="reference/retry_funmel_dish.html">retry_funmel_dish()</a></code> lets you select it with three clicks. If the rim is correct but the colony masks are wrong, use <code><a href="reference/retry_funmel_dish.html">recover_funmel_plate()</a></code> to propose new boundaries from the target centres. Both save to a new recovery folder. Reapply saved annotations by exact plate ID when rerunning a project; see <a href="https://mghotbi.github.io/FunMel/articles/Real-14-day.html#recovering-a-failed-dish-fit-or-tissue-mask">the real-data recovery guide</a>. No external recovery script is required.</p>
 <p>Target diameter is <code>eq_diameter_mm</code> in <code>colonies.csv</code>. Central fungal diameter is <code>central_diameter_mm</code> in <code>plates.csv</code>. Both are diameters of circles with the same segmented area, not maximum caliper/Feret diameters. Physical units require verified calibration and reviewed boundaries.</p>
 </div>
 <div class="section level2">
@@ -178,7 +178,7 @@
 <span>  <span class="va">photo</span>, dish_diameter_mm <span class="op">=</span> <span class="va">dish_mm</span>, centre <span class="op">=</span> <span class="st">"fungus"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">fixed</span><span class="op">$</span><span class="va">recovery_status</span></span></code></pre></div>
-<p>Set <code>dish_mm</code> to the verified physical diameter first. Click three widely separated outer dish-rim points, then click once inside each target in the prompted order: <strong>top-left, top-right, bottom-right, bottom-left</strong>. Each step finishes automatically. Keep the photograph window open; no outline drawing, right-click or Esc is required in this default guided mode.</p>
+<p>Set <code>dish_mm</code> to the verified physical diameter first. Click three widely separated outer dish-rim points, then click once inside each target in the prompted order: <strong>top-left, top-right, bottom-right, bottom-left</strong>. Each step finishes automatically. Keep the photograph window open; no outline drawing, right-click or Esc is required in this default guided mode. Reuse a checked dish circle to skip the first three clicks. If you also supply the four colony centres as <code>seeds</code>, recovery can run without clicks.</p>
 <p>Open <code>fixed$recovery_dir</code> and inspect the proposed boundaries in <code>recovered_QC.png</code>. <code>measured_requires_review</code> means provisional measurements were saved; <code>awaiting_boundaries</code> means unresolved proposals and diagnostics were saved without measurements. A closed graphics window returns <code>cancelled</code>. The central extent is a contrast-based proposal requiring visual review, not an automatic identification of hyphae or pigment. Explicit manual overrides remain available for uncertain boundaries; see the real-data tutorial.</p>
 </div>
 </div>

@@ -553,7 +553,8 @@ the dish circle first: an incorrect rim changes both the scale and all
 expected target positions. FunMel retries a failed automatic background
 choice against dark and light backgrounds, accepting a supported,
 plausible circle. This safeguard does not establish that every accepted
-circle or colony outline is correct.
+circle or colony outline is correct. If no acceptable fit is found,
+FunMel reports the dish detection failure.
 
 For a difficult photograph, use the built-in recovery tools. **Select an
 original JPG/PNG/TIFF photograph, not its ZIP archive, QC PNG or an R
@@ -593,6 +594,30 @@ The default is **guided recovery with seven clicks**:
 3.  Wait for measurement and open the new QC output. Each click step
     finishes automatically; keep the graphics window open. Do not draw
     outlines or press right-click/Esc in this default mode.
+
+The console shows which click is needed, then announces when the
+boundary proposals begin. If the automatic rim already follows the outer
+edge in the QC image, reuse it to skip the three rim clicks:
+
+``` r
+
+d <- FunMel::detect_plate(
+  FunMel::read_plate(photo, max_dim = 1200),
+  dish_diameter_mm = dish_mm
+)$dish
+
+fixed <- FunMel::recover_funmel_plate(
+  photo, dish_diameter_mm = dish_mm, centre = "fungus",
+  max_dim = 1200, dish = c(d$x, d$y, d$r_outer), mode = "guided"
+)
+```
+
+After a successful dish retry, you can instead use
+`dish = fixed$annotation$dish` from that retry. To skip all clicks, also
+supply `seeds`: a four-row matrix with columns `x` and `y` (image column
+and row) and row names `TL`, `TR`, `BR` and `BL`. These are coordinates
+in the resized working image at the same `max_dim`. Use centres from the
+exact original photograph you are recovering.
 
 The target centres guide local bright/dark boundary proposals. The
 central fungal extent is proposed separately from local lightness
@@ -1119,6 +1144,10 @@ recorded reason rather than treating it as zero.
 
 knitr::kable(result14$run_summary, row.names=FALSE)
 ```
+
+| images_processed | image_failures | target_colony_rows | finite_detected_colony_MI | missing_colony_MI | colonies_with_incomplete_spots | image_processing_status | measurement_qc_status | comparison_status |
+|---:|---:|---:|---:|---:|---:|:---|:---|:---|
+| 8 | 0 | 32 | 32 | 0 | 0 | complete | no_missing_measurements | not_finalized |
 
 | File | What to check |
 |----|----|

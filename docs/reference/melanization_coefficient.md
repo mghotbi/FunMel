@@ -115,6 +115,8 @@ melanization_coefficient(d)$coefficients  # 60 / 40 = 1.5
 #> 1                      1.5       20                  1                1
 #>   qc_review_status  control_replication n_treatment_colonies n_control_colonies
 #> 1      unconfirmed single_control_plate                    4                  4
-#>   n_excluded_target_colonies status                         interpretation
-#> 1                          0     ok Higher treatment image-darkness index.
+#>   n_excluded_target_colonies weighting status
+#> 1                          0  colonies     ok
+#>                           interpretation
+#> 1 Higher treatment image-darkness index.
 ```

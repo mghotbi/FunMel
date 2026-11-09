@@ -98,10 +98,12 @@ contents and limitations in detail.
 
 ## Recovering an incorrect mask
 
-Inspect the QC image before using a measurement. `retry_funmel_dish()` corrects
-an outer dish circle with three clicks; `recover_funmel_plate()` additionally
-collects reviewed target and central-fungus outlines. Both save a new recovery
-folder. Reapply saved annotations by exact plate ID when rerunning a project;
+Inspect the QC image before using a measurement. FunMel tries alternative
+backgrounds if automatic dish detection fails. If it still cannot fit the rim,
+`retry_funmel_dish()` lets you select it with three clicks. If the rim is correct
+but the colony masks are wrong, use `recover_funmel_plate()` to propose new
+boundaries from the target centres. Both save to a new recovery folder.
+Reapply saved annotations by exact plate ID when rerunning a project;
 see [the real-data recovery guide](https://mghotbi.github.io/FunMel/articles/Real-14-day.html#recovering-a-failed-dish-fit-or-tissue-mask).
 No external recovery script is required.
 
@@ -164,6 +166,8 @@ separated outer dish-rim points, then click once inside each target in the
 prompted order: **top-left, top-right, bottom-right, bottom-left**. Each step
 finishes automatically. Keep the photograph window open; no outline drawing,
 right-click or Esc is required in this default guided mode.
+Reuse a checked dish circle to skip the first three clicks. If you also supply
+the four colony centres as `seeds`, recovery can run without clicks.
 
 Open `fixed$recovery_dir` and inspect the proposed boundaries in `recovered_QC.png`.
 `measured_requires_review` means provisional measurements were saved;

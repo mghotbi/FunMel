@@ -63,32 +63,37 @@ detect_plate <- function(plate, dish = NULL, dish_diameter_mm = 90,
     method <- "manual"
   } else {
     H <- dim(plate$rgb)[1]; W <- dim(plate$rgb)[2]
-    plausible <- function(z) is.list(z) && all(is.finite(c(z$x,z$y,z$r))) &&
-      z$r>=0.15*min(H,W) && z$r<=0.8*max(H,W) &&
-      z$x>=1 && z$x<=W && z$y>=1 && z$y<=H
+    scalar <- function(x) is.numeric(x) && length(x) == 1L && is.finite(x)
+    fields_ok <- function(z, fields) {
+      is.list(z) && !inherits(z, "condition") &&
+        all(vapply(fields, function(nm) scalar(z[[nm, exact = TRUE]]), logical(1)))
+    }
+    plausible <- function(z) fields_ok(z, c("x", "y", "r")) &&
+      z$r >= 0.15 * min(H, W) && z$r <= 0.8 * max(H, W) &&
+      z$x >= 1 && z$x <= W && z$y >= 1 && z$y <= H
     circ <- tryCatch(fit_dish_circle(plate$lab[,,1],background,seed),error=identity)
     method <- "auto"
     if(!plausible(circ) && background=="auto") {
       candidates <- lapply(c("dark","light"),function(bg)
         tryCatch(fit_dish_circle(plate$lab[,,1],bg,seed),error=identity))
       good <- which(vapply(candidates,function(z) plausible(z) &&
-        is.finite(z$coverage) && z$coverage>=0.4 &&
-        is.finite(z$rmse) && z$rmse/z$r<=0.03,logical(1)))
+        fields_ok(z, c("coverage", "rmse")) && z$coverage>=0.4 &&
+        z$rmse/z$r<=0.03,logical(1)))
       if(length(good)) {
         score <- vapply(candidates[good],function(z) z$coverage-z$rmse/z$r,numeric(1))
         chosen <- good[which.max(score)]; circ <- candidates[[chosen]]
         method <- paste0("auto_fallback_",c("dark","light")[chosen])
       }
     }
-    if(inherits(circ,"error")) stop(circ)
-  }
-  H <- dim(plate$rgb)[1]; W <- dim(plate$rgb)[2]
-  if (method != "manual" && !plausible(circ)) {
-    cli::cli_abort(c(
-      "Dish detection failed (implausible radius {round(circ$r)} px).",
-      "i" = "Photograph the dish on a uniform, contrasting background, or pass {.arg dish = c(x, y, r)}.",
-      "i" = "Use {.fn plot_qc} to check the detected circle."
-    ))
+    if (!plausible(circ)) {
+      detail <- if (inherits(circ, "error")) conditionMessage(circ) else
+        "The fitted centre or radius was outside the plausible range."
+      cli::cli_abort(c(
+        "Automatic dish detection failed: {detail}",
+        "i" = "Use {.fn retry_funmel_dish} to select three points on the outer rim."
+      ), class = "funmel_dish_detection_error",
+      parent = if (inherits(circ, "error")) circ else NULL)
+    }
   }
   plate$dish <- list(
     x = circ$x, y = circ$y, r_outer = circ$r,

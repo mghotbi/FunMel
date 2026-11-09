@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.24</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.25</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1063,7 +1063,8 @@ Review the dish circle first: an incorrect rim changes both the scale
 and all expected target positions. FunMel retries a failed automatic
 background choice against dark and light backgrounds, accepting a
 supported, plausible circle. This safeguard does not establish that
-every accepted circle or colony outline is correct.</p>
+every accepted circle or colony outline is correct. If no acceptable fit
+is found, FunMel reports the dish detection failure.</p>
 <p>For a difficult photograph, use the built-in recovery tools.
 <strong>Select an original JPG/PNG/TIFF photograph, not its ZIP archive,
 QC PNG or an R script.</strong> The package functions are available
@@ -1098,6 +1099,27 @@ BL.</li>
 finishes automatically; keep the graphics window open. Do not draw
 outlines or press right-click/Esc in this default mode.</li>
 </ol>
+<p>The console shows which click is needed, then announces when the
+boundary proposals begin. If the automatic rim already follows the outer
+edge in the QC image, reuse it to skip the three rim clicks:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu">FunMel</span><span class="fu">::</span><span class="fu"><a href="../reference/detect_plate.html">detect_plate</a></span><span class="op">(</span></span>
+<span>  <span class="fu">FunMel</span><span class="fu">::</span><span class="fu"><a href="../reference/read_plate.html">read_plate</a></span><span class="op">(</span><span class="va">photo</span>, max_dim <span class="op">=</span> <span class="fl">1200</span><span class="op">)</span>,</span>
+<span>  dish_diameter_mm <span class="op">=</span> <span class="va">dish_mm</span></span>
+<span><span class="op">)</span><span class="op">$</span><span class="va">dish</span></span>
+<span></span>
+<span><span class="va">fixed</span> <span class="op">&lt;-</span> <span class="fu">FunMel</span><span class="fu">::</span><span class="fu"><a href="../reference/retry_funmel_dish.html">recover_funmel_plate</a></span><span class="op">(</span></span>
+<span>  <span class="va">photo</span>, dish_diameter_mm <span class="op">=</span> <span class="va">dish_mm</span>, centre <span class="op">=</span> <span class="st">"fungus"</span>,</span>
+<span>  max_dim <span class="op">=</span> <span class="fl">1200</span>, dish <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">r_outer</span><span class="op">)</span>, mode <span class="op">=</span> <span class="st">"guided"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>After a successful dish retry, you can instead use
+<code>dish = fixed$annotation$dish</code> from that retry. To skip all
+clicks, also supply <code>seeds</code>: a four-row matrix with columns
+<code>x</code> and <code>y</code> (image column and row) and row names
+<code>TL</code>, <code>TR</code>, <code>BR</code> and <code>BL</code>.
+These are coordinates in the resized working image at the same
+<code>max_dim</code>. Use centres from the exact original photograph you
+are recovering.</p>
 <p>The target centres guide local bright/dark boundary proposals. The
 central fungal extent is proposed separately from local lightness
 contrast. Its visible fringe must be checked because differing
@@ -1105,7 +1127,7 @@ pigmentation, transparent hyphae, shadows and contact with targets can
 make the edge ambiguous. Detection changes geometry, not the original
 photograph’s colours. The existing explicit colour calibration and
 background-correction settings still apply to measurement.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fixed</span><span class="op">$</span><span class="va">recovery_status</span></span>
 <span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">fixed</span><span class="op">$</span><span class="va">recovery_dir</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system2.html" class="external-link">system2</a></span><span class="op">(</span><span class="st">"open"</span>, <span class="fu"><a href="https://rdrr.io/r/base/shQuote.html" class="external-link">shQuote</a></span><span class="op">(</span><span class="va">fixed</span><span class="op">$</span><span class="va">recovery_dir</span><span class="op">)</span><span class="op">)</span> <span class="co"># macOS: open saved outputs.</span></span>
@@ -1139,7 +1161,7 @@ annotation.</p>
 <p>To apply a correction in a complete experiment, use the <strong>exact
 plate ID from the project metadata</strong>, rather than its position in
 a menu:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">project</span><span class="op">$</span><span class="va">metadata_file</span>, check.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plate_id"</span>, <span class="st">"relative_file"</span><span class="op">)</span><span class="op">]</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
@@ -1190,7 +1212,7 @@ fitting error establishes biological validation.</p>
 <p>For a project saved in a durable folder, start a fresh session and
 select its <code>image_analysis.rds</code> file. Read saved results
 directly from that same folder:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mghotbi.github.io/FunMel">FunMel</a></span><span class="op">)</span></span>
 <span><span class="va">saved_file14</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.choose.html" class="external-link">file.choose</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Select image_analysis.rds in the project folder.</span></span>
 <span><span class="va">saved_dir14</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">dirname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="va">saved_file14</span>,mustWork<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
@@ -1204,13 +1226,13 @@ remain together.</p>
 <p>For project-aware recovery, the optional
 <code><a href="../reference/load_experiment.html">load_experiment()</a></code> and <code><a href="../reference/read_experiment.html">read_experiment()</a></code>
 helpers reconnect moved project paths:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">project14</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_experiment.html">load_experiment</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Select project.rds in its current folder.</span></span>
 <span><span class="va">result14</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_experiment.html">read_experiment</a></span><span class="op">(</span><span class="va">project14</span><span class="op">)</span></span>
 <span><span class="va">reviewed14</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_experiment.html">read_experiment</a></span><span class="op">(</span><span class="va">project14</span>,finalized<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>After opening the project with <code><a href="../reference/load_experiment.html">load_experiment()</a></code>, update
 final outputs after correcting valid experimental annotations:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reviewed14</span> <span class="op">&lt;-</span> <span class="fu">FunMel</span><span class="fu">::</span><span class="fu"><a href="../reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project14</span><span class="op">)</span></span></code></pre></div>
 <p><code>Final outputs saved</code> means this succeeded. It is
 unnecessary to prepare the photographs again. Keep the complete folder,
@@ -1227,7 +1249,7 @@ require reanalysis.</p>
 <p>Batch results keep tables and saved QC PNGs but drop large image
 arrays. For interactive image-level views, reprocess just one real
 photograph with images retained:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">row14</span> <span class="op">&lt;-</span> <span class="va">metadata14</span><span class="op">[</span><span class="va">metadata14</span><span class="op">$</span><span class="va">plate_id</span><span class="op">==</span><span class="st">"2026_10_02_99_38"</span>,,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
 <span><span class="va">plate14</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyze_plate.html">analyze_plate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">project14</span><span class="op">$</span><span class="va">image_root</span>,<span class="va">row14</span><span class="op">$</span><span class="va">relative_file</span><span class="op">)</span>,</span>
 <span>  id<span class="op">=</span><span class="va">row14</span><span class="op">$</span><span class="va">plate_id</span>,layout<span class="op">=</span><span class="fu"><a href="../reference/layout_by_treatment.html">layout_by_treatment</a></span><span class="op">(</span><span class="va">row14</span><span class="op">)</span>,dish_diameter_mm<span class="op">=</span><span class="va">dish_mm</span>,</span>
@@ -1380,7 +1402,7 @@ coefficient calculation. For your own ZIP, first run the standalone
 workflow below, then use its <code>result14</code> and
 <code>project14</code> objects here.</p>
 <p>First, count the photographs recorded in each set:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadata14</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">project14</span><span class="op">$</span><span class="va">metadata_file</span>, check.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">metadata14</span><span class="op">$</span><span class="va">set_id</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>             col.names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Set"</span>, <span class="st">"Photographs"</span><span class="op">)</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
@@ -1408,7 +1430,7 @@ before interpretation. Keep different days, strains, media and other
 experimental contexts separate; subset the colony table to a single
 context before running this summary if those contexts occur within the
 same set.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">colony_table14</span> <span class="op">&lt;-</span> <span class="va">result14</span><span class="op">$</span><span class="va">colonies</span></span>
 <span><span class="va">usable14</span> <span class="op">&lt;-</span> <span class="va">colony_table14</span><span class="op">[</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">colony_table14</span><span class="op">$</span><span class="va">MI_mean</span><span class="op">)</span> <span class="op">&amp;</span></span>
@@ -1467,7 +1489,7 @@ same set.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">set_means14</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">MI_mean</span> <span class="op">~</span> <span class="va">set_id</span>, data<span class="op">=</span><span class="va">plate_means14</span>, FUN<span class="op">=</span><span class="va">mean</span><span class="op">)</span></span>
 <span><span class="va">plate_counts14</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">plate_id</span> <span class="op">~</span> <span class="va">set_id</span>, data<span class="op">=</span><span class="va">plate_means14</span>, FUN<span class="op">=</span><span class="va">length</span><span class="op">)</span></span>
@@ -1495,7 +1517,7 @@ same set.</p>
 </tbody>
 </table>
 <p>You can plot those plate means without assigning treatment names:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Keep individual plates visible; use the final figure's colours and typography.</span></span>
 <span><span class="va">set_order14</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">plate_means14</span><span class="op">$</span><span class="va">set_id</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">set_palette14</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span></span>
@@ -1555,7 +1577,7 @@ treatment effects, coefficients or p-values. There is no caption
 embedded beneath either figure by default.</p>
 <p>The plot displays in R and in this article. To save this optional
 figure, run:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">ext14</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pdf"</span>, <span class="st">"svg"</span>, <span class="st">"png"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">project14</span><span class="op">$</span><span class="va">project_dir</span>,</span>
 <span>                          <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"set_measurements."</span>, <span class="va">ext14</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -1595,7 +1617,7 @@ inside the ZIP filename. Do not rerun preparation over an existing
 project; reopen its <code>project.rds</code> with
 <code><a href="../reference/load_experiment.html">load_experiment()</a></code> instead, or choose a new output
 folder.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mghotbi.github.io/FunMel">FunMel</a></span><span class="op">)</span></span>
 <span><span class="va">photo_zip14</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/path.expand.html" class="external-link">path.expand</a></span><span class="op">(</span><span class="st">"~/Desktop/photos_14_days.zip"</span><span class="op">)</span></span>
 <span><span class="va">project_dir14</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/path.expand.html" class="external-link">path.expand</a></span><span class="op">(</span><span class="st">"~/Desktop/FunMel_14_day_project"</span><span class="op">)</span></span>
@@ -1651,7 +1673,7 @@ results to bypass the check. A failed assignment such as
 <code>project14 &lt;- prepare_experiment(...)</code> does not clear or
 update an older <code>project14</code> object. If preparation reports an
 existing project, reopen its actual folder:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">project14</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_experiment.html">load_experiment</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/path.expand.html" class="external-link">path.expand</a></span><span class="op">(</span><span class="st">"~/Desktop/FunMel_14_day_project"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">project14</span><span class="op">$</span><span class="va">project_dir</span></span></code></pre></div>
 <p>Replace the input ZIP path with the actual location on your computer.
@@ -1685,8 +1707,43 @@ is stored in <code>colonies.csv</code> (and individual spot MI in
 by its own set’s control mean. A coefficient CSV with headers but no
 rows means no comparison was computed; inspect its recorded reason
 rather than treating it as zero.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">result14</span><span class="op">$</span><span class="va">run_summary</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="8%">
+<col width="7%">
+<col width="9%">
+<col width="13%">
+<col width="9%">
+<col width="16%">
+<col width="12%">
+<col width="12%">
+<col width="9%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">images_processed</th>
+<th align="right">image_failures</th>
+<th align="right">target_colony_rows</th>
+<th align="right">finite_detected_colony_MI</th>
+<th align="right">missing_colony_MI</th>
+<th align="right">colonies_with_incomplete_spots</th>
+<th align="left">image_processing_status</th>
+<th align="left">measurement_qc_status</th>
+<th align="left">comparison_status</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td align="right">8</td>
+<td align="right">0</td>
+<td align="right">32</td>
+<td align="right">32</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">complete</td>
+<td align="left">no_missing_measurements</td>
+<td align="left">not_finalized</td>
+</tr></tbody>
+</table>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -1744,7 +1801,7 @@ treatment/control coefficient uses all remaining measurable
 target-colony MI values, each with equal weight. It does not treat an
 undetected colony as zero, infer its colour from neighbours, or count
 the central fungus as a replacement target.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reviewed14</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project14</span><span class="op">)</span> <span class="co"># Default: warn and omit unusable targets.</span></span>
 <span><span class="va">reviewed14</span><span class="op">$</span><span class="va">excluded_colonies</span>              <span class="co"># Affected plate and colony IDs.</span></span>
 <span><span class="va">reviewed14</span><span class="op">$</span><span class="va">coefficient_plate_means</span>         <span class="co"># Actual used/excluded counts per plate.</span></span>
@@ -1814,7 +1871,7 @@ control.</p>
 <p>For a design with <strong>one experimental treatment per
 set</strong>, users who want to use set names as treatment codes can
 select their actual controls explicitly:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_experiment.html">load_experiment</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Open the existing project.rds.</span></span>
 <span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">project</span><span class="op">$</span><span class="va">metadata_file</span>, check.names<span class="op">=</span><span class="cn">FALSE</span>,</span>
 <span>                     stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
@@ -1849,7 +1906,7 @@ it reuses measurements.</p>
 correcting those controls to <code>none</code> changes segmentation.
 Save the corrected metadata and <strong>rerun image analysis</strong>,
 inspect the new QC images, then finalize:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Replace 90 with the verified dish diameter; keep the intended sampling settings.</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_experiment.html">run_experiment</a></span><span class="op">(</span><span class="va">project</span>, dish_diameter_mm<span class="op">=</span><span class="fl">90</span>, max_dim<span class="op">=</span><span class="fl">1200</span>,</span>
 <span>                         n_spots<span class="op">=</span><span class="fl">5</span>, spot_radius_mm<span class="op">=</span><span class="fl">0.4</span><span class="op">)</span></span>

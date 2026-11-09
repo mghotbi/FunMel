@@ -32,8 +32,8 @@ File path(s).
 
 ``` r
 example_plate("control")
-#>                                                                                   control 
-#> "/Users/mitraghotbi/Rlib-clean/FunMel/extdata/14-days/A60_2_14_days/2026_10_02_99_41.JPG" 
+#>                                                                                                      control 
+#> "/Users/mitraghotbi/Rlib-FunMel-025-16c9e6b0dd6a9/FunMel/extdata/14-days/A60_2_14_days/2026_10_02_99_41.JPG" 
 # \donttest{
 res <- analyze_plate(example_plate("control"), layout = plate_layout(centre = "none"))
 #> ℹ Reading image

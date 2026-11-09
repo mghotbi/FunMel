@@ -148,9 +148,12 @@ suggest_funmel_polygons <- function(path,dish_diameter_mm,centre=c("fungus","non
   for(z in exclusions) excluded <- excluded | .fm_polygon_mask(z,H,W)
   if(is.null(seeds)) {
     seeds <- matrix(NA_real_,4,2,dimnames=list(ids,c("x","y")))
-    for(id in setdiff(ids,names(polygons))) {
+    pending <- setdiff(ids,names(polygons))
+    for(id in pending) {
       if(!interactive()) stop("Supply seeds for noninteractive proposals.")
       .fm_show(p,paste("Click inside",id,"colony"))
+      message("Waiting for click ", match(id, pending), "/", length(pending),
+              ": click inside the ", id, " colony in the photograph window.")
       q <- graphics::locator(n=1,type="p",pch=3,col="cyan")
       if(is.null(q)) stop("Centre selection cancelled.")
       seeds[id,] <- c(q$x,q$y)
@@ -163,6 +166,7 @@ suggest_funmel_polygons <- function(path,dish_diameter_mm,centre=c("fungus","non
   seeds <- seeds[ids,,drop=FALSE]
   diagnostics <- list()
   L <- p$lab[,,1]
+  if (interactive()) message("Proposing tissue boundaries from the selected centres.")
   for(id in ids) {
     if(id %in% names(polygons)) {
       diagnostics[[id]] <- data.frame(colony_id=id,method="manual_override",
