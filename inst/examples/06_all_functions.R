@@ -131,3 +131,12 @@ if(interactive() && isTRUE(getOption("FunMel.suggest",FALSE))) {
   print(proposal$guidance$diagnostics)
   # Review every outline; see the guided-recovery guide before measuring.
 }
+
+# Persistent review decisions for a real saved project.
+if (FALSE) {
+  exclude_colonies(project, plate_id="YOUR_PLATE_ID", colony_id="TR",
+                   reason="Mask includes agar")
+  reviewed <- finish_experiment(project)
+  exclude_colonies(project, "YOUR_PLATE_ID", "TR",
+                   reason="Boundary rechecked", exclude=FALSE)
+}

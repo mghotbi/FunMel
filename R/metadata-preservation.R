@@ -49,8 +49,8 @@ attach_result_metadata <- function(result, metadata, initial=FALSE) {
         # Saved results without maps may already contain experimental fields.
         # Preserve those names while protecting technical measurement columns.
         legacy_metadata <- !initial && is.null(result$metadata_column_maps) &&
-          !grepl("^(MI_|L_|a_mean$|b_mean$|chroma_|hue_|area_|centroid_|n_pixels$|detected$|is_target$|colony_id$|ring$|file$)",nm)
-        if(target %in% names(df) && !legacy_metadata) {
+          !grepl("^(MI_|L_|a_mean$|b_mean$|chroma_|hue_|area_|centroid_|n_pixels$|detected$|is_target$|colony_id$|ring$|file$|\\.funmel_)",nm)
+        if(grepl("^\\.funmel_",nm) || (target %in% names(df) && !legacy_metadata)) {
           target <- paste0("metadata_",nm)
           while(target %in% c(names(df),names(metadata),unname(map))) target <- paste0("metadata_",target)
         }

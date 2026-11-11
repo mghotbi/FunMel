@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.25</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.26</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -160,8 +160,15 @@
 <div class="section level2">
 <h2 id="when-one-target-colony-cannot-be-measured">When one target colony cannot be measured<a class="anchor" aria-label="anchor" href="#when-one-target-colony-cannot-be-measured"></a>
 </h2>
-<p>Finalization warns and continues with the remaining measurable target colonies:</p>
+<p>For a detected target with an unreliable mask, try guided recovery first. If it still cannot be measured reliably, record an explicit exclusion:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/exclude_colonies.html">exclude_colonies</a></span><span class="op">(</span><span class="va">project</span>, plate_id <span class="op">=</span> <span class="st">"YOUR_PLATE_ID"</span>, colony_id <span class="op">=</span> <span class="st">"TR"</span>,</span>
+<span>                 reason <span class="op">=</span> <span class="st">"Mask includes agar"</span><span class="op">)</span></span>
+<span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
+<span><span class="va">reviewed</span><span class="op">$</span><span class="va">excluded_colonies</span></span></code></pre></div>
+<p>Replace the plate ID with the exact ID in <code>colonies.csv</code>; TL/TR/BR/BL identify the four targets. Decisions are saved in <code>colony_exclusions.csv</code> and applied on subsequent finalizations and project comparison plots. Original measurements and detection flags remain unchanged; excluded values are flagged for audit. <code>qc_pass = FALSE</code> does not filter measurements. Use <code>exclude = FALSE</code> in <code><a href="reference/exclude_colonies.html">exclude_colonies()</a></code> to reinstate a decision. After image reanalysis, recheck the new masks and record active exclusions again before finalizing.</p>
+<p>Finalization warns and continues with the remaining measurable target colonies:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
 <span><span class="va">reviewed</span><span class="op">$</span><span class="va">excluded_colonies</span></span>
 <span><span class="va">reviewed</span><span class="op">$</span><span class="va">coefficient_plate_means</span></span></code></pre></div>
@@ -172,7 +179,7 @@
 <h2 id="recover-a-difficult-photograph-with-seven-clicks">Recover a difficult photograph with seven clicks<a class="anchor" aria-label="anchor" href="#recover-a-difficult-photograph-with-seven-clicks"></a>
 </h2>
 <p>If automatic tissue classification selects the central fungus as a target or misses the pink target colonies, use:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">photo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.choose.html" class="external-link">file.choose</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Select the original JPG.</span></span>
 <span><span class="va">fixed</span> <span class="op">&lt;-</span> <span class="fu">FunMel</span><span class="fu">::</span><span class="fu"><a href="reference/retry_funmel_dish.html">recover_funmel_plate</a></span><span class="op">(</span></span>
 <span>  <span class="va">photo</span>, dish_diameter_mm <span class="op">=</span> <span class="va">dish_mm</span>, centre <span class="op">=</span> <span class="st">"fungus"</span></span>

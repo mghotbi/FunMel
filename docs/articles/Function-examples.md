@@ -68,6 +68,7 @@ photographs.
 | [`prepare_photo_archive()`](https://mghotbi.github.io/FunMel/reference/prepare_photo_archive.md) | 8\. ZIP input (a nested archive may contain many sets with their own controls). |
 | [`read_experiment()`](https://mghotbi.github.io/FunMel/reference/read_experiment.md) | 7\. Metadata, batch analysis and a complete saved project from synthetic images. |
 | [`retry_funmel_dish()`](https://mghotbi.github.io/FunMel/reference/retry_funmel_dish.md) | Real-data recovery guide: correct the dish and repeat automatic segmentation. |
+| [`exclude_colonies()`](https://mghotbi.github.io/FunMel/reference/exclude_colonies.md) | Record or reinstate target-colony exclusions; finalization applies saved review decisions. |
 | [`recover_funmel_plate()`](https://mghotbi.github.io/FunMel/reference/retry_funmel_dish.md) | Real-data recovery guide: review target/central boundaries and save reusable annotations. |
 | [`read_plate()`](https://mghotbi.github.io/FunMel/reference/read_plate.md) | 1\. Layout, simulation and import. |
 | [`run_experiment()`](https://mghotbi.github.io/FunMel/reference/run_experiment.md) | 7\. Metadata, batch analysis and a complete saved project from synthetic images. |
@@ -212,6 +213,15 @@ if(interactive() && isTRUE(getOption("FunMel.suggest",FALSE))) {
   plot(proposal)
   print(proposal$guidance$diagnostics)
   # Review every outline; see the guided-recovery guide before measuring.
+}
+
+# Persistent review decisions for a real saved project.
+if (FALSE) {
+  exclude_colonies(project, plate_id="YOUR_PLATE_ID", colony_id="TR",
+                   reason="Mask includes agar")
+  reviewed <- finish_experiment(project)
+  exclude_colonies(project, "YOUR_PLATE_ID", "TR",
+                   reason="Boundary rechecked", exclude=FALSE)
 }
 ```
 

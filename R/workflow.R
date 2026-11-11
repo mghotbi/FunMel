@@ -234,6 +234,7 @@ finish_experiment <- function(project, ..., require_qc=FALSE,na_action=c("omit",
   na_action <- match.arg(na_action)
   project <- as_funmel_project(project)
   result <- read_experiment(project)
+  result <- apply_project_exclusions(result, project)
   meta <- read_project_metadata(project)
   if(nrow(result$failed)) stop("Resolve all failed photographs before finalization.")
   design_issue <- comparison_metadata_issue(meta)
@@ -264,6 +265,8 @@ finish_experiment <- function(project, ..., require_qc=FALSE,na_action=c("omit",
       for(nm in context) sel <- sel & !is.na(meta[[nm]]) & meta[[nm]]==contexts[[nm]][k]
       submeta <- meta[sel,,drop=FALSE]
       sub <- result
+      if(is.data.frame(sub$colony_exclusions))
+        sub$colony_exclusions <- sub$colony_exclusions[sub$colony_exclusions$plate_id %in% submeta$plate_id,,drop=FALSE]
       for(nm in c("colonies","profiles","plates","spots")) if(nrow(sub[[nm]]))
         sub[[nm]] <- sub[[nm]][sub[[nm]]$plate_id %in% submeta$plate_id,,drop=FALSE]
       ans <- finalize_analysis(sub,submeta,...,require_qc=require_qc,na_action=na_action)
@@ -332,6 +335,8 @@ write_experiment_tables <- function(result, path) {
   }
   for(nm in intersect(c("metadata_issues","measurement_issues","excluded_colonies","layout_assignments","run_summary"),names(result)))
     utils::write.csv(result[[nm]],file.path(path,paste0(nm,".csv")),row.names=FALSE)
+  if(!is.null(result$colony_exclusions))
+    utils::write.csv(result$colony_exclusions,file.path(path,"colony_exclusions.csv"),row.names=FALSE)
   if(!is.null(result$metadata)) utils::write.csv(result$metadata,file.path(path,"metadata_used.csv"),row.names=FALSE)
   for(nm in intersect(c("colonies","profiles","spots","plates","failed","melanization_coefficient",
     "coefficient_plate_means","per_plate_coefficients"),names(result)))

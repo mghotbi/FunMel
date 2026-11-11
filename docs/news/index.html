@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.25</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.26</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,13 @@
       <small>Source: <a href="https://github.com/mghotbi/FunMel/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.26" id="funmel-0426">FunMel 0.4.26<a class="anchor" aria-label="anchor" href="#funmel-0426"></a></h2>
+<ul><li>Add exclude_colonies() for persistent target-colony review decisions by exact plate ID, colony ID and reason. finish_experiment() and project plotting apply the saved decisions automatically.</li>
+<li>Preserve original MI, detection flags, spots and metadata; mark excluded measurements and report decisions and actual used/excluded counts.</li>
+<li>Support reinstatement with exclude=FALSE. A new image-analysis run requires fresh review of active exclusions. qc_pass remains a review flag.</li>
+<li>Keep missing-MI counts accurate when an already missing colony is explicitly excluded, and protect review flags from similarly named user metadata.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.25" id="funmel-0425">FunMel 0.4.25<a class="anchor" aria-label="anchor" href="#funmel-0425"></a></h2>
 <ul><li>Reject failed circle fits before reading their fields, so automatic dish detection can try alternative backgrounds and report the underlying failure if no acceptable fit is found.</li>

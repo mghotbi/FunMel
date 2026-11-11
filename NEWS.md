@@ -1,3 +1,15 @@
+# FunMel 0.4.26
+
+* Add exclude_colonies() for persistent target-colony review decisions by exact
+  plate ID, colony ID and reason. finish_experiment() and project plotting
+  apply the saved decisions automatically.
+* Preserve original MI, detection flags, spots and metadata; mark excluded
+  measurements and report decisions and actual used/excluded counts.
+* Support reinstatement with exclude=FALSE. A new image-analysis run requires
+  fresh review of active exclusions. qc_pass remains a review flag.
+* Keep missing-MI counts accurate when an already missing colony is explicitly
+  excluded, and protect review flags from similarly named user metadata.
+
 # FunMel 0.4.25
 
 * Reject failed circle fits before reading their fields, so automatic dish

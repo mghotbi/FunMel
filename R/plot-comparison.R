@@ -52,6 +52,7 @@ plot_treatment_comparison <- function(colonies, control="control", by=NULL,
       (is.character(input) && (dir.exists(input) || identical(basename(input),"project.rds")))
     if(project_input) {
       p <- as_funmel_project(input)
+      colonies <- apply_project_exclusions(colonies,p)
       meta <- read_project_metadata(p)
       check_saved_metadata(colonies,meta)
       colonies <- attach_result_metadata(colonies,meta)

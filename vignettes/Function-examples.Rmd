@@ -70,6 +70,7 @@ Interactive annotation alone needs user clicks; enable `options(FunMel.annotate=
 | `prepare_photo_archive()` | 8. ZIP input (a nested archive may contain many sets with their own controls). |
 | `read_experiment()` | 7. Metadata, batch analysis and a complete saved project from synthetic images. |
 | `retry_funmel_dish()` | Real-data recovery guide: correct the dish and repeat automatic segmentation. |
+| `exclude_colonies()` | Record or reinstate target-colony exclusions; finalization applies saved review decisions. |
 | `recover_funmel_plate()` | Real-data recovery guide: review target/central boundaries and save reusable annotations. |
 | `read_plate()` | 1. Layout, simulation and import. |
 | `run_experiment()` | 7. Metadata, batch analysis and a complete saved project from synthetic images. |
@@ -215,6 +216,14 @@ if(interactive() && isTRUE(getOption("FunMel.suggest",FALSE))) {
   # Review every outline; see the guided-recovery guide before measuring.
 }
 
+# Persistent review decisions for a real saved project.
+if (FALSE) {
+  exclude_colonies(project, plate_id="YOUR_PLATE_ID", colony_id="TR",
+                   reason="Mask includes agar")
+  reviewed <- finish_experiment(project)
+  exclude_colonies(project, "YOUR_PLATE_ID", "TR",
+                   reason="Boundary rechecked", exclude=FALSE)
+}
 ```
 
 ## Measurement-only projects

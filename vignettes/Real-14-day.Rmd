@@ -445,6 +445,64 @@ or exclude it explicitly; do not invent the hidden boundary or missing MI.
 
 ## Recovering a failed dish fit or tissue mask
 
+### Excluding a detected colony after review
+
+A detected mask can include agar or omit target tissue while still giving a
+finite MI. Try guided recovery first. If the mask remains unreliable, exclude
+that target explicitly instead of rejecting the other colonies on the plate:
+
+```{r reviewed-colony-exclusion, eval=FALSE}
+unique(result14$colonies$plate_id) # Find the exact plate ID.
+FunMel::exclude_colonies(
+  project14, plate_id = "YOUR_PLATE_ID", colony_id = "TR",
+  reason = "Mask includes agar"
+)
+reviewed14 <- FunMel::finish_experiment(project14)
+reviewed14$excluded_colonies
+reviewed14$coefficient_plate_means
+```
+
+Replace the example ID with the actual plate ID. TR means the top-right target;
+TL, BR and BL identify the other positions. A single plate ID and a vector such
+as `colony_id = c("TR", "BL")` records multiple exclusions. Supply one shared
+reason or one reason per decision. By default the remaining valid target
+colonies contribute to the matched coefficient. A plate with none still requires
+measurement review; no control is substituted from another set.
+
+The review table is saved in the project as `colony_exclusions.csv`.
+Subsequent `finish_experiment(project14)` calls and
+`plot_treatment_comparison(project14)` use it automatically. The original
+`image_analysis.rds`, MI values, detection flags and user metadata stay intact.
+Final tables include `.funmel_excluded` and `.funmel_exclusion_reason`, and
+`excluded_colonies.csv` reports manual exclusions separately from missing
+measurements. Excluded size/spot/profile values are retained for audit, not
+validated for biological interpretation. Spot-based coefficients respect the
+same exclusions.
+
+`qc_pass` is a plate-review flag, not an exclusion switch. Setting it to FALSE
+does not remove a plate or colony. Strict `require_qc = TRUE` stops if any
+included plate is unconfirmed; it does not silently filter plates.
+
+To reinstate a target after reviewing the decision:
+
+```{r reinstate-colony, eval=FALSE}
+FunMel::exclude_colonies(
+  project14, plate_id = "YOUR_PLATE_ID", colony_id = "TR",
+  reason = "Boundary rechecked and accepted", exclude = FALSE
+)
+reviewed14 <- FunMel::finish_experiment(project14)
+```
+
+Each decision is tied to the saved image-analysis run. If you rerun image
+analysis or apply a recovered mask, recheck the new QC and record active decisions
+again, or reinstate them. FunMel stops finalization if an active decision refers
+to an earlier run. This prevents rejection of a newly corrected measurement by
+an old review decision. Keep exclusion criteria consistent across treatments:
+selective failure related to colour or size can bias the remaining-colony
+comparison.
+
+### Correcting dish and tissue boundaries
+
 An image can finish processing while its masks remain incorrect. Review the dish
 circle first: an incorrect rim changes both the scale and all expected target
 positions. FunMel retries a failed automatic background choice against dark and

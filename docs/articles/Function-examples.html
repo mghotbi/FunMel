@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">FunMel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.25</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.26</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -271,43 +271,48 @@ synthetic images.</td>
 segmentation.</td>
 </tr>
 <tr class="even">
+<td><code><a href="../reference/exclude_colonies.html">exclude_colonies()</a></code></td>
+<td>Record or reinstate target-colony exclusions; finalization applies
+saved review decisions.</td>
+</tr>
+<tr class="odd">
 <td><code><a href="../reference/retry_funmel_dish.html">recover_funmel_plate()</a></code></td>
 <td>Real-data recovery guide: review target/central boundaries and save
 reusable annotations.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code><a href="../reference/read_plate.html">read_plate()</a></code></td>
 <td>1. Layout, simulation and import.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code><a href="../reference/run_experiment.html">run_experiment()</a></code></td>
 <td>7. Metadata, batch analysis and a complete saved project from
 synthetic images.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code><a href="../reference/sample_colony_spots.html">sample_colony_spots()</a></code></td>
 <td>3. The individual image-processing steps (normally analyze_plate
 does these).</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code><a href="../reference/segment_colonies.html">segment_colonies()</a></code></td>
 <td>3. The individual image-processing steps (normally analyze_plate
 does these).</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code><a href="../reference/simulate_plate.html">simulate_plate()</a></code></td>
 <td>1. Layout, simulation and import.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code><a href="../reference/srgb_to_lab.html">srgb_to_lab()</a></code></td>
 <td>2. Colour conversions and reference calibration.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code><a href="../reference/train_classifier.html">train_classifier()</a></code></td>
 <td>5. Supervised classification. Coordinates below come from simulated
 truth.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code><a href="../reference/validate_metadata.html">validate_metadata()</a></code></td>
 <td>6. Repeated independent plates and matched-set statistics (synthetic
 values).</td>
@@ -447,6 +452,15 @@ values).</td>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">proposal</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">proposal</span><span class="op">$</span><span class="va">guidance</span><span class="op">$</span><span class="va">diagnostics</span><span class="op">)</span></span>
 <span>  <span class="co"># Review every outline; see the guided-recovery guide before measuring.</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Persistent review decisions for a real saved project.</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/exclude_colonies.html">exclude_colonies</a></span><span class="op">(</span><span class="va">project</span>, plate_id<span class="op">=</span><span class="st">"YOUR_PLATE_ID"</span>, colony_id<span class="op">=</span><span class="st">"TR"</span>,</span>
+<span>                   reason<span class="op">=</span><span class="st">"Mask includes agar"</span><span class="op">)</span></span>
+<span>  <span class="va">reviewed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finish_experiment.html">finish_experiment</a></span><span class="op">(</span><span class="va">project</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/exclude_colonies.html">exclude_colonies</a></span><span class="op">(</span><span class="va">project</span>, <span class="st">"YOUR_PLATE_ID"</span>, <span class="st">"TR"</span>,</span>
+<span>                   reason<span class="op">=</span><span class="st">"Boundary rechecked"</span>, exclude<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="measurement-only-projects">Measurement-only projects<a class="anchor" aria-label="anchor" href="#measurement-only-projects"></a>

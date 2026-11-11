@@ -41,6 +41,7 @@ compare_melanization <- function(colonies,response="MI_mean",group="treatment",
   d<-colonies[is.finite(colonies[[response]]),,drop=FALSE]
   if("is_target" %in% names(d)) d<-d[!is.na(d$is_target) & d$is_target,,drop=FALSE]
   if("detected" %in% names(d)) d<-d[!is.na(d$detected) & d$detected,,drop=FALSE]
+  d<-d[colony_review_valid(d),,drop=FALSE]
   if(anyNA(d[c(group,plate)])) stop("Complete treatment and plate metadata.")
   d$.y<-d[[response]];d$.g<-stats::relevel(factor(d[[group]]),reference);d$.p<-factor(d[[plate]])
   if(any(vapply(split(d$.g,d$.p),function(z) length(unique(z))>1L,TRUE))) stop("A plate must belong to one treatment.")

@@ -53,8 +53,12 @@ measurement_issue_table <- function(result) {
       colony_id=as.character(co$colony_id[ix]),field=field,issue=issue,
       action=action,stringsAsFactors=FALSE))
   }
-  add(which(!valid),"MI_mean","missing_target_measurement",
+  manually_excluded <- !colony_review_valid(co)
+  add(which(!valid & !manually_excluded),"MI_mean","missing_target_measurement",
       "Inspect this colony in QC; correct its image/layout and rerun. No missing MI is imputed. Omit mode excludes this target from comparisons with a warning; strict mode withholds comparisons.")
+  for(i in which(manually_excluded)) add(i,"review","manual_colony_exclusion",
+    paste0("Excluded after image review: ",co$.funmel_exclusion_reason[i]))
+  valid <- valid & !manually_excluded
   if(all(c("n_spots_requested","n_spots_measured") %in% names(co))) {
     incomplete <- valid & is.finite(co$n_spots_requested) & co$n_spots_requested>0 &
       (!is.finite(co$n_spots_measured) | co$n_spots_measured<co$n_spots_requested)
@@ -68,7 +72,7 @@ measurement_issue_table <- function(result) {
 missing_target_measurement_issue <- function(result,na_action=c("omit","error")) {
   na_action <- match.arg(na_action)
   x <- measurement_issue_table(result)
-  x <- x[x$issue=="missing_target_measurement",,drop=FALSE]
+  x <- x[x$issue %in% c("missing_target_measurement","manual_colony_exclusion"),,drop=FALSE]
   if(!nrow(x)) return(NULL)
   if(na_action=="omit") {
     co <- result$colonies
@@ -77,6 +81,7 @@ missing_target_measurement_issue <- function(result,na_action=c("omit","error"))
     co <- co[target,,drop=FALSE]
     valid <- is.finite(co$MI_mean)
     if("detected" %in% names(co)) valid <- valid & !is.na(co$detected) & co$detected
+    valid <- valid & colony_review_valid(co)
     empty <- names(which(tapply(valid,as.character(co$plate_id),sum)==0L))
     if(!length(empty)) return(NULL)
     return(paste0("No usable target MI remains on plate(s): ",paste(empty,collapse=", "),
@@ -91,7 +96,7 @@ add_workflow_diagnostics <- function(result,metadata) {
   result$metadata_issues <- metadata_design_issues(metadata)
   result$measurement_issues <- measurement_issue_table(result)
   missing <- result$measurement_issues
-  result$excluded_colonies <- missing[missing$issue=="missing_target_measurement",,drop=FALSE]
+  result$excluded_colonies <- missing[missing$issue %in% c("missing_target_measurement","manual_colony_exclusion"),,drop=FALSE]
   if(!is.null(result$missing_colony_action) && result$missing_colony_action=="error")
     result$excluded_colonies <- result$excluded_colonies[FALSE,,drop=FALSE]
   result$measurement_qc_status <- if(nrow(result$measurement_issues)) "needs_review" else "no_missing_measurements"
@@ -115,13 +120,20 @@ add_workflow_diagnostics <- function(result,metadata) {
   if(length(target) && "is_target" %in% names(co)) target <- target & !is.na(co$is_target) & co$is_target
   n_target <- sum(target)
   if(!n_target) result$measurement_qc_status <- "no_target_measurements"
-  n_missing <- sum(result$measurement_issues$issue=="missing_target_measurement")
+  raw_valid <- if(n_target) is.finite(co$MI_mean[target]) else logical()
+  if(n_target && "detected" %in% names(co))
+    raw_valid <- raw_valid & !is.na(co$detected[target]) & co$detected[target]
+  review_valid <- if(n_target) colony_review_valid(co[target,,drop=FALSE]) else logical()
+  n_missing <- sum(!raw_valid)
+  n_review_excluded <- sum(result$measurement_issues$issue=="manual_colony_exclusion")
   n_incomplete <- sum(result$measurement_issues$issue=="incomplete_spot_sampling")
   n_failed <- if(is.data.frame(result$failed)) nrow(result$failed) else 0L
   n_plates <- length(unique(c(if(is.data.frame(result$plates)) as.character(result$plates$plate_id),
                             if(is.data.frame(result$failed) && "file" %in% names(result$failed)) as.character(result$failed$file))))
   result$run_summary <- data.frame(images_processed=n_plates,image_failures=n_failed,
-    target_colony_rows=n_target,finite_detected_colony_MI=n_target-n_missing,
+    target_colony_rows=n_target,finite_detected_colony_MI=sum(raw_valid),
+    manually_excluded_colonies=n_review_excluded,
+    usable_colony_MI=sum(raw_valid & review_valid),
     missing_colony_MI=n_missing,colonies_with_incomplete_spots=n_incomplete,
     image_processing_status=if(!is.null(result$analysis_status)) result$analysis_status else "not_recorded",
     measurement_qc_status=result$measurement_qc_status,
@@ -139,6 +151,10 @@ report_workflow_diagnostics <- function(result) {
     "Image-processing completion does not imply complete colony measurements or biological validation.")
   if(nrow(result$measurement_issues)) message("Inspect measurement_issues.csv and the named colony QC before interpreting results.")
   if(s$missing_colony_MI>0L) message("Missing targets remain recorded. By default finalization warns and compares remaining finite detected target MIs; a plate with none remains unavailable. Use finish_experiment(..., na_action='error') to require complete targets.")
+  if("manually_excluded_colonies" %in% names(s) && s$manually_excluded_colonies>0L)
+    message(s$manually_excluded_colonies," target colonies excluded by saved review decisions. ",
+            s$usable_colony_MI," target-colony MI values remain eligible for comparison. ",
+            "Original MI values remain recorded; inspect colony_exclusions.csv and excluded_colonies.csv.")
   if(nrow(result$metadata_issues)) message("Matching-design issues affect ",
     length(unique(result$metadata_issues$plate_id))," plate(s); see metadata_issues.csv for fields, plate IDs and next steps. ",
     "Colony MI values remain in colonies.csv; coefficient tables are unavailable until the matching design is valid.")

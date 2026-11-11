@@ -128,6 +128,24 @@ replicates for statistical inference. Missing targets require review.
 
 ## When one target colony cannot be measured
 
+For a detected target with an unreliable mask, try guided recovery first.
+If it still cannot be measured reliably, record an explicit exclusion:
+
+```r
+exclude_colonies(project, plate_id = "YOUR_PLATE_ID", colony_id = "TR",
+                 reason = "Mask includes agar")
+reviewed <- finish_experiment(project)
+reviewed$excluded_colonies
+```
+
+Replace the plate ID with the exact ID in `colonies.csv`; TL/TR/BR/BL identify
+the four targets. Decisions are saved in `colony_exclusions.csv` and applied
+on subsequent finalizations and project comparison plots. Original measurements
+and detection flags remain unchanged; excluded values are flagged for audit.
+`qc_pass = FALSE` does not filter measurements. Use `exclude = FALSE` in
+`exclude_colonies()` to reinstate a decision. After image reanalysis, recheck
+the new masks and record active exclusions again before finalizing.
+
 Finalization warns and continues with the remaining measurable target colonies:
 
 ```r

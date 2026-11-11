@@ -44,6 +44,9 @@
 - [`example_plate()`](https://mghotbi.github.io/FunMel/reference/example_plate.md)
   : Paths to the example plate photographs shipped with FunMel
 
+- [`exclude_colonies()`](https://mghotbi.github.io/FunMel/reference/exclude_colonies.md)
+  : Exclude or reinstate individual colonies after image review
+
 - [`extract_training_pixels()`](https://mghotbi.github.io/FunMel/reference/extract_training_pixels.md)
   : Extract annotated training pixels
 

@@ -88,6 +88,7 @@ melanization_coefficient <- function(colonies, control="control",
     if (length(unique(df[[nm]][idx]))!=1L) stop("Each plate must have one value of ",nm,"; use globally unique plate IDs.")
   valid <- is.finite(df[[response]])
   if ("detected" %in% names(df)) valid <- valid & !is.na(df$detected) & df$detected==TRUE
+  valid <- valid & colony_review_valid(df)
   if (any(!valid)) {
     if (na_action=="error") stop("Undetected or nonfinite target MI values. Inspect QC; use na_action='omit' only with a documented exclusion decision.")
     affected <- unique(as.character(df[[plate]][!valid]))
